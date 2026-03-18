@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Cambiado al tono exacto de Agro Midnight */
+    background-color: #0A0F10; 
+  }
+
+  body {
+    /* Usamos los nombres aplanados de tu tailwind.config.js */
+    @apply bg-agro-midnight text-agro-cream antialiased font-sans;
+  }
+}
+
+@layer components {
+  .btn-emerald {
+    /* CORRECCIÓN: agro-tealLight -> agro-teal-light */
+    @apply px-8 py-4 bg-agro-teal text-agro-midnight font-black rounded-2xl shadow-teal-glow hover:bg-agro-teal-light hover:shadow-teal-glow-lg transition-all duration-300 active:scale-95 uppercase tracking-widest text-[10px];
+  }
+
+  .card-midnight {
+    /* CORRECCIÓN: bg-agro-charcoal/40 para el efecto traslúcido Noir */
+    @apply bg-agro-charcoal/40 rounded-[3rem] border border-white/5 hover:border-agro-teal/30 shadow-premium transition-all duration-500 overflow-hidden backdrop-blur-md;
+  }
+
+  .glass-midnight {
+    @apply bg-agro-midnight/60 backdrop-blur-2xl border border-white/5 shadow-2xl;
+  }
+
+  .text-glow-teal {
+    text-shadow: 0 0 15px rgba(63, 111, 118, 0.5);
+  }
+}
+
+/* 🌑 Animación de revelación profunda (Noir Reveal) */
+.reveal {
+  animation: reveal 1s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.reveal-delayed {
+  animation: reveal 1s cubic-bezier(0.23, 1, 0.32, 1) 0.2s both;
+}
+
+.reveal-delayed-more {
+  animation: reveal 1s cubic-bezier(0.23, 1, 0.32, 1) 0.4s both;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 🎨 Scrollbar Estilo Terminal Premium */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0F10;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3F6F76;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5A8C93;
+}
