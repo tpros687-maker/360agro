@@ -2,57 +2,65 @@ import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
-    <footer className="bg-agro-midnight border-t border-white/5 pt-24 pb-12 px-6">
-      <div className="container mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
-          
-          {/* MARCA */}
-          <div className="col-span-1 md:col-span-1">
-            <h3 className="text-agro-cream font-black italic uppercase text-2xl mb-6 leading-none">
-              360 AGRO <br /> <span className="text-agro-teal not-italic">ELITE</span>
-            </h3>
-            <p className="text-agro-cream/20 text-[10px] font-bold leading-relaxed uppercase italic">
-              "Digitalizando la trazabilidad y los negocios del sector agropecuario con tecnología de precisión."
-            </p>
-          </div>
-
-          {/* COLUMNAS DE LINKS TÉCNICOS */}
-          <div>
-            <h4 className="text-agro-teal font-black uppercase text-[10px] tracking-[0.4em] mb-8">Ecosistema</h4>
-            <ul className="space-y-4">
-              <li><Link to="/lotes" className="text-agro-cream/40 hover:text-white transition-colors text-[10px] uppercase font-bold tracking-widest">Remates Particulares</Link></li>
-              <li><Link to="/tiendas" className="text-agro-cream/40 hover:text-white transition-colors text-[10px] uppercase font-bold tracking-widest">Insumos Críticos</Link></li>
-              <li><Link to="/servicios" className="text-agro-cream/40 hover:text-white transition-colors text-[10px] uppercase font-bold tracking-widest">Equipos de Campaña</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-agro-teal font-black uppercase text-[10px] tracking-[0.4em] mb-8">Terminal</h4>
-            <ul className="space-y-4">
-              <li><Link to="/perfil" className="text-agro-cream/40 hover:text-white transition-colors text-[10px] uppercase font-bold tracking-widest">Mi Membresía</Link></li>
-              <li><Link to="/mensajes" className="text-agro-cream/40 hover:text-white transition-colors text-[10px] uppercase font-bold tracking-widest">Canal de Negocios</Link></li>
-              <li><Link to="/planes" className="text-agro-cream/40 hover:text-white transition-colors text-[10px] uppercase font-bold tracking-widest">Upgrade Pro</Link></li>
-            </ul>
-          </div>
-
-          {/* CONTACTO RÁPIDO */}
-          <div className="bg-agro-charcoal/30 p-8 rounded-[2rem] border border-white/5">
-            <h4 className="text-white font-black uppercase text-[10px] tracking-[0.4em] mb-6">Soporte Técnico</h4>
-            <p className="text-agro-teal font-black text-[12px] italic mb-2">0800-360-AGRO</p>
-            <p className="text-agro-cream/20 text-[8px] font-black uppercase tracking-widest leading-relaxed">
-              Atención Operativa 24/7 para Socios Élites.
-            </p>
+    <footer className="bg-background px-6 pt-20 pb-10 border-t border-outline-variant/5">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
+        <div className="col-span-1 md:col-span-1">
+          <span className="text-2xl font-black italic text-[#E8E0C8] drop-shadow-[0_0_15px_rgba(63,111,118,0.4)] block mb-6 font-headline tracking-tighter">360AGRO</span>
+          <p className="text-on-surface-variant text-sm leading-relaxed mb-6 font-light">
+            Liderando la revolución tecnológica del sector agropecuario soberano a través de transparencia, tecnología y excelencia operativa.
+          </p>
+          <div className="flex gap-4">
+            <div className="w-10 h-10 rounded-full border border-outline-variant/30 flex items-center justify-center text-outline hover:text-primary transition-colors cursor-pointer">
+              <span className="material-symbols-outlined text-lg">share</span>
+            </div>
+            <div className="w-10 h-10 rounded-full border border-outline-variant/30 flex items-center justify-center text-outline hover:text-primary transition-colors cursor-pointer">
+              <span className="material-symbols-outlined text-lg">public</span>
+            </div>
           </div>
         </div>
 
-        {/* BOTTOM FOOTER */}
-        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[8px] font-black text-white/10 uppercase tracking-[0.5em]">
-            © 2026 360 AGRO ELITE - TODOS LOS DERECHOS RESERVADOS.
-          </p>
-          <div className="flex gap-8">
-             <span className="text-[8px] font-black text-white/5 uppercase tracking-widest">Sincronizado v3.2.0</span>
+        <div>
+          <h5 className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#3F6F76] mb-6">Plataforma</h5>
+          <ul className="space-y-4">
+            <li><Link className="text-on-surface-variant hover:text-primary text-sm transition-colors" to="/lotes">Mapa Activo</Link></li>
+            <li><Link className="text-on-surface-variant hover:text-primary text-sm transition-colors" to="/agro-ledger">Agro Ledger</Link></li>
+            <li><Link className="text-on-surface-variant hover:text-primary text-sm transition-colors" to="/tiendas">Insumos Críticos</Link></li>
+            <li><Link className="text-on-surface-variant hover:text-primary text-sm transition-colors" to="/servicios">Servicios Pro</Link></li>
+          </ul>
+        </div>
+
+        <div>
+          <h5 className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#3F6F76] mb-6">Soporte</h5>
+          <ul className="space-y-4">
+            <li><Link className="text-on-surface-variant hover:text-primary text-sm transition-colors" to="/perfil">Centro de Ayuda</Link></li>
+            <li><Link className="text-on-surface-variant hover:text-primary text-sm transition-colors" to="/register">Seguridad de Datos</Link></li>
+            <li><Link className="text-on-surface-variant hover:text-primary text-sm transition-colors" to="/planes">Términos de Servicio</Link></li>
+            <li><Link className="text-on-surface-variant hover:text-primary text-sm transition-colors" to="/mensajes">Contacto Directo</Link></li>
+          </ul>
+        </div>
+
+        <div>
+          <h5 className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#3F6F76] mb-6">Inscripción Newsletter</h5>
+          <p className="text-xs text-on-surface-variant mb-4 tracking-wide font-light">Reciba reportes semanales de mercado y actualizaciones de plataforma.</p>
+          <div className="relative">
+            <input
+              className="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary px-4 py-3 text-sm focus:ring-0 placeholder:text-outline/40 outline-none transition-colors"
+              placeholder="Email corporativo"
+              type="email"
+            />
+            <button className="absolute right-0 top-1/2 -translate-y-1/2 text-primary p-2">
+              <span className="material-symbols-outlined">send</span>
+            </button>
           </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto pt-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p className="text-[0.65rem] text-outline tracking-widest uppercase italic">© 2026 AGRO-NOIR. TODOS LOS DERECHOS RESERVADOS.</p>
+        <div className="flex gap-8 text-[0.65rem] text-outline tracking-widest uppercase italic">
+          <Link className="hover:text-on-surface" to="/">Política de Privacidad</Link>
+          <Link className="hover:text-on-surface" to="/">Cookies</Link>
+          <Link className="hover:text-on-surface" to="/">Legal</Link>
         </div>
       </div>
     </footer>

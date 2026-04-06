@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import { useContext } from "react";
 import { CartContext } from "../context/CartContext";
 
-const BASE_URL = "http://localhost:5000";
+import { BASE_URL } from "../api/axiosConfig";
 
 const CATEGORIAS = [
   "Todas",
@@ -85,8 +85,8 @@ export default function TiendaDetalle() {
 
   if (loading) {
     return (
-      <div className="bg-agro-midnight min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-agro-teal shadow-teal-glow"></div>
+      <div className="bg-background min-h-screen flex justify-center items-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-primary shadow-[0_0_20px_rgba(63,111,118,0.4)]"></div>
       </div>
     );
   }
@@ -101,38 +101,44 @@ export default function TiendaDetalle() {
   }
 
   return (
-    <div className="bg-agro-midnight min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-agro-teal/5 rounded-full blur-[200px] pointer-events-none"></div>
+    <div className="bg-background min-h-screen pt-32 pb-24 px-6 relative overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[200px] pointer-events-none"></div>
 
-      <div className="container mx-auto relative z-10">
+      <div className="container mx-auto relative z-10 max-w-7xl">
 
         {/* SHOP HEADER NOIR */}
-        <section className="bg-agro-charcoal border border-white/5 p-12 rounded-[3.5rem] shadow-2xl mb-16 relative overflow-hidden flex flex-col md:flex-row items-center gap-12 group">
-          <div className="w-48 h-48 bg-agro-midnight rounded-[2.5rem] border border-white/10 flex items-center justify-center p-6 shadow-inner relative z-10 overflow-hidden">
+        <section className="bg-surface-container-high border border-outline-variant/10 p-10 rounded-[3rem] shadow-2xl mb-12 relative overflow-hidden flex flex-col md:flex-row items-center gap-10 group">
+          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+          <div className="w-44 h-44 bg-surface-container-lowest rounded-[2.5rem] border border-outline-variant/10 flex items-center justify-center p-6 shadow-inner relative z-10 overflow-hidden">
             <img src={`${BASE_URL}${tienda.logo}`} className="w-full h-full object-contain brightness-110 group-hover:scale-110 transition duration-700" alt={tienda.nombre} />
           </div>
+
           <div className="flex-1 text-center md:text-left relative z-10">
-            <span className="bg-agro-teal/10 text-agro-teal text-[10px] font-black px-5 py-2 rounded-full uppercase tracking-widest mb-6 inline-block border border-agro-teal/10">Socio Proveedor Élite</span>
-            <h1 className="text-6xl font-black text-white italic tracking-tighter leading-none mb-6">
-              {tienda.nombre.toUpperCase()}
+            <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
+              <span className="w-3 h-3 bg-primary rounded-full animate-pulse"></span>
+              <span className="text-primary text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest border border-primary/20 italic bg-primary/5">Socio Proveedor Élite</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-black text-on-surface italic tracking-tighter leading-none mb-6 glow-text uppercase">
+              {tienda.nombre}
             </h1>
-            <p className="text-agro-cream/40 text-xl font-medium leading-relaxed max-w-2xl italic">
+            <p className="text-on-surface-variant text-lg font-medium leading-relaxed max-w-2xl italic opacity-60">
               "{tienda.descripcion || "Experto certificado en la distribución de insumos técnicos para el sector agropecuario uruguayo."}"
             </p>
           </div>
         </section>
 
         {/* FILTROS Y BÚSQUEDA */}
-        <div className="mb-12 space-y-8">
-          <div className="flex flex-col md:flex-row gap-6 items-center justify-between bg-white/5 p-4 rounded-3xl border border-white/5 shadow-inner">
+        <div className="mb-12">
+          <div className="flex flex-col md:flex-row gap-6 items-center justify-between bg-surface-container-low p-4 rounded-3xl border border-outline-variant/10 shadow-xl">
             <div className="relative w-full md:w-1/3">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-agro-cream/40" size={20} />
+              <span className="material-symbols-outlined absolute left-6 top-1/2 -translate-y-1/2 text-on-surface-variant/40">search</span>
               <input
                 type="text"
                 placeholder="Buscar insumos o maquinaria..."
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                className="w-full bg-agro-midnight border border-white/5 py-4 pl-14 pr-6 rounded-2xl text-white outline-none focus:border-agro-teal/50 transition-colors shadow-inner font-medium"
+                className="w-full bg-surface-container-lowest border border-outline-variant/20 py-4 pl-14 pr-6 rounded-2xl text-on-surface outline-none focus:border-primary/50 transition-all shadow-inner font-medium placeholder:text-on-surface-variant/20"
               />
             </div>
 
@@ -141,9 +147,9 @@ export default function TiendaDetalle() {
                 <button
                   key={cat}
                   onClick={() => setCategoria(cat)}
-                  className={`px-6 py-3 rounded-xl border font-black uppercase tracking-widest text-[9px] transition-all whitespace-nowrap ${categoria === cat
-                    ? "bg-agro-teal text-white border-agro-teal shadow-teal-glow"
-                    : "bg-transparent text-agro-cream/40 border-white/10 hover:border-agro-teal/30 hover:text-agro-cream"
+                  className={`px-6 py-3 rounded-full border font-bold uppercase tracking-widest text-[9px] transition-all whitespace-nowrap italic ${categoria === cat
+                    ? "machined-gradient text-on-tertiary-fixed border-none shadow-[0_0_15px_rgba(63,111,118,0.3)] scale-105"
+                    : "bg-transparent text-on-surface-variant border-outline-variant/10 hover:border-primary/30 hover:text-on-surface"
                     }`}
                 >
                   {cat}
@@ -154,50 +160,51 @@ export default function TiendaDetalle() {
         </div>
 
         {/* PRODUCTS GRID */}
-        <div>
-          <div className="flex items-center gap-6 mb-12">
-            <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap">Resultados de Catálogo</h2>
-            <div className="h-[1px] bg-white/5 flex-1"></div>
+        <div className="reveal">
+          <div className="flex items-center gap-6 mb-10">
+            <h2 className="text-2xl font-black text-on-surface italic tracking-tighter uppercase whitespace-nowrap glow-text">Catálogo de Activos</h2>
+            <div className="h-[1px] machined-gradient opacity-20 flex-1"></div>
           </div>
 
           {productos.length === 0 ? (
-            <div className="text-center py-40 card-midnight bg-white/5 border-dashed border-white/10 italic text-white/20 text-3xl font-black uppercase tracking-tighter">
-              No se encontraron artículos
+            <div className="text-center py-40 bg-surface-container-low rounded-[3rem] border-2 border-dashed border-outline-variant/10 flex flex-col items-center">
+              <span className="material-symbols-outlined text-6xl text-outline/20 mb-6">inventory_2</span>
+              <p className="text-on-surface-variant text-xl font-bold uppercase tracking-widest italic opacity-40">No se encontraron artículos en esta sección</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {productos.map((prod) => (
                 <div
                   key={prod._id}
-                  className="card-midnight group bg-agro-midnight border-white/5 flex flex-col h-full hover:-translate-y-2 transition-all duration-500 shadow-2xl overflow-hidden relative"
+                  className="group relative flex flex-col h-full bg-surface-container-high rounded-[2rem] border border-outline-variant/10 overflow-hidden hover:scale-[1.02] transition-all duration-500 shadow-xl hover:shadow-primary/5"
                 >
-                  <div className="absolute top-4 left-4 z-10 bg-agro-midnight/80 backdrop-blur-sm border border-white/10 text-[9px] font-black uppercase tracking-widest text-agro-teal px-3 py-1 rounded-full shadow-inner">
+                  <div className="absolute top-4 left-4 z-20 bg-primary/20 backdrop-blur-md border border-primary/30 text-[9px] font-bold uppercase tracking-widest text-primary px-3 py-1.5 rounded-full shadow-lg italic">
                     {prod.categoria}
                   </div>
 
-                  <div className="h-56 overflow-hidden relative bg-white/5">
+                  <div className="h-56 overflow-hidden relative bg-surface-container-lowest">
                     <img
                       src={`${BASE_URL}${prod.fotoPrincipal}`}
-                      className="w-full h-full object-cover group-hover:scale-110 transition duration-[2s]"
+                      className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-[2s] group-hover:scale-105"
                       alt={prod.nombre}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-agro-midnight/60 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-surface-container-high/90 via-transparent to-transparent"></div>
                   </div>
 
-                  <div className="p-8 flex flex-col flex-1">
-                    <h3 className="text-xl font-black text-white mb-2 group-hover:text-agro-teal transition-colors duration-500 leading-tight uppercase line-clamp-2">
+                  <div className="p-8 flex flex-col flex-1 relative z-10">
+                    <h3 className="text-lg font-bold text-on-surface mb-4 group-hover:text-primary transition-colors leading-tight uppercase line-clamp-2 italic">
                       {prod.titulo || prod.nombre}
                     </h3>
 
-                    <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
-                      <p className="text-2xl font-black text-white text-glow-teal italic tracking-tighter">
-                        ${prod.precio?.toLocaleString()}
+                    <div className="mt-auto pt-6 border-t border-outline-variant/10 flex items-center justify-between">
+                      <p className="text-2xl font-black text-on-surface italic tracking-tighter glow-text">
+                        <span className="text-sm not-italic text-primary mr-1 font-bold">USD</span>{prod.precio?.toLocaleString()}
                       </p>
                       <button
                         onClick={() => agregarAlCarrito(prod, 1)}
-                        className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-agro-teal hover:bg-agro-teal hover:text-white transition shadow-inner"
+                        className="w-12 h-12 machined-gradient rounded-2xl flex items-center justify-center text-on-tertiary-fixed hover:scale-110 transition shadow-xl"
                       >
-                        🛒
+                        <span className="material-symbols-outlined text-xl">shopping_cart_checkout</span>
                       </button>
                     </div>
                   </div>

@@ -6,7 +6,9 @@ export const CartContext = createContext();
 export function CartProvider({ children }) {
     const [carrito, setCarrito] = useState(() => {
         const guardado = localStorage.getItem("agro-cart");
-        return guardado ? JSON.parse(guardado) : [];
+        const parsed = guardado ? JSON.parse(guardado) : [];
+        // 🩹 AUTO-REPARACIÓN: Si hay datos en el formato viejo {producto, cantidad}, los aplanamos
+        return parsed.map(item => item.producto ? { ...item.producto, cantidad: item.cantidad } : item);
     });
 
     useEffect(() => {
@@ -14,32 +16,34 @@ export function CartProvider({ children }) {
     }, [carrito]);
 
     const agregarAlCarrito = (producto, cantidad = 1) => {
+        // 🚀 MOVE TOAST OUTSIDE: Los efectos como 'toast' no deben dispararse dentro de un callback de estado (updater)
+        const existePrev = carrito.find(item => item._id === producto._id);
+
+        if (existePrev) {
+            toast.success(`Incrementada la carga de ${producto.titulo || producto.nombre}`, {
+                style: { background: '#1a2424', color: '#E8E0C8', border: '1px solid #3F6F76' }
+            });
+        } else {
+            toast.success(`${producto.titulo || producto.nombre} indexado a la solicitud`, {
+                style: { background: '#1a2424', color: '#E8E0C8', border: '1px solid #3F6F76' }
+            });
+        }
+
         setCarrito((prev) => {
-            // Buscamos si el producto ya está en el carrito
-            const existe = prev.find((item) => item.producto._id === producto._id);
-            
+            const existe = prev.find((item) => item._id === producto._id);
             if (existe) {
-                toast.success(`Incrementada la carga de ${producto.titulo || producto.nombre}`, {
-                    style: { background: '#1a1a1a', color: '#2dd4bf', border: '1px solid #2dd4bf' }
-                });
                 return prev.map((item) =>
-                    item.producto._id === producto._id
+                    item._id === producto._id
                         ? { ...item, cantidad: item.cantidad + cantidad }
                         : item
                 );
             }
-
-            // Si es nuevo, lo indexamos
-            toast.success(`${producto.titulo || producto.nombre} indexado a la solicitud`, {
-                style: { background: '#1a1a1a', color: '#2dd4bf', border: '1px solid #2dd4bf' }
-            });
-            
-            return [...prev, { producto, cantidad }];
+            return [...prev, { ...producto, cantidad }];
         });
     };
 
     const eliminarDelCarrito = (id) => {
-        setCarrito((prev) => prev.filter((item) => item.producto._id !== id));
+        setCarrito((prev) => prev.filter((item) => item._id !== id));
         toast.error("Activo removido de la solicitud", {
             style: { background: '#1a1a1a', color: '#ef4444', border: '1px solid #ef4444' }
         });
@@ -47,7 +51,7 @@ export function CartProvider({ children }) {
 
     const modificarCantidad = (id, n) => {
         setCarrito((prev) => prev.map((item) => {
-            if (item.producto._id === id) {
+            if (item._id === id) {
                 const nuevaCantidad = item.cantidad + n;
                 return { ...item, cantidad: nuevaCantidad > 0 ? nuevaCantidad : 1 };
             }
@@ -61,7 +65,7 @@ export function CartProvider({ children }) {
     };
 
     const subtotal = carrito.reduce(
-        (acc, item) => acc + (Number(item.producto.precio) || 0) * item.cantidad,
+        (acc, item) => acc + (Number(item.precio) || 0) * item.cantidad,
         0
     );
 

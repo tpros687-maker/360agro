@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "./context/AuthContext";
+import api from "./api/axiosConfig";
 
 // Layout
 import Navbar from "./components/Navbar";
@@ -12,7 +13,7 @@ import AgroIA from "./components/AgroIA";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Explorar from "./pages/Explorar"; 
+import Explorar from "./pages/Explorar";
 import Publicar from "./pages/Publicar";
 
 // LOTES
@@ -25,6 +26,7 @@ import EditarLote from "./pages/EditarLote";
 // USUARIO
 import Perfil from "./pages/Perfil";
 import Planes from "./pages/Planes";
+import AgroLedger from "./components/AgroLedger";
 
 // MENSAJERÍA
 import Mensajes from "./pages/Mensajes";
@@ -32,7 +34,7 @@ import Chat from "./pages/Chat";
 
 // TIENDAS
 import Tiendas from "./pages/Tiendas";
-import TiendaPublica from "./pages/TiendaPublica"; 
+import TiendaPublica from "./pages/TiendaPublica";
 import CrearTienda from "./pages/CrearTienda";
 import MiTienda from "./pages/MiTienda";
 import EditarTienda from "./pages/EditarTienda";
@@ -56,21 +58,49 @@ import PanelProveedor from "./pages/PanelProveedor";
 
 // PROTECCIÓN
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedAdmin from "./components/ProtectedAdmin";
+
+// ADMIN
+import AdminDashboard from "./pages/AdminDashboard";
 
 export default function App() {
   const { usuario, loadingAuth } = useContext(AuthContext);
+  const [settings, setSettings] = useState({});
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data } = await api.get("/settings");
+        setSettings(data);
+
+        // Inyección dinámica de colores
+        if (data.theme_primary) {
+          document.documentElement.style.setProperty('--primary', data.theme_primary);
+        }
+        if (data.theme_secondary) {
+          document.documentElement.style.setProperty('--primary-container', data.theme_secondary);
+        }
+      } catch (error) {
+        console.error("Error al cargar temas dinámicos:", error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   if (loadingAuth) return (
-    <div className="bg-agro-midnight min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-agro-teal shadow-teal-glow"></div>
+    <div className="bg-background min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary shadow-[0_0_20px_rgba(63,111,118,0.4)]"></div>
     </div>
   );
 
   // Lista de planes que pueden vender (Sincronizado con Navbar)
-  const ES_VENDEDOR = ["empresa", "bronce", "plata", "oro", "pro"].includes(usuario?.plan?.toLowerCase());
+  const ES_VENDEDOR = ["empresa", "bronce", "plata", "oro", "pro", "basico", "élite pro"].includes(usuario?.plan?.toLowerCase());
+
+  // Acceso a herramientas premium (Calculadora AgroProfit)
+  const ES_PREMIUM = ["empresa", "pro", "basico", "élite pro"].includes(usuario?.plan?.toLowerCase());
 
   return (
-    <div className="flex flex-col min-h-screen bg-agro-midnight">
+    <div className="flex flex-col min-h-screen bg-background text-on-surface font-body">
       <Toaster position="top-right" />
       <Navbar />
 
@@ -98,36 +128,37 @@ export default function App() {
             <Route path="/carrito" element={<Carrito />} />
             <Route path="/mis-ordenes" element={<MisOrdenes />} />
             <Route path="/publicar" element={<Publicar />} />
-          </Route>
 
-          {/* --- RUTAS DE VENDEDOR / PROVEEDOR --- */}
-          <Route element={<ProtectedRoute />}>
+            {/* Agro Ledger (Premium Tool) */}
+            <Route
+              path="/agro-ledger"
+              element={ES_PREMIUM ? <AgroLedger /> : <Navigate to="/planes" />}
+            />
+
+            {/* RUTAS DE VENDEDOR (Anidadas por lógica de plan) */}
             {ES_VENDEDOR ? (
               <>
-                {/* Panel principal */}
                 <Route path="/panel-vendedor" element={<PanelProveedor />} />
-                
-                {/* Gestión de Lotes */}
                 <Route path="/mis-lotes" element={<MisLotes />} />
                 <Route path="/crear-lote" element={<CrearLote />} />
                 <Route path="/editar-lote/:id" element={<EditarLote />} />
-
-                {/* Gestión de Tienda y Productos */}
                 <Route path="/mi-tienda" element={<MiTienda />} />
                 <Route path="/crear-tienda" element={<CrearTienda />} />
-                <Route path="/editar-tienda" element={<EditarTienda />} />
+                <Route path="/editar-tienda/:id" element={<EditarTienda />} />
                 <Route path="/crear-producto" element={<CrearProducto />} />
                 <Route path="/editar-producto/:id" element={<EditarProducto />} />
-
-                {/* Gestión de Servicios */}
                 <Route path="/mis-servicios" element={<MisServicios />} />
                 <Route path="/crear-servicio" element={<CrearServicio />} />
                 <Route path="/editar-servicio/:id" element={<EditarServicio />} />
               </>
             ) : (
-              /* Si no tiene plan vendedor, cualquier intento lo manda a contratar uno */
               <Route path="/panel-vendedor/*" element={<Navigate to="/planes" />} />
             )}
+            {/* RUTAS DE ADMINISTRACIÓN */}
+            <Route element={<ProtectedAdmin />}>
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            </Route>
+
           </Route>
 
           {/* Redirección por defecto */}

@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import Proveedor from "../models/proveedorModel.js";
 import slugify from "slugify";
+import mongoose from "mongoose";
 
 // Helper para borrar archivos físicos
 const borrarArchivoFisico = (ruta) => {
@@ -17,9 +18,28 @@ const borrarArchivoFisico = (ruta) => {
 export const obtenerMiProveedor = async (req, res) => {
   try {
     const proveedor = await Proveedor.findOne({ usuario: req.user._id }).populate("misProductos");
-    if (!proveedor) return res.status(404).json({ mensaje: "No tienes un perfil configurado" });
+
+    if (!proveedor) {
+      return res.status(200).json({ mensaje: "No tienes un perfil configurado", noExiste: true });
+    }
+
+    console.log(`✅ Proveedor encontrado: ${proveedor.nombre} (Tipo: ${proveedor.tipoProveedor})`);
+
+    // 🔥 AUTO-FIX: Si el perfil migrado no tiene tipoProveedor, lo asignamos
+    if (!proveedor.tipoProveedor) {
+      if (proveedor.servicios && proveedor.servicios.length > 0) {
+        proveedor.tipoProveedor = "servicio";
+      } else {
+        proveedor.tipoProveedor = "tienda";
+      }
+      await proveedor.save();
+    }
+
     res.json(proveedor);
-  } catch (error) { res.status(500).json({ mensaje: error.message }); }
+  } catch (error) {
+    console.error(`❌ Error en obtenerMiProveedor: ${error.message}`);
+    res.status(500).json({ mensaje: error.message });
+  }
 };
 
 // ==========================
@@ -29,7 +49,19 @@ export const obtenerProveedores = async (req, res) => {
   try {
     const { tipo, rubro, zona, search } = req.query;
     let query = {};
-    if (tipo) query.tipoProveedor = tipo;
+    if (tipo === "tienda") {
+      // 🛡️ SEGURIDAD: Mostramos tiendas explícitas o perfiles con rubros comerciales
+      query.$or = [
+        { tipoProveedor: "tienda" },
+        { tipoProveedor: { $exists: false } },
+        { rubro: { $ne: "Servicios Profesionales" } }
+      ];
+    } else if (tipo === "servicio") {
+      // Para servicios, preferimos basarnos en la existencia de los mismos
+      query.servicios = { $exists: true, $not: { $size: 0 } };
+    } else if (tipo) {
+      query.tipoProveedor = tipo;
+    }
     if (rubro) query.rubro = rubro;
     if (zona) query.zona = zona;
 
@@ -55,25 +87,78 @@ export const obtenerProveedorPorSlug = async (req, res) => {
   } catch (error) { res.status(500).json({ mensaje: error.message }); }
 };
 
+export const obtenerProveedor = async (req, res) => {
+  try {
+    const proveedor = await Proveedor.findById(req.params.id).populate("misProductos");
+    if (!proveedor) return res.status(404).json({ mensaje: "Negocio no encontrado" });
+    res.json(proveedor);
+  } catch (error) { res.status(500).json({ mensaje: error.message }); }
+};
+
 // ==========================
 //   CRUD DE NEGOCIO
 // ==========================
 export const crearProveedor = async (req, res) => {
   try {
+    const usuario = req.user; // Obtenido por el middleware 'proteger'
+
+    // 🛡️ VALIDACIÓN DE PLAN: Solo planes pagados pueden fundar showroom
+    const planesPermitidos = ["basico", "pro", "empresa", "élite pro"];
+    if (!planesPermitidos.includes(usuario.plan?.toLowerCase())) {
+      return res.status(403).json({
+        mensaje: "Tu plan actual no permite la creación de un Showroom Corporativo. Por favor, actualiza tu suscripción."
+      });
+    }
+
     const existe = await Proveedor.findOne({ usuario: req.user._id });
-    if (existe) return res.status(400).json({ mensaje: "Ya tienes un perfil creado" });
-    const proveedor = await Proveedor.create({ ...req.body, usuario: req.user._id });
+
+    // 🔥 IDEMPOTENCIA: Si ya existe, en lugar de 400, devolvemos el existente (200)
+    // Esto rompe el bucle en el frontend si por alguna razón la verificación previa falló
+    if (existe) {
+      console.log(`♻️ Proveedor ya existente, devolviendo registro para: ${req.user._id}`);
+      return res.status(200).json(existe);
+    }
+
+    // Asegurar valores por defecto si vienen vacíos
+    const datos = {
+      ...req.body,
+      usuario: req.user._id,
+      tipoProveedor: req.body.tipoProveedor || "tienda"
+    };
+
+    // 📸 PROCESAMIENTO DE ARCHIVOS (Logo y Fotos)
+    if (req.files) {
+      if (req.files.logo && req.files.logo[0]) {
+        datos.logo = `/uploads/proveedores/${req.files.logo[0].filename}`;
+      }
+      if (req.files.fotos) {
+        datos.fotos = req.files.fotos.map(f => `/uploads/proveedores/${f.filename}`);
+      }
+    }
+
+    const proveedor = await Proveedor.create(datos);
+    console.log(`🆕 Proveedor creado: ${proveedor.nombre} (Plan: ${usuario.plan})`);
     res.status(201).json(proveedor);
-  } catch (error) { res.status(500).json({ mensaje: error.message }); }
+  } catch (error) {
+    console.error(`❌ Error en crearProveedor: ${error.message}`);
+    res.status(500).json({ mensaje: error.message });
+  }
 };
 
 export const editarProveedor = async (req, res) => {
   try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ mensaje: "ID de proveedor no válido" });
+    }
+
     const proveedor = await Proveedor.findOneAndUpdate(
-      { _id: req.params.id, usuario: req.user._id },
+      { _id: id, usuario: req.user._id },
       { $set: req.body },
       { new: true }
     );
+
+    if (!proveedor) return res.status(404).json({ mensaje: "Perfil no encontrado" });
     res.json(proveedor);
   } catch (error) { res.status(500).json({ mensaje: error.message }); }
 };
@@ -81,7 +166,12 @@ export const editarProveedor = async (req, res) => {
 // --- FUNCIÓN QUE FALTABA PARA LAS RUTAS ---
 export const eliminarProveedor = async (req, res) => {
   try {
-    const proveedor = await Proveedor.findOne({ _id: req.params.id, usuario: req.user._id });
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ mensaje: "ID de proveedor no válido" });
+    }
+
+    const proveedor = await Proveedor.findOne({ _id: id, usuario: req.user._id });
     if (!proveedor) return res.status(404).json({ mensaje: "Perfil no encontrado" });
 
     if (proveedor.logo) borrarArchivoFisico(proveedor.logo);
@@ -108,7 +198,14 @@ export const subirLogo = async (req, res) => {
 
 export const eliminarLogoProveedor = async (req, res) => {
   try {
-    const proveedor = await Proveedor.findOne({ _id: req.params.id, usuario: req.user._id });
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ mensaje: "ID de proveedor no válido" });
+    }
+
+    const proveedor = await Proveedor.findOne({ _id: id, usuario: req.user._id });
+    if (!proveedor) return res.status(404).json({ mensaje: "Perfil no encontrado" });
+
     if (proveedor.logo) borrarArchivoFisico(proveedor.logo);
     proveedor.logo = null;
     await proveedor.save();
@@ -129,8 +226,13 @@ export const subirFotosProveedor = async (req, res) => {
 
 export const eliminarFotoProveedor = async (req, res) => {
   try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ mensaje: "ID de proveedor no válido" });
+    }
+
     const { ruta } = req.body;
-    const proveedor = await Proveedor.findOne({ _id: req.params.id, usuario: req.user._id });
+    const proveedor = await Proveedor.findOne({ _id: id, usuario: req.user._id });
     if (!proveedor) return res.status(404).json({ mensaje: "Perfil no encontrado" });
 
     borrarArchivoFisico(ruta);

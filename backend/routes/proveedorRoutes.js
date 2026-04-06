@@ -9,6 +9,7 @@ import {
   editarProveedor,
   eliminarProveedor,
   registrarClick,
+  obtenerProveedor,
   subirLogo,
   subirFotosProveedor,
   eliminarFotoProveedor,
@@ -18,6 +19,7 @@ import {
 import {
   uploadLogo,
   uploadFotos,
+  uploadTienda,
   manejarErroresMulter,
 } from "../middleware/proveedorUpload.js";
 
@@ -34,19 +36,24 @@ router.get("/", obtenerProveedores);
 // Cambiado a PATCH para ser más semántico con una actualización
 router.patch("/click/:slug/:tipo", registrarClick);
 
-// Perfil de negocio por su SLUG (VA AL FINAL para no interferir)
+// Perfil de negocio por su SLUG
 router.get("/perfil/:slug", obtenerProveedorPorSlug);
+router.get("/slug/:slug", obtenerProveedorPorSlug);
+
+// Perfil de negocio por su ID (para uso interno/admin)
+router.get("/id/:id", obtenerProveedor);
 
 
 // =======================================================
 // 🔐 RUTAS PRIVADAS (Panel de Vendedor)
 // =======================================================
 
-// Obtener mi propio perfil de negocio (antes era /mio)
+// Obtener mi propio perfil de negocio (Unificado: me/mio)
 router.get("/me", proteger, obtenerMiProveedor);
+router.get("/mio", proteger, obtenerMiProveedor);
 
 // Crear el perfil de negocio (Tienda o Servicio)
-router.post("/", proteger, crearProveedor);
+router.post("/", proteger, uploadTienda, manejarErroresMulter, crearProveedor);
 
 // Editar datos del negocio
 router.put("/:id", proteger, editarProveedor);

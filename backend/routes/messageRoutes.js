@@ -7,7 +7,7 @@ import {
   enviarMensaje,
   obtenerConversacion,
   obtenerConversaciones,
-} from "../controllers/messageController.js"; 
+} from "../controllers/messageController.js";
 
 const router = express.Router();
 
@@ -16,6 +16,7 @@ const router = express.Router();
 // =======================================================
 // Antes era "/", ahora usamos "/bandeja" para que sea más claro
 router.get("/bandeja", proteger, obtenerConversaciones);
+router.get("/recibidos", proteger, obtenerConversaciones);
 
 // =======================================================
 // 🔍 HISTORIAL DE CHAT ESPECÍFICO

@@ -17,14 +17,23 @@ export default function MiTienda() {
 
   const cargarDatos = async () => {
     try {
-      const [resTienda, resProds] = await Promise.all([
-        tiendaApi.obtenerMiTienda(),
-        productoApi.obtenerProductosProveedor()
-      ]);
+      setLoading(true);
+      // 🔥 Sincronización robusta: Si falla productos, aún mostramos la tienda
+      const resTienda = await tiendaApi.obtenerMiTienda();
       setTienda(resTienda.data);
-      setProductos(resProds.data);
+
+      if (resTienda.data && !resTienda.data.noExiste) {
+        try {
+          const resProds = await productoApi.obtenerMisProductos();
+          setProductos(resProds.data);
+        } catch (errProds) {
+          console.error("⚠️ Error (no crítico) al cargar inventario:", errProds);
+          setProductos([]);
+        }
+      }
     } catch (err) {
-      console.error("❌ Error al cargar datos operativos:", err);
+      console.error("❌ Error CRÍTICO al cargar identidad de marca:", err);
+      setTienda(null);
     } finally {
       setLoading(false);
     }
@@ -56,24 +65,24 @@ export default function MiTienda() {
 
   if (loading) return (
     <div className="bg-agro-midnight min-h-screen pt-32 pb-24 px-6 relative overflow-hidden text-center flex items-center justify-center">
-        <div className="animate-pulse text-agro-teal font-black uppercase tracking-[1em] text-xs italic">Sincronizando Showroom...</div>
+      <div className="animate-pulse text-agro-teal font-black uppercase tracking-[1em] text-xs italic">Sincronizando Showroom...</div>
     </div>
   );
 
-  if (!tienda) {
+  if (!tienda || tienda.noExiste) {
     return (
       <div className="bg-agro-midnight min-h-screen flex flex-col items-center justify-center px-6">
         <div className="text-center space-y-8 card-midnight p-16 border-dashed border-white/10 animate-reveal">
-            <span className="text-6xl block mb-6">🏪</span>
-            <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">
-                Showroom <br /> <span className="text-agro-teal not-italic">No Detectado</span>
-            </h2>
-            <p className="text-agro-cream/30 max-w-sm mx-auto uppercase text-[10px] font-black tracking-widest leading-loose italic">
-                Para comercializar insumos y productos, primero debe configurar su identidad corporativa en la red.
-            </p>
-            <Link to="/crear-tienda" className="btn-emerald py-5 px-12 inline-block">
-                CONFIGURAR SHOWROOM ➔
-            </Link>
+          <span className="text-6xl block mb-6">🏪</span>
+          <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">
+            Tienda <br /> <span className="text-agro-teal not-italic">No Detectada</span>
+          </h2>
+          <p className="text-agro-cream/30 max-w-sm mx-auto uppercase text-[10px] font-black tracking-widest leading-loose italic">
+            Para comercializar insumos y productos, primero debe configurar su identidad corporativa en la red.
+          </p>
+          <Link to="/crear-tienda" className="btn-emerald py-5 px-12 inline-block">
+            CONFIGURAR TIENDA ➔
+          </Link>
         </div>
       </div>
     );
@@ -81,14 +90,14 @@ export default function MiTienda() {
 
   return (
     <div className="bg-agro-midnight min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
-      
+
       {/* MODAL DE SEGURIDAD PARA INVENTARIO */}
-      <ModalConfirmar 
+      <ModalConfirmar
         abierto={modalAbierto}
         alCerrar={() => setModalAbierto(false)}
         alConfirmar={confirmarEliminar}
         titulo="Retirar Producto"
-        mensaje="¿Desea retirar permanentemente este activo de su catálogo élite? Esta acción eliminará el stock del showroom público."
+        mensaje="¿Desea retirar permanentemente este activo de su catálogo élite? Esta acción eliminará el stock de la tienda pública."
       />
 
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-agro-teal/5 rounded-full blur-[200px] pointer-events-none -mr-40 -mt-40"></div>
@@ -122,6 +131,9 @@ export default function MiTienda() {
               <Link to={`/tienda/${tienda.slug}`} className="px-8 py-4 bg-white/5 text-white font-black rounded-xl border border-white/5 hover:bg-agro-teal hover:text-agro-midnight transition-all text-[10px] uppercase text-center tracking-widest italic">
                 VER VISTA PÚBLICA
               </Link>
+              <Link to={`/editar-tienda/${tienda._id}`} className="px-8 py-4 bg-agro-teal/10 text-agro-teal font-black rounded-xl border border-agro-teal/20 hover:bg-agro-teal hover:text-agro-midnight transition-all text-[10px] uppercase text-center tracking-widest italic shadow-teal-glow-sm">
+                ⚙️ CONFIGURAR PERFIL
+              </Link>
             </div>
           </div>
 
@@ -145,17 +157,17 @@ export default function MiTienda() {
         <section>
           <div className="flex justify-between items-end mb-12 border-b border-white/5 pb-8">
             <div>
-                <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">Inventario <span className="text-agro-teal">Corporativo</span></h2>
-                <p className="text-[10px] font-black text-agro-cream/20 uppercase tracking-widest mt-2 italic">Gestión de stock y catálogo de showroom</p>
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">Inventario <span className="text-agro-teal">Corporativo</span></h2>
+              <p className="text-[10px] font-black text-agro-cream/20 uppercase tracking-widest mt-2 italic">Gestión de stock y catálogo de la tienda</p>
             </div>
             <Link to="/crear-producto" className="btn-emerald py-4 px-8 text-[10px] shadow-teal-glow">
-                ➕ AÑADIR PRODUCTO ➔
+              ➕ AÑADIR PRODUCTO ➔
             </Link>
           </div>
 
           {productos.length === 0 ? (
             <div className="text-center py-32 bg-agro-charcoal/20 border-2 border-dashed border-white/5 rounded-[3.5rem]">
-                <p className="text-agro-cream/10 text-2xl font-black uppercase tracking-[0.5em] italic">Catálogo de Activos Vacío</p>
+              <p className="text-agro-cream/10 text-2xl font-black uppercase tracking-[0.5em] italic">Catálogo de Activos Vacío</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -177,15 +189,15 @@ export default function MiTienda() {
                   <div className="p-8 flex flex-col flex-1">
                     <h3 className="text-lg font-black text-white italic tracking-tighter uppercase mb-2 truncate group-hover:text-agro-teal transition-colors">{p.titulo}</h3>
                     <p className="text-[10px] font-black text-agro-teal/40 uppercase mb-6 tracking-widest italic">{p.categoria}</p>
-                    
+
                     <div className="bg-agro-midnight p-5 rounded-2xl border border-white/5 mb-8 shadow-inner">
                       <p className="text-2xl font-black text-white italic tracking-tighter text-glow-teal">USD {p.precio.toLocaleString()}</p>
                     </div>
 
                     <div className="mt-auto flex justify-between gap-4 pt-6 border-t border-white/5">
                       <Link to={`/editar-producto/${p._id}`} className="flex-1 text-center py-4 bg-white/5 rounded-xl text-[9px] font-black uppercase text-agro-cream/40 hover:text-white transition-all border border-white/5 italic">Editar</Link>
-                      <button 
-                        onClick={() => prepararEliminacion(p._id)} 
+                      <button
+                        onClick={() => prepararEliminacion(p._id)}
                         className="px-5 py-4 bg-red-900/10 text-red-500/40 rounded-xl hover:bg-red-500 hover:text-white transition-all border border-red-500/10"
                       >
                         🗑️

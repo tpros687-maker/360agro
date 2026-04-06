@@ -1,14 +1,15 @@
 import express from "express";
-import { 
-    crearProducto, 
-    buscarProductosGlobal, 
-    obtenerProductosProveedor, 
+import {
+    crearProducto,
+    buscarProductosGlobal,
+    obtenerProductosProveedor,
     obtenerProductosPorTienda,
-    editarProducto, 
+    obtenerProductoPorId,
+    editarProducto,
     eliminarProducto,
     subirFotosProducto,
     eliminarFotoProducto,
-    setFotoPrincipal 
+    setFotoPrincipal
 } from "../controllers/productoController.js";
 import proteger from "../middleware/authMiddleware.js";
 import uploadProductos from "../config/multerProductos.js";
@@ -23,13 +24,14 @@ const router = express.Router();
  * 🔍 Buscador Global / Explorar
  * Uso: GET /api/productos/buscar/global?search=termino
  */
-router.get("/buscar/global", buscarProductosGlobal); 
+router.get("/buscar/global", buscarProductosGlobal);
 
 /**
  * 🏪 Obtener productos de un Showroom específico por su SLUG
  * Uso: GET /api/productos/tienda/:slug
  */
 router.get("/tienda/:slug", obtenerProductosPorTienda);
+router.get("/:id", obtenerProductoPorId);
 
 
 // =======================================================

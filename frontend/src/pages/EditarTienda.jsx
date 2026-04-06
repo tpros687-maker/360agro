@@ -40,6 +40,14 @@ export default function EditarTienda() {
     try {
       const { data } = await tiendaApi.obtenerMiTienda();
       setTienda(data);
+
+      // 🛡️ SEGURIDAD: Si no existe el perfil, redirigimos a la creación
+      if (data.noExiste) {
+        toast.error("Showroom no detectado. Redirigiendo...");
+        navigate("/mi-tienda");
+        return;
+      }
+
       setForm({
         nombre: data.nombre || "",
         categoria: data.rubro || "",
@@ -74,7 +82,7 @@ export default function EditarTienda() {
   const handleNuevasFotos = (e) => {
     const arr = Array.from(e.target.files);
     if (fotosActuales.length + fotosNuevas.length + arr.length > 8) {
-        return toast.error("Límite de 8 activos visuales excedido");
+      return toast.error("Límite de 8 activos visuales excedido");
     }
     setFotosNuevas((prev) => [...prev, ...arr]);
   };
@@ -107,10 +115,15 @@ export default function EditarTienda() {
     const tId = toast.loading("Consolidando cambios en la red...");
 
     try {
+      if (!tienda?._id) {
+        toast.error("ID de tienda perdido. Recargando...", { id: tId });
+        return cargarTienda();
+      }
+
       // 1. Actualización de datos (Sincronizamos rubro con categoria)
-      await tiendaApi.editarTienda(tienda._id, { 
-        ...form, 
-        rubro: form.categoria 
+      await tiendaApi.editarTienda(tienda._id, {
+        ...form,
+        rubro: form.categoria
       });
 
       // 2. Subida de Logo (Si hay cambio)
@@ -150,23 +163,23 @@ export default function EditarTienda() {
         <header className="mb-16 border-b border-white/5 pb-10">
           <span className="text-agro-teal font-black text-[10px] uppercase tracking-[0.5em] mb-4 block italic">Brand Management Terminal</span>
           <h1 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-none">
-            RECONFIGURAR <span className="text-agro-teal not-italic">SHOWROOM</span>
+            RECONFIGURAR <span className="text-agro-teal not-italic">TIENDA</span>
           </h1>
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-12">
-          
+
           {/* SECCIÓN 1: IDENTIDAD BÁSICA */}
           <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-8">
             <h2 className="text-agro-teal font-black text-[10px] uppercase tracking-[0.4em] mb-6">Parámetros de Marca</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="flex flex-col gap-3">
                 <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Nombre Comercial</label>
                 <input type="text" name="nombre" value={form.nombre} onChange={handleChange} required className="bg-agro-midnight p-5 rounded-2xl text-white outline-none border border-white/5 focus:border-agro-teal/30 transition-all font-bold" />
               </div>
               <div className="flex flex-col gap-3">
-                <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Sector Industrial</label>
+                <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Sector</label>
                 <select name="categoria" value={form.categoria} onChange={handleChange} required className="bg-agro-midnight p-5 rounded-2xl text-white outline-none border border-white/5 focus:border-agro-teal/30 transition-all font-black text-[10px] uppercase tracking-widest appearance-none">
                   <option value="">Seleccionar Sector...</option>
                   {SECTORES_AGRO.map(s => <option key={s} value={s}>{s}</option>)}
@@ -175,7 +188,7 @@ export default function EditarTienda() {
             </div>
 
             <div className="flex flex-col gap-3">
-              <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Manifiesto / Bio</label>
+              <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Descripcion</label>
               <textarea name="descripcion" value={form.descripcion} onChange={handleChange} rows="4" className="bg-agro-midnight p-5 rounded-2xl text-white outline-none border border-white/5 focus:border-agro-teal/30 transition-all resize-none font-medium leading-relaxed"></textarea>
             </div>
           </section>
@@ -183,7 +196,7 @@ export default function EditarTienda() {
           {/* SECCIÓN 2: ACTIVOS VISUALES */}
           <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-10">
             <h2 className="text-agro-teal font-black text-[10px] uppercase tracking-[0.4em]">Visual Assets & Branding</h2>
-            
+
             {/* LOGO */}
             <div className="space-y-6">
               <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Identificador Logotipo</p>
@@ -205,7 +218,7 @@ export default function EditarTienda() {
 
             {/* GALERÍA */}
             <div className="space-y-6">
-              <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Galería de Showroom</p>
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Galería de Tienda</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {fotosActuales.map((f, i) => (
                   <div key={i} className="relative group h-24 rounded-xl overflow-hidden border border-white/10">
@@ -223,8 +236,8 @@ export default function EditarTienda() {
 
           <footer className="flex flex-col md:flex-row gap-6 pt-10">
             <Link to="/mi-tienda" className="flex-1 py-6 bg-white/5 text-agro-cream/40 font-black rounded-2xl text-[10px] uppercase text-center tracking-[0.3em] hover:bg-white/10 transition-all border border-white/5">Cancelar</Link>
-            <button type="submit" disabled={saving} className="btn-emerald flex-[2] py-6 shadow-teal-glow uppercase tracking-[0.4em] text-xs">
-              {saving ? "Procesando..." : "Consolidar Identidad ➔"}
+            <button type="submit" disabled={saving} className="btn-emerald flex-[2] py-6 shadow-[0_0_40px_rgba(16,185,129,0.4)] uppercase tracking-[0.4em] text-xs">
+              {saving ? "Procesando..." : "CONSOLIDAR IDENTIDAD ➔"}
             </button>
           </footer>
 

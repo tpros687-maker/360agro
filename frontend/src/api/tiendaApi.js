@@ -1,7 +1,8 @@
 import axios from "axios";
+import { BASE_URL } from "./axiosConfig";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: `${BASE_URL}/api`,
 });
 
 // 🔒 Agregar token automáticamente
@@ -19,13 +20,13 @@ const tiendaApi = {
   obtenerTiendas: () => API.get("/proveedores"),
 
   // 🟢 Obtener tienda por SLUG (detalle público)
-  obtenerTiendaPorSlug: (slug) => API.get(`/proveedores/${slug}`),
+  obtenerTiendaPorSlug: (slug) => API.get(`/proveedores/perfil/${slug}`),
 
   // 🟢 Obtener tienda por ID (para backend)
   obtenerTiendaPorId: (id) => API.get(`/proveedores/id/${id}`),
 
   // 🟢 Obtener mi tienda (privado)
-  obtenerMiTienda: () => API.get("/proveedores/mio"),
+  obtenerMiTienda: () => API.get("/proveedores/me"),
 
   // 🟢 Crear tienda
   crearTienda: (data) => API.post("/proveedores", data),

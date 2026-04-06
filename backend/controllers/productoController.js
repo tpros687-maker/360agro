@@ -9,16 +9,14 @@ import path from "path";
 
 // Busca la tienda (negocio) vinculada al usuario
 const buscarProveedor = async (userId) => {
-  const proveedor = await Proveedor.findOne({ usuario: userId });
-  if (!proveedor) throw new Error("Primero debes configurar tu perfil de Tienda o Servicio");
-  return proveedor;
+  return await Proveedor.findOne({ usuario: userId });
 };
 
 const borrarArchivoFisico = (rutaRelativa) => {
   if (!rutaRelativa) return;
   const cleanPath = rutaRelativa.startsWith('/uploads/') ? rutaRelativa.replace('/uploads/', '') : rutaRelativa;
   const localPath = path.join(process.cwd(), "uploads", cleanPath);
-  
+
   if (fs.existsSync(localPath)) {
     fs.unlinkSync(localPath);
   }
@@ -56,7 +54,7 @@ export const buscarProductosGlobal = async (req, res) => {
     let productos = await Producto.find(query)
       .populate({
         path: "proveedor",
-        select: "nombre zona slug logo whatsapp" 
+        select: "nombre zona slug logo whatsapp esVerificado rating"
       })
       .sort("-createdAt");
 
@@ -103,6 +101,19 @@ export const obtenerProductosPorTienda = async (req, res) => {
   }
 };
 
+/**
+ * 🔗 Obtener detalle de un producto específico
+ */
+export const obtenerProductoPorId = async (req, res) => {
+  try {
+    const producto = await Producto.findById(req.params.id).populate("proveedor", "nombre slug logo zona whatsapp esVerificado rating");
+    if (!producto) return res.status(404).json({ mensaje: "Producto no encontrado" });
+    res.status(200).json(producto);
+  } catch (error) {
+    res.status(500).json({ mensaje: error.message });
+  }
+};
+
 // =======================================================
 // OPERACIONES DE GESTIÓN (CRUD)
 // =======================================================
@@ -110,9 +121,10 @@ export const obtenerProductosPorTienda = async (req, res) => {
 export const crearProducto = async (req, res) => {
   try {
     const proveedor = await buscarProveedor(req.user._id);
+    if (!proveedor) return res.status(404).json({ mensaje: "Primero debes configurar tu perfil de Tienda o Servicio" });
     const producto = await Producto.create({
       ...req.body,
-      proveedor: proveedor._id, // Siempre vinculado al negocio del usuario
+      proveedor: proveedor._id,
       fotos: [],
       fotoPrincipal: null,
     });
@@ -127,9 +139,13 @@ export const crearProducto = async (req, res) => {
 export const obtenerProductosProveedor = async (req, res) => {
   try {
     const proveedor = await buscarProveedor(req.user._id);
+    if (!proveedor) return res.status(200).json([]);
     const productos = await Producto.find({ proveedor: proveedor._id }).sort("-createdAt");
     res.status(200).json(productos);
-  } catch (error) { res.status(500).json({ mensaje: error.message }); }
+  } catch (error) {
+    console.error("DEBUG - Fallo en obtenerProductosProveedor:", error);
+    res.status(200).json([]);
+  }
 };
 
 export const editarProducto = async (req, res) => {
@@ -187,9 +203,9 @@ export const setFotoPrincipal = async (req, res) => {
     const { ruta } = req.body;
     const proveedor = await buscarProveedor(req.user._id);
     const producto = await Producto.findOneAndUpdate(
-        { _id: req.params.id, proveedor: proveedor._id, fotos: ruta },
-        { $set: { fotoPrincipal: ruta } },
-        { new: true }
+      { _id: req.params.id, proveedor: proveedor._id, fotos: ruta },
+      { $set: { fotoPrincipal: ruta } },
+      { new: true }
     );
     res.status(200).json({ fotoPrincipal: producto.fotoPrincipal });
   } catch (error) { res.status(500).json({ mensaje: error.message }); }

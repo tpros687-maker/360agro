@@ -2,6 +2,7 @@ import { useState } from "react";
 import api from "../api/axiosConfig";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { UserPlus, Mail, Lock, ShieldCheck, CheckCircle2, Sparkles } from "lucide-react";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ export default function Register() {
     nombre: "",
     email: "",
     password: "",
-    plan: "gratis" // 'gratis' para compradores, 'empresa' para vendedores iniciales
+    plan: "gratis"
   });
   const [loading, setLoading] = useState(false);
   const [exito, setExito] = useState(false);
@@ -18,7 +19,7 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     const tId = toast.loading("Registrando nuevo socio en la red...");
-    
+
     try {
       await api.post("/users/register", formData);
       setExito(true);
@@ -34,16 +35,16 @@ export default function Register() {
 
   if (exito) {
     return (
-      <div className="bg-agro-midnight min-h-screen flex items-center justify-center text-center px-6">
-        <div className="reveal space-y-8">
-          <div className="w-24 h-24 bg-agro-teal/10 rounded-[3rem] border border-agro-teal/20 flex items-center justify-center text-5xl mx-auto shadow-teal-glow animate-pulse">
-            ✅
+      <div className="bg-background min-h-screen flex items-center justify-center text-center px-6 selection:bg-primary-container selection:text-on-primary-container">
+        <div className="space-y-12">
+          <div className="w-32 h-32 machined-gradient rounded-full flex items-center justify-center text-on-tertiary-fixed mx-auto shadow-[0_0_30px_rgba(63,111,118,0.5)] animate-bounce">
+            <span className="material-symbols-outlined text-6xl">check_circle</span>
           </div>
-          <h2 className="text-5xl font-black text-white italic tracking-tighter uppercase leading-none">
-            SOLICITUD <br /> <span className="text-agro-teal">PROCESADA</span>
+          <h2 className="text-7xl font-black text-on-surface italic tracking-tighter uppercase leading-none glow-text">
+            SOLICITUD <br /> <span className="text-primary">PROCESADA</span>
           </h2>
-          <p className="text-agro-cream/40 font-bold uppercase tracking-[0.3em] text-[10px] italic">
-            "Redirigiendo al terminal de acceso seguro..."
+          <p className="text-on-surface-variant text-[12px] font-bold uppercase tracking-[0.6em] italic opacity-40">
+            "Sincronizando terminal de acceso seguro..."
           </p>
         </div>
       </div>
@@ -51,114 +52,113 @@ export default function Register() {
   }
 
   return (
-    <div className="bg-agro-midnight min-h-screen flex items-center justify-center px-6 py-24 relative overflow-hidden">
+    <div className="bg-background min-h-screen flex items-center justify-center px-6 py-32 relative overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
       {/* Luces de fondo cinemáticas */}
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-agro-teal/5 rounded-full blur-[200px] pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-agro-teal/10 rounded-full blur-[150px] pointer-events-none opacity-30"></div>
+      <div className="absolute top-0 right-0 w-[1200px] h-[1200px] bg-primary/5 rounded-full blur-[250px] pointer-events-none opacity-40"></div>
+      <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[200px] pointer-events-none opacity-30"></div>
 
-      <div className="w-full max-w-6xl relative z-10">
+      <div className="w-full max-w-7xl relative z-10">
         <div className="flex flex-col lg:flex-row gap-20 items-center">
 
           {/* COLUMNA DE MARCA E INFO */}
-          <div className="lg:w-1/2 space-y-12">
+          <div className="lg:w-1/2 space-y-16">
             <header>
-                <span className="text-agro-teal font-black text-[11px] uppercase tracking-[0.6em] mb-4 block italic">Plataforma de Activos 360</span>
-                <h1 className="text-7xl md:text-8xl font-black text-white italic tracking-tighter leading-none uppercase">
-                    ÚNETE A LA <br />
-                    <span className="text-agro-teal not-italic">EXCELENCIA</span>
-                </h1>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-0.5 machined-gradient shadow-[0_0_10px_rgba(63,111,118,0.4)]"></div>
+                <span className="text-primary font-bold text-[12px] uppercase tracking-[0.8em] block italic">Ecosistema Soberano 360</span>
+              </div>
+              <h1 className="text-7xl md:text-[9.5rem] font-black text-on-surface italic tracking-tighter leading-[0.8] uppercase glow-text">
+                ÚNETE A LA <br />
+                <span className="text-primary not-italic">RED LÍDER</span>
+              </h1>
             </header>
-            
-            <p className="text-agro-cream/40 text-xl leading-relaxed italic border-l-2 border-agro-teal/20 pl-8 max-w-lg">
-                "Acceda a un ecosistema de negocios diseñado para la máxima eficiencia agropecuaria y trazabilidad total."
+
+            <p className="text-on-surface-variant text-2xl leading-relaxed italic border-l-4 border-primary/20 pl-10 max-w-2xl uppercase tracking-[0.1em] font-medium opacity-60">
+              "ACCEDA A UNA INFRAESTRUCTURA DE NEGOCIOS DISEÑADA PARA LA MÁXIMA PERFORMANCE AGROPECUARIA."
             </p>
-            
-            <div className="grid grid-cols-1 gap-6 pt-6">
-               {["Certificación de Identidad", "Mensajería Directa B2B", "Terminal de Ventas Pro"].map((text, i) => (
-                 <div key={i} className="flex items-center gap-5 font-black uppercase text-[9px] tracking-[0.4em] text-white/40">
-                    <span className="w-8 h-8 rounded-2xl bg-agro-teal/10 flex items-center justify-center text-agro-teal border border-agro-teal/20">{i+1}</span>
-                    {text}
-                 </div>
-               ))}
+
+            <div className="grid grid-cols-1 gap-10 pt-8">
+              {[
+                { text: "Certificación de Activos Corporativos", icon: "verified" },
+                { text: "Conectividad Estratégica Soberana", icon: "hub" },
+                { text: "Protocolos de Seguridad de Elite", icon: "lock" }
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-6 font-bold uppercase text-[10px] tracking-[0.4em] text-on-surface-variant/40 group cursor-default">
+                  <div className="w-14 h-14 rounded-[1.5rem] bg-surface-container-high flex items-center justify-center text-primary border border-outline-variant/10 group-hover:border-primary/40 group-hover:bg-primary/5 transition-all duration-500 shadow-xl">
+                    <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">{item.icon}</span>
+                  </div>
+                  {item.text}
+                </div>
+              ))}
             </div>
           </div>
 
           {/* FORMULARIO DE REGISTRO */}
-          <div className="lg:w-1/2 w-full">
-            <div className="bg-agro-charcoal/30 backdrop-blur-3xl p-10 md:p-14 rounded-[4rem] border border-white/5 shadow-2xl">
-              <form onSubmit={handleSubmit} className="space-y-8">
-                
-                {/* SELECTOR DE PERFIL OPERATIVO */}
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black text-agro-cream/20 uppercase tracking-widest ml-4 italic">Naturaleza del Socio</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button 
-                      type="button"
-                      onClick={() => setFormData({...formData, plan: 'gratis'})}
-                      className={`py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] border transition-all ${formData.plan === 'gratis' ? 'bg-agro-teal text-agro-midnight border-agro-teal shadow-teal-glow' : 'bg-agro-midnight text-white/30 border-white/5 hover:border-white/20'}`}
-                    >
-                      Comprador
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={() => setFormData({...formData, plan: 'empresa'})}
-                      className={`py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] border transition-all ${formData.plan === 'empresa' ? 'bg-agro-teal text-agro-midnight border-agro-teal shadow-teal-glow' : 'bg-agro-midnight text-white/30 border-white/5 hover:border-white/20'}`}
-                    >
-                      Vendedor
-                    </button>
-                  </div>
-                </div>
+          <div className="lg:w-5/12 w-full lg:ml-auto">
+            <div className="bg-surface-container-high border border-outline-variant/15 p-10 md:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-full h-1.5 machined-gradient opacity-50"></div>
 
-                <div className="grid grid-cols-1 gap-8">
-                    <div className="space-y-3">
-                    <label className="text-[9px] font-black text-agro-teal uppercase tracking-[0.3em] ml-4 italic">Nombre del Establecimiento</label>
-                    <input
+              <form onSubmit={handleSubmit} className="space-y-10">
+                <div className="space-y-8">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-[0.4em] ml-6 italic opacity-80">Identidad de la Terminal</label>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-6 top-1/2 -translate-y-1/2 text-primary/40 text-xl">account_circle</span>
+                      <input
                         type="text"
-                        className="w-full bg-agro-midnight border border-white/5 rounded-2xl p-5 focus:border-agro-teal outline-none text-white font-bold transition-all shadow-inner text-sm"
-                        placeholder="Ej: Agropecuaria del Sur"
+                        className="w-full bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-6 pl-14 focus:border-primary/50 focus:ring-4 focus:ring-primary/5 outline-none text-on-surface font-bold transition-all shadow-inner text-base placeholder:text-on-surface-variant/10 italic uppercase tracking-widest"
+                        placeholder="EJ: ESTABLECIMIENTO PLATINUM"
                         value={formData.nombre}
                         onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                         required
-                    />
+                      />
                     </div>
+                  </div>
 
-                    <div className="space-y-3">
-                    <label className="text-[9px] font-black text-agro-teal uppercase tracking-[0.3em] ml-4 italic">E-mail de Gestión</label>
-                    <input
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-[0.4em] ml-6 italic opacity-80">Canal Operativo (Email)</label>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-6 top-1/2 -translate-y-1/2 text-primary/40 text-xl">mail</span>
+                      <input
                         type="email"
-                        className="w-full bg-agro-midnight border border-white/5 rounded-2xl p-5 focus:border-agro-teal outline-none text-white font-bold transition-all shadow-inner text-sm"
-                        placeholder="socio@redagro.com"
+                        className="w-full bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-6 pl-14 focus:border-primary/50 focus:ring-4 focus:ring-primary/5 outline-none text-on-surface font-bold transition-all shadow-inner text-base placeholder:text-on-surface-variant/10 italic uppercase tracking-widest"
+                        placeholder="NODO@360AGRO.COM"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         required
-                    />
+                      />
                     </div>
+                  </div>
 
-                    <div className="space-y-3">
-                    <label className="text-[9px] font-black text-agro-teal uppercase tracking-[0.3em] ml-4 italic">Contraseña de Seguridad</label>
-                    <input
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-[0.4em] ml-6 italic opacity-80">Clave de Acceso Blindada</label>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-6 top-1/2 -translate-y-1/2 text-primary/40 text-xl">lock</span>
+                      <input
                         type="password"
-                        className="w-full bg-agro-midnight border border-white/5 rounded-2xl p-5 focus:border-agro-teal outline-none text-white font-bold transition-all shadow-inner text-sm"
+                        className="w-full bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-6 pl-14 focus:border-primary/50 focus:ring-4 focus:ring-primary/5 outline-none text-on-surface font-bold transition-all shadow-inner text-base placeholder:text-on-surface-variant/10 italic"
                         placeholder="••••••••••••"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         required
-                    />
+                      />
                     </div>
+                  </div>
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-agro-teal py-7 rounded-2xl font-black text-agro-midnight text-[11px] uppercase tracking-[0.5em] hover:shadow-teal-glow transition-all active:scale-95 disabled:opacity-50 mt-4"
+                  className="machined-gradient w-full py-6 rounded-full font-black text-on-tertiary-fixed text-[11px] uppercase tracking-[0.5em] shadow-xl hover:scale-[1.03] transition-all active:scale-95 disabled:opacity-50 mt-4 italic"
                 >
-                  {loading ? "Sincronizando..." : "SOLICITAR MEMBRESÍA ➔"}
+                  {loading ? "Sincronizando Red..." : "SOLICITAR ALTA ➔"}
                 </button>
               </form>
 
-              <div className="mt-12 text-center pt-8 border-t border-white/5">
-                <p className="text-agro-cream/20 text-[10px] font-black uppercase tracking-widest italic">
-                   ¿Ya posee credenciales? <Link to="/login" className="text-agro-teal hover:text-white transition underline underline-offset-8 decoration-agro-teal/30">Acceder al Terminal</Link>
+              <div className="mt-16 text-center pt-10 border-t border-outline-variant/10">
+                <p className="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest italic opacity-40">
+                  ¿Ya posee una terminal activa? <br />
+                  <Link to="/login" className="text-primary mt-4 inline-block hover:text-on-surface transition-all underline underline-offset-[10px] font-bold text-[11px]">Acceder al Nodo Central</Link>
                 </p>
               </div>
             </div>

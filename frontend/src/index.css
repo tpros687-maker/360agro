@@ -1,43 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --primary: #9ecfd7;
+  --primary-container: #3f6f76;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
-    /* Cambiado al tono exacto de Agro Midnight */
-    background-color: #0A0F10; 
+    background-color: #001719;
   }
 
   body {
-    /* Usamos los nombres aplanados de tu tailwind.config.js */
-    @apply bg-agro-midnight text-agro-cream antialiased font-sans;
+    @apply bg-background text-on-surface antialiased font-body selection:bg-primary-container selection:text-on-primary-container;
   }
 }
 
 @layer components {
+  .glass-morphism {
+    background: rgba(0, 23, 25, 0.6);
+    backdrop-filter: blur(20px);
+  }
+
+  .glow-text {
+    text-shadow: 0 0 15px rgba(63, 111, 118, 0.4);
+  }
+
+  .machined-gradient {
+    background: linear-gradient(45deg, var(--primary) 0%, var(--primary-container) 100%);
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .btn-primary {
+    @apply px-8 py-4 bg-agro-ocean text-white font-black rounded-2xl shadow-blue-accent hover:bg-agro-sky hover:text-agro-navy hover:shadow-[0_0_30px_rgba(63, 111, 118, 0.6)] transition-all duration-300 active:scale-95 uppercase tracking-widest text-[10px];
+  }
+
+  .card-elite {
+    @apply bg-agro-charcoal/40 rounded-[3rem] border border-white/5 hover:border-agro-ocean/30 shadow-premium transition-all duration-500 overflow-hidden backdrop-blur-xl;
+  }
+
+  .glass-elite {
+    @apply bg-agro-midnight/70 backdrop-blur-3xl border border-white/5 shadow-2xl;
+  }
+
+  .text-glow-blue {
+    text-shadow: 0 0 15px rgba(63, 111, 118, 0.4);
+  }
+
   .btn-emerald {
-    /* CORRECCIÓN: agro-tealLight -> agro-teal-light */
-    @apply px-8 py-4 bg-agro-teal text-agro-midnight font-black rounded-2xl shadow-teal-glow hover:bg-agro-teal-light hover:shadow-teal-glow-lg transition-all duration-300 active:scale-95 uppercase tracking-widest text-[10px];
+    @apply bg-[#10b981] text-[#001719] font-black px-10 py-5 rounded-2xl shadow-[0_0_25px_#10b9814d] hover:shadow-[0_0_40px_#10b98180] hover:scale-[1.02] transition-all duration-300 uppercase tracking-widest text-[10px] active:scale-95;
   }
 
-  .card-midnight {
-    /* CORRECCIÓN: bg-agro-charcoal/40 para el efecto traslúcido Noir */
-    @apply bg-agro-charcoal/40 rounded-[3rem] border border-white/5 hover:border-agro-teal/30 shadow-premium transition-all duration-500 overflow-hidden backdrop-blur-md;
-  }
-
-  .glass-midnight {
-    @apply bg-agro-midnight/60 backdrop-blur-2xl border border-white/5 shadow-2xl;
-  }
-
-  .text-glow-teal {
-    text-shadow: 0 0 15px rgba(63, 111, 118, 0.5);
+  /* Efecto de brillo para botones de acción globales */
+  .action-btn {
+    @apply transition-all duration-300 hover:scale-[1.02] hover:drop-shadow-[0_0_10px_rgba(0, 229, 255, 0.3)] active:scale-95;
   }
 }
 
-/* 🌑 Animación de revelación profunda (Noir Reveal) */
+/* 🌑 Animación de revelación profunda */
 .reveal {
   animation: reveal 1s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
@@ -55,26 +83,27 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* 🎨 Scrollbar Estilo Terminal Premium */
+/* 🎨 Scrollbar Estilo Blue Premium */
 ::-webkit-scrollbar {
   width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0F10;
+  background: #05090F;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3F6F76;
+  background: var(--primary-container);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #5A8C93;
+  background: #E8E0C8;
 }

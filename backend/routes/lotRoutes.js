@@ -1,8 +1,5 @@
-// backend/routes/lotRoutes.js
 import express from "express";
 import proteger from "../middleware/authMiddleware.js";
-import upload from "../middleware/uploadMiddleware.js";
-
 import {
   crearLote,
   obtenerLotes,
@@ -12,36 +9,27 @@ import {
   eliminarLote,
   subirFotosTemporales,
   subirVideoTemporal,
+  registrarInteraccionLote,
 } from "../controllers/lotController.js";
+import { uploadLote, manejarErroresMulter } from "../middleware/lotUpload.js";
 
 const router = express.Router();
 
-// 🔹 Rutas públicas
 router.get("/", obtenerLotes);
-
-// 🔹 Rutas específicas antes que las dinámicas
 router.get("/mis-lotes", proteger, obtenerMisLotes);
 router.get("/:id", obtenerLotePorId);
 
-// 🖼 Subida de fotos
-router.post(
-  "/upload/images",
-  proteger,
-  upload.array("fotos", 5),
-  subirFotosTemporales
-);
+// 🖼 Subida de fotos temporales
+router.post("/upload/images", proteger, uploadLote.array("fotos", 5), manejarErroresMulter, subirFotosTemporales);
 
-// 🎥 Subida de video
-router.post(
-  "/upload/video",
-  proteger,
-  upload.single("video"),
-  subirVideoTemporal
-);
+// 🎥 Subida de video temporal
+router.post("/upload/video", proteger, uploadLote.single("video"), manejarErroresMulter, subirVideoTemporal);
 
-// 🔸 Crear / editar / borrar lotes
-router.post("/", proteger, crearLote);
-router.put("/:id", proteger, editarLote);
+// 🔸 Crear Lote: AÑADIMOS uploadLote.any() para que Multer procese el FormData y llene el req.body
+router.post("/", proteger, uploadLote.any(), crearLote);
+
+router.put("/:id", proteger, uploadLote.any(), editarLote);
+router.patch("/:id/interaccion", registrarInteraccionLote);
 router.delete("/:id", proteger, eliminarLote);
 
 export default router;

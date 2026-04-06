@@ -68,9 +68,17 @@ export const obtenerConversaciones = async (req, res) => {
     const mapaConversaciones = {};
 
     mensajes.forEach((msg) => {
-      const otroUsuario = msg.emisor._id.toString() === userId.toString() 
-                          ? msg.receptor 
-                          : msg.emisor;
+      // 🛡️ DEFENSA: Evitamos crash si un usuario fue eliminado de la base
+      if (!msg.emisor || !msg.receptor) return;
+
+      const emisorId = msg.emisor._id.toString();
+      const receptorId = msg.receptor._id.toString();
+
+      const otroUsuario = emisorId === userId.toString()
+        ? msg.receptor
+        : msg.emisor;
+
+      if (!otroUsuario || !otroUsuario._id) return;
 
       // Llave única: Si no hay lote ni producto, es una consulta general
       const referenciaId = msg.lote?._id || msg.producto?._id || "general";
@@ -90,7 +98,7 @@ export const obtenerConversaciones = async (req, res) => {
         };
       }
 
-      if (msg.receptor._id.toString() === userId.toString() && !msg.leido) {
+      if (receptorId === userId.toString() && !msg.leido) {
         mapaConversaciones[key].noLeidos++;
       }
     });
@@ -114,11 +122,11 @@ export const obtenerConversacion = async (req, res) => {
     let filtroReferencia = { lote: null, producto: null };
 
     if (referenciaId !== "general") {
-      filtroReferencia = { 
+      filtroReferencia = {
         $or: [
-          { lote: referenciaId }, 
+          { lote: referenciaId },
           { producto: referenciaId }
-        ] 
+        ]
       };
     }
 
@@ -143,6 +151,7 @@ export const obtenerConversacion = async (req, res) => {
     })
       .sort({ createdAt: 1 })
       .populate("emisor", "nombre")
+      .populate("receptor", "nombre") // Poblamos receptor también por seguridad
       .populate("lote", "titulo")
       .populate("producto", "titulo");
 

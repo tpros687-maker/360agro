@@ -1,5 +1,5 @@
-import { useState, useContext, useEffect } from "react";
-import API from "../api/lotApi"; // ✅ CORREGIDO: Usar lotApi para la creación de lotes
+import { useState, useContext } from "react";
+import API from "../api/lotApi";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
@@ -17,44 +17,16 @@ export default function CrearLote() {
     pesoPromedio: "",
     precio: "",
     ubicacion: "",
+    numeroDicose: "",
   });
 
   const [fotos, setFotos] = useState([]);
   const [video, setVideo] = useState(null);
+  const [docPropiedad, setDocPropiedad] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ CORREGIDO: Mapeo de límites actualizado para coincidir con tus nuevos planes
-  const limitePorPlan = {
-    gratis: 0,
-    observador: 0,
-    basico: 5,
-    productor: 5,
-    pro: Infinity,
-    "élite pro": Infinity,
-    empresa: Infinity,
-    business: Infinity,
-  };
-
   const userPlan = usuario?.plan?.toLowerCase() || "gratis";
-  const puedePublicar = limitePorPlan[userPlan] > 0;
-
-  // Validación de Plan al renderizar
-  if (!puedePublicar) {
-    return (
-      <div className="bg-agro-midnight min-h-screen flex items-center justify-center px-6">
-        <div className="card-midnight p-12 bg-agro-charcoal text-center max-w-xl border border-red-500/20 shadow-2xl rounded-[3rem] animate-reveal">
-          <div className="text-6xl mb-8">🚫</div>
-          <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-6">Restricción de Membresía</h2>
-          <p className="text-agro-cream/40 text-lg mb-10 italic leading-relaxed uppercase text-[11px] tracking-widest">
-            Su nivel de suscripción actual ({userPlan}) no contempla la emisión de nuevos activos.
-          </p>
-          <Link to="/planes" className="btn-emerald inline-block py-4 px-10 shadow-teal-glow">
-            Elevar Nivel de Socio ➔
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const puedePublicar = ["basico", "productor", "pro", "élite pro", "empresa", "bronce", "plata", "oro"].includes(userPlan);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -67,140 +39,225 @@ export default function CrearLote() {
     setFotos((prev) => [...prev, ...files]);
   };
 
-  const handleVideoChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.size > 50 * 1024 * 1024) {
-      toast.error("EL VIDEO EXCEDE EL LÍMITE DE 50MB");
-      return;
-    }
-    setVideo(file);
-  };
+  const eliminarFoto = (i) => setFotos((prev) => prev.filter((_, index) => index !== i));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const toastId = toast.loading("SINCRONIZANDO ACTIVO CON LA RED...");
+    const toastId = toast.loading("SINCRONIZANDO ACTIVO EN LA RED...");
 
     try {
       const formFull = new FormData();
       Object.keys(formData).forEach(key => formFull.append(key, formData[key]));
       fotos.forEach((file) => formFull.append("fotos", file));
       if (video) formFull.append("video", video);
+      if (docPropiedad) formFull.append("documentoPropiedad", docPropiedad);
 
-      // ✅ Usamos la instancia de lotApi que ya maneja el token
-      await API.crearLote(formFull); 
+      formFull.append("destacado", ["oro", "empresa", "élite pro"].includes(userPlan));
 
-      toast.success("ACTIVO INDEXADO CORRECTAMENTE", { id: toastId });
-      navigate("/mis-lotes");
+      await API.crearLote(formFull);
+      toast.success("ACTIVO PUBLICADO CON ÉXITO", { id: toastId });
+      navigate("/lotes");
     } catch (error) {
       console.error(error);
-      toast.error("FALLO EN LA INDEXACIÓN OPERATIVA", { id: toastId });
+      toast.error(error.response?.data?.detalle || "ERROR DE VALIDACIÓN", { id: toastId });
     } finally {
       setLoading(false);
     }
   };
 
+  if (!puedePublicar) {
+    return (
+      <div className="bg-agro-midnight min-h-screen flex items-center justify-center px-6">
+        <div className="card-midnight p-16 bg-agro-charcoal/40 text-center max-w-xl border border-white/5 rounded-[3rem] shadow-2xl">
+          <div className="text-7xl mb-10">⚠️</div>
+          <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase mb-6">Acceso Restringido</h2>
+          <p className="text-agro-cream/30 text-sm font-black uppercase tracking-widest mb-10 leading-loose">
+            No cuenta con un plan operativo activo para publicar activos en el mercado.
+          </p>
+          <Link to="/planes" className="btn-emerald py-5 px-10 inline-block font-black uppercase tracking-widest shadow-[0_0_30px_rgba(16,185,129,0.3)]">VER PLANES DE ÉLITE ➔</Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-agro-midnight min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-agro-teal/5 blur-[200px] pointer-events-none opacity-30"></div>
+      {/* Background Decor */}
+      <div className="absolute top-0 right-1/2 translate-x-1/2 w-full h-[600px] bg-agro-teal/5 blur-[200px] pointer-events-none opacity-20"></div>
 
-      <div className="container mx-auto max-w-4xl relative z-10 animate-reveal">
-        <header className="mb-16">
-          <span className="text-agro-teal font-black text-[10px] uppercase tracking-[0.5em] mb-4 block italic">Terminal de Carga de Hacienda</span>
-          <h1 className="text-5xl md:text-7xl font-black text-white italic tracking-tighter leading-none uppercase">
-            Nueva <span className="text-agro-teal not-italic font-black">Entrada</span>
+      <div className="container mx-auto max-w-4xl relative z-10">
+
+        <header className="mb-16 border-b border-white/5 pb-10">
+          <span className="text-agro-teal font-black text-[10px] uppercase tracking-[0.5em] mb-4 block italic">New Asset Deployment</span>
+          <h1 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-none">
+            SUMAR <span className="text-agro-teal not-italic">LOTE</span>
           </h1>
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-12">
-          {/* SECCIÓN 1: DATOS TÉCNICOS */}
-          <section className="card-midnight p-10 bg-agro-charcoal/40 space-y-8 rounded-[2.5rem] border border-white/5 shadow-2xl backdrop-blur-md">
-            <div className="flex items-center gap-6 mb-4">
-              <h2 className="text-xl font-black text-white italic tracking-tighter uppercase text-agro-teal">Información Crítica</h2>
-              <div className="h-[1px] bg-white/5 flex-1"></div>
-            </div>
+
+          {/* SECCIÓN 1: BIOMETRÍA Y CATEGORIZACIÓN */}
+          <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-8 rounded-[2.5rem] border backdrop-blur-sm">
+            <h2 className="text-agro-teal font-black text-[10px] uppercase tracking-[0.4em] mb-6">Especificaciones Biométricas</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Título del Lote</label>
-                <input type="text" name="titulo" value={formData.titulo} onChange={handleChange} required placeholder="Ej: 50 Terneros Brangus..." className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none text-white font-bold" />
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Título del Activo</label>
+                <input type="text" name="titulo" value={formData.titulo} onChange={handleChange} required placeholder="Ej: Lote 50 Novillos Hereford" className="bg-agro-midnight p-5 rounded-2xl text-white outline-none border border-white/5 focus:border-agro-teal/30 transition-all font-bold" />
               </div>
-
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Categorización</label>
-                <select name="categoria" value={formData.categoria} onChange={handleChange} className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none text-white font-black uppercase text-[10px] tracking-widest cursor-pointer">
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Clasificación Técnica</label>
+                <select name="categoria" value={formData.categoria} onChange={handleChange} className="bg-agro-midnight p-5 rounded-2xl text-white outline-none border border-white/5 focus:border-agro-teal/30 transition-all font-black text-[10px] uppercase tracking-widest appearance-none cursor-pointer">
                   <option value="Ganado">Ganado Vacuno</option>
                   <option value="Invernada">Invernada</option>
                   <option value="Cria">Cría</option>
                   <option value="Maquinaria">Maquinaria</option>
+                  <option value="Campos">Campos / Fracciones</option>
                 </select>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Raza / Cruza</label>
-                <input type="text" name="raza" value={formData.raza} onChange={handleChange} placeholder="Angus, Hereford..." className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none text-white font-bold" />
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Raza / Genética</label>
+                <input type="text" name="raza" value={formData.raza} onChange={handleChange} placeholder="Ej: Angus Negro" className="bg-agro-midnight p-5 rounded-2xl text-white border border-white/5 outline-none focus:border-agro-teal/30 transition-all font-bold" />
               </div>
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Cabezas</label>
-                <input type="number" name="cantidad" value={formData.cantidad} onChange={handleChange} placeholder="0" className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none text-white font-bold" />
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Cantidad / Cabezas</label>
+                <input type="number" name="cantidad" value={formData.cantidad} onChange={handleChange} placeholder="0" className="bg-agro-midnight p-5 rounded-2xl text-white border border-white/5 outline-none focus:border-agro-teal/30 transition-all font-bold text-center" />
               </div>
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Peso (kg)</label>
-                <input type="number" name="pesoPromedio" value={formData.pesoPromedio} onChange={handleChange} placeholder="180" className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none text-white font-bold" />
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Peso Prom. (KG)</label>
+                <input type="number" name="pesoPromedio" value={formData.pesoPromedio} onChange={handleChange} placeholder="0" className="bg-agro-midnight p-5 rounded-2xl text-white border border-white/5 outline-none focus:border-agro-teal/30 transition-all font-bold text-center text-agro-teal" />
               </div>
             </div>
+          </section>
+
+          {/* SECCIÓN 2: LOGÍSTICA Y MERCADO */}
+          <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-8 rounded-[2.5rem] border backdrop-blur-sm">
+            <h2 className="text-agro-teal font-black text-[10px] uppercase tracking-[0.4em] mb-6">Valuación y Jurisdicción</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Precio Objetivo (USD)</label>
+                <input type="number" name="precio" value={formData.precio} onChange={handleChange} required placeholder="0.00" className="bg-agro-midnight p-5 rounded-2xl text-white border border-white/5 outline-none focus:border-agro-teal/30 transition-all font-black text-2xl tracking-tighter" />
+              </div>
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Ubicación / Departamento</label>
+                <input type="text" name="ubicacion" value={formData.ubicacion} onChange={handleChange} required placeholder="Ej: Soriano, Paraje San Juan" className="bg-agro-midnight p-5 rounded-2xl text-white border border-white/5 outline-none focus:border-agro-teal/30 transition-all font-bold" />
+              </div>
+            </div>
+          </section>
+
+          {/* SECCIÓN 3: FICHA DESCRIPTIVA */}
+          <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-8 rounded-[2.5rem] border backdrop-blur-sm">
+            <h2 className="text-agro-teal font-black text-[10px] uppercase tracking-[0.4em] mb-6">Memoria Técnica</h2>
+            <div className="flex flex-col gap-3">
+              <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Detalles de Sanidad y Alimentación</label>
+              <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} rows="5" required placeholder="Describa el estado del lote, historial de vacunación, suplementación..." className="bg-agro-midnight p-6 rounded-2xl text-white border border-white/5 outline-none focus:border-agro-teal/30 transition-all resize-none font-medium leading-relaxed"></textarea>
+            </div>
+          </section>
+
+          {/* SECCIÓN 4: CERTIFICACIÓN OFICIAL (EL RECIÉN AGREGADO, CON ESTILO MEJORADO) */}
+          <section className="card-midnight p-10 bg-agro-charcoal/40 border-agro-teal/20 space-y-10 rounded-[2.5rem] border relative overflow-hidden backdrop-blur-sm">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-agro-teal/5 rounded-bl-[15rem]"></div>
+
+            <header className="flex items-center gap-5 relative z-10">
+              <div className="w-14 h-14 machined-gradient rounded-2xl flex items-center justify-center text-agro-midnight shadow-teal-glow">
+                <span className="material-symbols-outlined font-black text-2xl">verified_user</span>
+              </div>
+              <div>
+                <h3 className="text-white font-black italic uppercase tracking-tighter text-2xl leading-none">Certificación de Elite</h3>
+                <p className="text-[10px] text-agro-teal font-black uppercase tracking-[0.4em] mt-2 italic">Protocolo de Verificación Documental</p>
+              </div>
+            </header>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
+              {/* Input DICOSE */}
+              <div className="flex flex-col gap-4">
+                <label className="text-agro-teal text-[10px] font-black uppercase tracking-[0.3em] ml-1">Número DICOSE / ID Oficial</label>
+                <input
+                  type="text"
+                  name="numeroDicose"
+                  value={formData.numeroDicose}
+                  onChange={handleChange}
+                  placeholder="DICOSE - 9 DÍGITOS"
+                  className="bg-agro-midnight p-5 rounded-2xl text-white border border-agro-teal/20 focus:border-agro-teal transition-all outline-none font-black italic tracking-widest"
+                />
+              </div>
+
+              {/* Guía de Propiedad */}
+              <div className="flex flex-col gap-4">
+                <label className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] ml-1">Guía de Propiedad (PDF/IMG)</label>
+                <label className="relative group cursor-pointer">
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    onChange={(e) => setDocPropiedad(e.target.files[0])}
+                    className="hidden"
+                  />
+                  <div className="bg-agro-midnight p-5 rounded-2xl text-white border border-white/5 group-hover:border-agro-teal/40 transition-all flex items-center justify-between">
+                    <span className="text-[10px] font-bold truncate max-w-[200px] text-on-surface-variant font-mono uppercase tracking-widest">
+                      {docPropiedad ? docPropiedad.name : "VINCULAR ARCHIVO"}
+                    </span>
+                    <span className="material-symbols-outlined text-agro-teal text-xl">upload_file</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          {/* SECCIÓN 5: GALERÍA DE ACTIVOS */}
+          <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-8 rounded-[2.5rem] border backdrop-blur-sm">
+            <h2 className="text-agro-teal font-black text-[10px] uppercase tracking-[0.4em] mb-6">Evidencia Visual del Activo</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Valuación Lote (USD)</label>
-                <input type="number" name="precio" value={formData.precio} onChange={handleChange} required className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none text-white font-black text-xl text-glow-teal" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Procedencia</label>
-                <input type="text" name="ubicacion" value={formData.ubicacion} onChange={handleChange} placeholder="Localidad, Provincia" required className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none text-white font-bold" />
-              </div>
-            </div>
-          </section>
-
-          {/* ASSETS VISUALES */}
-          <section className="card-midnight p-10 bg-agro-charcoal/40 space-y-8 rounded-[2.5rem] border border-white/5">
-            <div className="flex items-center gap-6 mb-4">
-              <h2 className="text-xl font-black text-white italic tracking-tighter uppercase text-agro-teal">Carga Multimedia</h2>
-              <div className="h-[1px] bg-white/5 flex-1"></div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div className="space-y-6">
-                <label className="text-[9px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Fotos (MAX 5)</label>
-                <label className="block w-full h-40 border-2 border-dashed border-white/10 rounded-[2rem] hover:border-agro-teal/30 transition-all cursor-pointer relative group bg-agro-midnight/50">
-                  <input type="file" multiple accept="image/*" onChange={handleFileChange} className="hidden" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl mb-2 group-hover:scale-110 transition-transform">📸</span>
-                    <span className="text-[8px] font-black text-agro-cream/20 uppercase tracking-widest group-hover:text-agro-teal">Seleccionar Registros</span>
+              {/* VIDEO UPLOAD */}
+              <div className="flex flex-col gap-4">
+                <label className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] ml-1">Video del Lote (MP4 / MAX 15MB)</label>
+                <label className="relative group cursor-pointer h-32 border-2 border-dashed border-white/10 rounded-[2.5rem] hover:border-agro-teal/30 transition-all flex flex-col items-center justify-center bg-agro-midnight/30">
+                  <input type="file" accept="video/mp4" onChange={(e) => setVideo(e.target.files[0])} className="hidden" />
+                  <div className="flex flex-col items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                    <span className="text-2xl mb-1">{video ? "✅" : "🎥"}</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest">
+                      {video ? video.name : "Subir Video de Inspección"}
+                    </span>
                   </div>
                 </label>
               </div>
 
-              <div className="space-y-6">
-                <label className="text-[9px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Video Hacienda</label>
-                <label className="block w-full h-40 border-2 border-dashed border-white/10 rounded-[2rem] hover:border-agro-teal/30 transition-all cursor-pointer relative group bg-agro-midnight/50">
-                  <input type="file" accept="video/*" onChange={handleVideoChange} className="hidden" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl mb-2 group-hover:rotate-12 transition-transform">🎬</span>
-                    <span className="text-[8px] font-black text-agro-cream/20 uppercase tracking-widest">{video ? video.name : "Subir Archivo MP4"}</span>
+              {/* FOTOS UPLOAD */}
+              <div className="flex flex-col gap-4">
+                <label className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] ml-1">Fotos del Ganado (MAX 5)</label>
+                <label className="relative group cursor-pointer h-32 border-2 border-dashed border-white/10 rounded-[2.5rem] hover:border-agro-teal/30 transition-all flex flex-col items-center justify-center bg-agro-midnight/30">
+                  <input type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
+                  <div className="flex flex-col items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                    <span className="text-2xl mb-1">📸</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest">Añadir Registro Fotográfico</span>
                   </div>
                 </label>
               </div>
             </div>
+
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-8">
+              {fotos.map((f, i) => (
+                <div key={i} className="relative group h-20 rounded-2xl overflow-hidden border border-white/10 shadow-xl">
+                  <img src={URL.createObjectURL(f)} className="h-full w-full object-cover" />
+                  <button type="button" onClick={() => eliminarFoto(i)} className="absolute inset-0 bg-red-900/80 text-white font-black text-[14px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">⨯</button>
+                </div>
+              ))}
+            </div>
           </section>
 
-          <div className="pt-8">
-            <button type="submit" disabled={loading} className="btn-emerald w-full py-6 text-sm shadow-teal-glow active:scale-95 transition-all">
-              {loading ? "SINCRONIZANDO CON LA RED..." : "📤 CONFIRMAR PUBLICACIÓN ÉLITE"}
+          <footer className="pt-12">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-emerald w-full py-8 shadow-teal-glow-lg text-[13px] font-black uppercase tracking-[0.5em] italic transition-all active:scale-95"
+            >
+              {loading ? "Indexando Activo Vivo..." : "🏗️ DESPLEGAR LOTE EN LA RED"}
             </button>
-          </div>
+          </footer>
         </form>
       </div>
     </div>

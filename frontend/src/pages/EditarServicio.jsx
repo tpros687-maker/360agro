@@ -4,7 +4,7 @@ import servicioApi from "../api/servicioApi";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
-const BASE_URL = "http://localhost:5000";
+import { BASE_URL } from "../api/axiosConfig";
 
 export default function EditarServicio() {
   const { id } = useParams();
@@ -74,7 +74,7 @@ export default function EditarServicio() {
     Array.from(e.target.files).forEach((f) => fd.append("fotos", f));
 
     try {
-      const resp = await servicioApi.subirFotos(fd);
+      const resp = await servicioApi.subirFotos(form._id, fd);
       setForm((prev) => ({ ...prev, fotos: resp.data.fotos }));
       toast.success("ASSETS VISUALES INDEXADOS");
     } catch (err) {

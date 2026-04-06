@@ -1,6 +1,50 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
 
+/**
+ * 📦 ESQUEMA DE SERVICIO (Subdocumento)
+ * Los servicios no tienen colección propia. Viven dentro de Proveedor.
+ */
+const servicioSchema = new mongoose.Schema(
+  {
+    nombre: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    tipoServicio: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    descripcion: {
+      type: String,
+      required: true
+    },
+    zona: {
+      type: String,
+      required: true
+    },
+    // Contacto específico del servicio (por si difiere del proveedor)
+    telefono: String,
+    whatsapp: String,
+    email: String,
+    website: String,
+
+    fotos: [{
+      type: String
+    }],
+
+    estadisticas: {
+      visitas: { type: Number, default: 0 },
+      whatsapp: { type: Number, default: 0 },
+      telefono: { type: Number, default: 0 },
+      email: { type: Number, default: 0 },
+    },
+  },
+  { timestamps: true }
+);
+
 const proveedorSchema = new mongoose.Schema(
   {
     usuario: {
@@ -10,44 +54,38 @@ const proveedorSchema = new mongoose.Schema(
       unique: true,
     },
 
-    nombre: { 
-      type: String, 
+    nombre: {
+      type: String,
       required: true,
-      trim: true 
+      trim: true
     },
 
-    slug: { 
-      type: String, 
-      unique: true 
+    slug: {
+      type: String,
+      unique: true
     },
 
-    // rubro: ej. "Agroveterinaria", "Contratista", "Insumos"
-    rubro: { 
-      type: String, 
-      required: true 
+    rubro: {
+      type: String,
+      required: true
     },
 
-    // Definimos si es una Tienda física/insumos o un Proveedor de Servicios
     tipoProveedor: {
       type: String,
-      enum: ["tienda", "servicio"],
-      required: true,
+      default: "tienda",
     },
 
     descripcion: { type: String, required: true },
-    zona: { type: String, required: true }, // Ej: "Venado Tuerto", "Balcarce"
+    zona: { type: String, required: true },
 
-    // Contacto Directo
     telefono: String,
     whatsapp: String,
     email: String,
     website: String,
 
-    // Identidad Visual del Negocio
     logo: { type: String, default: null },
-    fotos: [{ type: String }], // Galería del local o maquinaria
+    fotos: [{ type: String }],
 
-    // Métricas de Rendimiento del Perfil
     estadisticas: {
       visitas: { type: Number, default: 0 },
       whatsapp: { type: Number, default: 0 },
@@ -55,15 +93,22 @@ const proveedorSchema = new mongoose.Schema(
       email: { type: Number, default: 0 },
     },
 
-    // Sincronizado con los planes de la plataforma
-    plan: { 
-      type: String, 
-      enum: ["gratis", "bronce", "plata", "oro", "empresa"], 
-      default: "gratis" 
+    // 🚀 MATRIOSHKA: Array de servicios embebidos
+    servicios: [servicioSchema],
+
+    plan: {
+      type: String,
+      enum: ["gratis", "basico", "pro", "empresa"],
+      default: "gratis"
     },
     destacado: { type: Boolean, default: false },
+    esVerificado: { type: Boolean, default: false },
+    rating: {
+      promedio: { type: Number, default: 0 },
+      totalOpiniones: { type: Number, default: 0 }
+    },
   },
-  { 
+  {
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
@@ -73,7 +118,6 @@ const proveedorSchema = new mongoose.Schema(
 /* ===============================================
     VIRTUALS (Conexión con productos)
 =============================================== */
-// Esto permite que al ver "Agroveterinaria Sur" traigamos sus productos
 proveedorSchema.virtual('misProductos', {
   ref: 'Producto',
   localField: '_id',

@@ -7,14 +7,28 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
 
-    // Tipo de usuario
+    // Tipo de usuario: 'productor', 'proveedor', 'admin'
     tipoUsuario: { type: String, default: "productor" },
 
     // 📌 Plan normalizado SIEMPRE en minúsculas
     plan: {
       type: String,
       enum: ["gratis", "basico", "pro", "empresa"],
-      default: "gratis"
+      default: "gratis",
+    },
+    // 💳 Automatización estilo Netflix
+    suscripcionId: { type: String, default: null },
+    proximaFechaCobro: { type: Date, default: null },
+    estadoSuscripcion: {
+      type: String,
+      enum: ["activa", "cancelada", "vencida", "pendiente"],
+      default: "pendiente"
+    },
+    // ✅ Agro-Trust System
+    esVerificado: { type: Boolean, default: false },
+    rating: {
+      promedio: { type: Number, default: 0 },
+      totalOpiniones: { type: Number, default: 0 }
     }
   },
   {

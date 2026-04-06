@@ -31,6 +31,7 @@ export function AuthProvider({ children }) {
         nombre: data.nombre,
         email: data.email,
         plan: data.plan?.toLowerCase() || "gratis",
+        tipoUsuario: data.tipoUsuario,
       };
 
       setUsuario(userFull);
@@ -54,17 +55,18 @@ export function AuthProvider({ children }) {
       const { data } = await api.post("/users/login", { email, password });
 
       localStorage.setItem("token", data.token);
-      
+
       const userFull = {
         _id: data._id,
         nombre: data.nombre,
         email: data.email,
         plan: data.plan?.toLowerCase() || "gratis",
+        tipoUsuario: data.tipoUsuario,
       };
 
       setUsuario(userFull);
       localStorage.setItem("user", JSON.stringify(userFull));
-      
+
       return data;
     } catch (error) {
       logout();
@@ -89,7 +91,7 @@ export function AuthProvider({ children }) {
         actualizarUsuario: setUsuario, // Útil para actualizar el plan tras un pago
       }}
     >
-      {!loadingAuth && children} 
+      {!loadingAuth && children}
     </AuthContext.Provider>
   );
 }

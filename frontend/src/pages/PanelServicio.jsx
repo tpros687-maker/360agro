@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import servicioApi from "../api/servicioApi";
 
-const BASE_URL = "http://localhost:5000";
+import { BASE_URL } from "../api/axiosConfig";
 
 export default function PanelServicio() {
   const [servicio, setServicio] = useState(null);

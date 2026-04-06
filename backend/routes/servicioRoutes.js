@@ -1,69 +1,51 @@
 import express from "express";
 import proteger from "../middleware/authMiddleware.js";
-
+import { uploadFotos, manejarErroresMulter } from "../middleware/servicioUpload.js";
 import {
-  obtenerServicios,
-  obtenerServicio,
-  obtenerMiServicio,
   crearServicio,
+  obtenerServicios,
+  obtenerMiServicio,
+  obtenerServicio,
   editarServicio,
   eliminarServicio,
   registrarClick,
-  subirFotosServicio,
+  subirFotosServicio
 } from "../controllers/servicioController.js";
-
-import {
-  uploadFotos,
-  manejarErroresMulter,
-} from "../middleware/servicioUpload.js";
 
 const router = express.Router();
 
 /* =======================================================
-   📌 LISTADO PÚBLICO
+    📌 RUTAS PÚBLICAS
 ======================================================= */
+
+// Obtener catálogo completo (Ruta: GET /api/servicios-profesionales)
 router.get("/", obtenerServicios);
 
-/* =======================================================
-   📌 MI SERVICIO (usuario logueado)
-   🔥 MOVER ESTA RUTA ANTES DE "/:id"
-======================================================= */
-router.get("/mio", proteger, obtenerMiServicio);
-
-/* =======================================================
-   📌 DETALLE + sumar visita
-======================================================= */
+// Obtener detalle de un servicio (Ruta: GET /api/servicios-profesionales/:id)
+// ✅ Cambiado de "/detalle/:id" a "/:id" para coincidir con el frontend
 router.get("/:id", obtenerServicio);
 
-/* =======================================================
-   📌 REGISTRAR CLIC
-======================================================= */
-router.post("/:id/click/:tipo", registrarClick);
+// Registrar métricas (Ruta: PUT /api/servicios-profesionales/:id/click/:tipo)
+// ✅ Cambiado a PUT para ser semánticamente correcto al actualizar estadísticas
+router.put("/:id/click/:tipo", registrarClick);
 
 /* =======================================================
-   📌 CREAR SERVICIO
+    📌 RUTAS PROTEGIDAS (Requieren Token)
 ======================================================= */
-router.post("/", proteger, crearServicio);
 
-/* =======================================================
-   📌 SUBIR FOTOS
-======================================================= */
-router.post(
-  "/upload/fotos",
-  proteger,
-  uploadFotos,
-  manejarErroresMulter,
-  subirFotosServicio
-);
+// Crear Servicio (Usa uploadFotos.any() para procesar FormData con múltiples archivos)
+router.post("/", proteger, uploadFotos, manejarErroresMulter, crearServicio);
 
-/* =======================================================
-   📌 EDITAR SERVICIO
-======================================================= */
-router.put("/:id", proteger, editarServicio);
+// Obtener servicios del usuario logueado (Panel de control)
+router.get("/mis-servicios", proteger, obtenerMiServicio);
 
-/* =======================================================
-   📌 ELIMINAR SERVICIO
-======================================================= */
+// Editar Servicio (Permite actualizar campos y fotos)
+router.put("/:id", proteger, uploadFotos, manejarErroresMulter, editarServicio);
+
+// Eliminar Servicio (Limpia base de datos y archivos físicos)
 router.delete("/:id", proteger, eliminarServicio);
+
+// Ruta corregida para carga de fotos vinculada al ID del servicio
+router.post("/:id/fotos", proteger, uploadFotos, manejarErroresMulter, subirFotosServicio);
 
 export default router;

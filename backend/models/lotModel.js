@@ -15,10 +15,12 @@ const lotSchema = new mongoose.Schema(
     descripcion: {
       type: String,
       required: [true, "La descripción técnica es obligatoria"],
+      default: "Sin descripción técnica detallada.", // ✅ Valor por defecto por si falla el front
     },
     categoria: {
       type: String,
-      enum: ["Ganado", "Maquinaria", "Campos"],
+      // ✅ CATEGORÍAS SINCRONIZADAS CON EL FRONTEND
+      enum: ["Ganado", "Invernada", "Cria", "Maquinaria", "Campos", "Ganado Vacuno"],
       default: "Ganado",
     },
     raza: { type: String, trim: true },
@@ -28,24 +30,26 @@ const lotSchema = new mongoose.Schema(
     ubicacion: { type: String, required: true },
     fotos: { type: [String], default: [] },
     video: { type: String, default: null },
-    
-    // --- MÉTRICAS DE ÉLITE ---
+
     estadisticas: {
       visitas: { type: Number, default: 0 },
-      whatsapp: { type: Number, default: 0 }, // Clics directos al botón de compra
-      contactos: { type: Number, default: 0 }, // Otros clics (teléfono/mail)
+      whatsapp: { type: Number, default: 0 },
+      contactos: { type: Number, default: 0 },
     },
 
-    // --- LÓGICA DE NEGOCIO ---
-    destacado: { type: Boolean, default: false }, // Para planes superiores
+    destacado: { type: Boolean, default: false },
     estado: {
       type: String,
       enum: ["Disponible", "Vendido", "Reservado"],
       default: "Disponible",
     },
+    // --- CERTIFICACIÓN OFICIAL ---
+    numeroDicose: { type: String, trim: true, default: null },
+    documentoPropiedad: { type: String, default: null },
+    certificadoSanitario: { type: String, default: null },
   },
   { timestamps: true }
 );
 
-const Lote = mongoose.model("Lote", lotSchema);
+const Lote = mongoose.models.Lote || mongoose.model("Lote", lotSchema, "lotes");
 export default Lote;

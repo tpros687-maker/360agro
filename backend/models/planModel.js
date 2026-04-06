@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 const planSchema = new mongoose.Schema({
   // Nombre interno del plan → siempre en minúsculas y sin acentos
-  nombre: { 
-    type: String, 
+  nombre: {
+    type: String,
     required: true,
     enum: ["gratis", "basico", "pro", "empresa"]
   },
@@ -18,11 +18,16 @@ const planSchema = new mongoose.Schema({
   destacado: { type: Boolean, default: false },
 
   // Tipo del plan (lo mismo que nombre)
-  tipo: { 
-    type: String, 
+  tipo: {
+    type: String,
     enum: ["gratis", "basico", "pro", "empresa"],
     required: true
-  }
+  },
+
+  // Límites técnicos adicionales
+  productosMax: { type: Number, default: 0 },
+  serviciosMax: { type: Number, default: 0 },
+  consultasAI: { type: Boolean, default: true }
 });
 
 //

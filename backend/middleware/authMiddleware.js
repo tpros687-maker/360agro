@@ -31,13 +31,22 @@ const proteger = async (req, res, next) => {
       // Continuar al siguiente controlador o middleware
       next();
     } catch (error) {
-      console.error("Error en Auth Middleware:", error.message);
-      
+      console.error("❌ Error en Auth Middleware:");
+      console.error("Mensaje:", error.message);
+
+      // Si es un error de conectividad de Mongoose
+      if (error.name === "MongooseServerSelectionError" || error.message.includes("buffering timed out")) {
+        return res.status(503).json({
+          mensaje: "Servicio temporalmente no disponible (Fallo de conexión a BD)",
+          detalles: "Por favor verifica la IP Whitelist en MongoDB Atlas"
+        });
+      }
+
       // Diferenciar errores para ayudar al frontend
-      const mensaje = error.name === "TokenExpiredError" 
-        ? "Sesión expirada, por favor inicia sesión de nuevo" 
+      const mensaje = error.name === "TokenExpiredError"
+        ? "Sesión expirada, por favor inicia sesión de nuevo"
         : "Token inválido o corrupto";
-        
+
       return res.status(401).json({ mensaje });
     }
   }

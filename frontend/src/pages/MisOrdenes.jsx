@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import Skeleton from "../components/Skeleton";
 
-const BASE_URL = "http://localhost:5000";
+import { BASE_URL } from "../api/axiosConfig";
 
 export default function MisOrdenes() {
     const { usuario } = useContext(AuthContext);

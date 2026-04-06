@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import servicioApi from "../api/servicioApi";
-import { BASE_URL } from "../api/axiosConfig"; // Importamos la config centralizada
+import { BASE_URL } from "../api/axiosConfig";
 import { toast } from "react-hot-toast";
 
 export default function ServicioDetalle() {
@@ -12,6 +12,7 @@ export default function ServicioDetalle() {
   const cargarServicio = async () => {
     try {
       const resp = await servicioApi.obtenerServicio(id);
+      // El backend devuelve el objeto del servicio con datos del proveedor extendidos
       setServicio(resp.data || null);
     } catch (error) {
       console.error("❌ Error cargando servicio:", error);
@@ -32,7 +33,7 @@ export default function ServicioDetalle() {
 
   useEffect(() => {
     cargarServicio();
-    window.scrollTo(0, 0); // Reset de scroll al entrar
+    window.scrollTo(0, 0);
   }, [id]);
 
   if (loading) {
@@ -61,14 +62,14 @@ export default function ServicioDetalle() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-20 items-center">
           <div className="lg:col-span-7 flex flex-col justify-center">
             <div className="flex items-center gap-4 mb-8">
-                <span className="bg-agro-teal/10 text-agro-teal text-[10px] font-black px-6 py-2 rounded-full uppercase tracking-[0.3em] shadow-inner border border-agro-teal/10">
+              <span className="bg-agro-teal/10 text-agro-teal text-[10px] font-black px-6 py-2 rounded-full uppercase tracking-[0.3em] shadow-inner border border-agro-teal/10">
                 {servicio.tipoServicio}
-                </span>
-                <span className="text-agro-cream/20 text-[10px] font-black uppercase tracking-widest italic">Visitas: {servicio.estadisticas?.visitas || 0}</span>
+              </span>
+              <span className="text-agro-cream/20 text-[10px] font-black uppercase tracking-widest italic">Visitas: {servicio.estadisticas?.visitas || 0}</span>
             </div>
-            
+
             <h1 className="text-6xl md:text-8xl font-black text-white italic tracking-tighter leading-none mb-8">
-              {servicio.nombre.toUpperCase()}
+              {servicio.nombre?.toUpperCase()}
             </h1>
             <div className="flex items-center gap-6 text-sm font-black uppercase tracking-[0.2em] text-agro-cream/30">
               <span className="flex items-center gap-2 text-agro-teal">📍 {servicio.zona}</span>
@@ -80,7 +81,7 @@ export default function ServicioDetalle() {
           <div className="lg:col-span-5 relative group">
             <div className="bg-agro-charcoal border border-white/5 p-6 rounded-[3.5rem] shadow-2xl relative overflow-hidden transform group-hover:scale-[1.01] transition-all duration-700">
               <img
-                src={servicio.fotos?.[0] ? `${BASE_URL}${servicio.fotos[0]}` : "/placeholder-servicio.png"}
+                src={servicio.fotos && servicio.fotos.length > 0 ? `${BASE_URL}${servicio.fotos[0]}` : "/placeholder-servicio.png"}
                 className="w-full h-[450px] object-cover rounded-[2.5rem] grayscale-[50%] group-hover:grayscale-0 transition duration-[2s]"
                 alt={servicio.nombre}
               />
@@ -93,13 +94,17 @@ export default function ServicioDetalle() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           {/* TEXTO Y GALERÍA */}
           <div className="lg:col-span-8 space-y-16">
-            <section className="bg-agro-charcoal/40 border border-white/5 p-12 rounded-[3.5rem] shadow-2xl">
-              <h2 className="text-3xl font-black text-white italic tracking-tighter mb-8 uppercase text-agro-teal">Alcance Operativo</h2>
-              <p className="text-agro-cream/40 text-xl font-medium leading-relaxed italic border-l-4 border-agro-teal pl-8">
-                "{servicio.descripcion}"
+            <section className="bg-agro-charcoal border border-white/10 p-12 rounded-[3.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.4)] relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-agro-teal/5 blur-3xl rounded-full"></div>
+              <h2 className="text-3xl font-black text-white italic tracking-tighter mb-8 uppercase text-agro-teal flex items-center gap-4">
+                <span className="w-8 h-[1px] bg-agro-teal/30"></span> Alcance Operativo
+              </h2>
+              <p className="text-white/80 text-xl font-medium leading-relaxed italic border-l-4 border-agro-teal pl-8 group-hover:text-white transition-colors duration-500">
+                "{servicio.descripcion || "Sin descripción técnica detallada disponible en el registro Élite."}"
               </p>
             </section>
 
+            {/* GALERÍA DE IMÁGENES EXTRA */}
             {servicio.fotos?.length > 1 && (
               <div className="space-y-8">
                 <div className="flex items-center gap-6">
@@ -112,7 +117,7 @@ export default function ServicioDetalle() {
                       key={i}
                       src={`${BASE_URL}${foto}`}
                       className="w-full h-72 object-cover rounded-[2.5rem] border border-white/5 shadow-2xl grayscale hover:grayscale-0 transition duration-700 cursor-pointer"
-                      alt="asset técnico"
+                      alt={`Evidencia ${i + 1}`}
                     />
                   ))}
                 </div>
@@ -132,10 +137,10 @@ export default function ServicioDetalle() {
                 {servicio.whatsapp && (
                   <a
                     onClick={() => registrarClick("whatsapp")}
-                    href={`https://wa.me/${servicio.whatsapp}`}
+                    href={`https://wa.me/${servicio.whatsapp.replace(/\D/g, '')}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="btn-emerald w-full py-6 text-[10px] flex items-center justify-center gap-4 group uppercase tracking-[0.2em]"
+                    className="btn-emerald w-full py-6 text-[10px] flex items-center justify-center gap-4 group uppercase tracking-[0.2em] rounded-2xl"
                   >
                     Abrir WhatsApp <span className="transition-transform group-hover:translate-x-1">→</span>
                   </a>
@@ -165,10 +170,10 @@ export default function ServicioDetalle() {
 
             {/* CARD DE PROVEEDOR (Vínculo al Showroom) */}
             <div className="bg-agro-midnight p-8 rounded-[2.5rem] border border-white/5 text-center">
-                <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-4">Empresa Responsable</p>
-                <Link to={`/tienda/${servicio.proveedorSlug}`} className="text-lg font-black text-white uppercase italic hover:text-agro-teal transition-colors">
-                    {servicio.proveedorNombre} ➔
-                </Link>
+              <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-4">Empresa Responsable</p>
+              <Link to={`/tienda/${servicio.proveedorSlug}`} className="text-lg font-black text-white uppercase italic hover:text-agro-teal transition-colors">
+                {servicio.proveedorNombre || "Ver Perfil de Empresa"} ➔
+              </Link>
             </div>
           </div>
         </div>

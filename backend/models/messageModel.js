@@ -22,7 +22,7 @@ const messageSchema = new mongoose.Schema(
     // 🔥 NUEVO: Referencia a Productos (Tienda/Insumos)
     producto: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product", // Asegúrate de que el modelo de productos se llame "Product"
+      ref: "Producto", // Corregido: El modelo se llama "Producto" en productoModel.js
       required: false,
     },
 

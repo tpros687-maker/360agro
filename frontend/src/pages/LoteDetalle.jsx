@@ -36,7 +36,7 @@ export default function LoteDetalle() {
   const handleContactarWhatsapp = async () => {
     try {
       await API.patch(`/lots/${id}/interaccion`, { tipo: 'whatsapp' });
-      
+
       const nroSaneado = lote.usuario?.telefono?.replace(/\D/g, '') || "";
       const texto = encodeURIComponent(`Hola ${lote.usuario?.nombre}, vi tu lote "${lote.titulo}" en 360 Agro y me interesa negociar.`);
       window.open(`https://wa.me/${nroSaneado}?text=${texto}`, '_blank');
@@ -69,60 +69,63 @@ export default function LoteDetalle() {
   };
 
   if (loading) return (
-    <div className="bg-agro-midnight min-h-screen flex justify-center items-center">
-      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-agro-teal shadow-teal-glow"></div>
+    <div className="bg-background min-h-screen flex justify-center items-center">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-primary shadow-[0_0_20px_rgba(63,111,118,0.4)]"></div>
     </div>
   );
 
   if (!lote) return <div className="bg-agro-midnight min-h-screen pt-40 text-center text-white font-black italic">LOTE NO LOCALIZADO</div>;
 
   return (
-    <div className="bg-agro-midnight min-h-screen pt-32 pb-20 px-6 relative overflow-hidden">
-      <div className="container mx-auto relative z-10">
-        
+    <div className="bg-background min-h-screen pt-32 pb-20 px-6 relative overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+      <div className="container mx-auto relative z-10 max-w-7xl">
+
         {/* Breadcrumbs */}
-        <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-[0.4em] text-agro-cream/20 mb-12">
-          <Link to="/" className="hover:text-agro-teal transition">Portal</Link>
-          <span>/</span>
-          <Link to="/lotes" className="hover:text-agro-teal transition">Lotes</Link>
-          <span>/</span>
-          <span className="text-agro-teal">{lote.titulo}</span>
+        <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/40 mb-10 italic">
+          <Link to="/" className="hover:text-primary transition-colors">Portal</Link>
+          <span className="material-symbols-outlined text-xs">chevron_right</span>
+          <Link to="/lotes" className="hover:text-primary transition-colors">Mercado</Link>
+          <span className="material-symbols-outlined text-xs">chevron_right</span>
+          <span className="text-primary">{lote.titulo}</span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-          
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
           {/* COLUMNA MULTIMEDIA */}
-          <div className="lg:col-span-7">
-            <div className="bg-agro-charcoal border border-white/5 p-6 rounded-[3.5rem] shadow-2xl">
-              
+          <div className="lg:col-span-7 space-y-6">
+            <div className="bg-surface-container-high border border-outline-variant/10 p-4 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+
               {/* VIDEO PLAYER */}
               {lote.video && (
-                <div className="mb-6 rounded-[2.5rem] overflow-hidden border border-agro-teal/20 shadow-teal-glow/10 bg-black">
-                  <video 
-                    src={`${BASE_URL}${lote.video}`} 
-                    controls 
+                <div className="mb-4 rounded-3xl overflow-hidden border border-primary/20 bg-black aspect-video group relative">
+                  <video
+                    src={`${BASE_URL}${lote.video}`}
+                    controls
                     playsInline
-                    className="w-full h-[25rem] object-contain"
+                    className="w-full h-full object-contain"
                     poster={lote.fotos?.[0] ? `${BASE_URL}${lote.fotos[0]}` : ""}
                   />
-                  <div className="bg-agro-teal/10 py-3 text-center border-t border-agro-teal/10">
-                    <span className="text-[9px] font-black text-agro-teal uppercase tracking-widest italic">Inspección de Video Activa</span>
+                  <div className="absolute top-4 left-4 bg-primary/20 backdrop-blur-md px-4 py-2 rounded-full border border-primary/30">
+                    <span className="text-[9px] font-bold text-primary uppercase tracking-widest italic flex items-center gap-2">
+                      <span className="material-symbols-outlined text-xs">videocam</span> Inspección Digital
+                    </span>
                   </div>
                 </div>
               )}
 
               {/* FOTO PRINCIPAL */}
-              <div className="relative h-[35rem] overflow-hidden rounded-[2.5rem] shadow-inner mb-6 bg-agro-midnight">
-                <img src={`${BASE_URL}${fotoPrincipal}`} className="w-full h-full object-cover transition duration-700" alt="Hacienda" />
+              <div className="relative h-[550px] overflow-hidden rounded-3xl bg-surface-container-lowest border border-outline-variant/5">
+                <img src={`${BASE_URL}${fotoPrincipal}`} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105" alt="Activo" />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-high/40 via-transparent to-transparent"></div>
               </div>
 
               {/* THUMBNAILS */}
-              <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+              <div className="flex gap-3 overflow-x-auto mt-4 pb-2 no-scrollbar">
                 {lote.fotos?.map((f, i) => (
-                  <button 
-                    key={i} 
-                    onClick={() => setFotoPrincipal(f)} 
-                    className={`w-20 h-20 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${fotoPrincipal === f ? "border-agro-teal scale-105" : "border-transparent opacity-40 hover:opacity-100"}`}
+                  <button
+                    key={i}
+                    onClick={() => setFotoPrincipal(f)}
+                    className={`w-20 h-20 rounded-2xl overflow-hidden border-2 shrink-0 transition-all ${fotoPrincipal === f ? "border-primary scale-105 shadow-lg shadow-primary/20" : "border-transparent opacity-40 hover:opacity-100"}`}
                   >
                     <img src={`${BASE_URL}${f}`} className="w-full h-full object-cover" />
                   </button>
@@ -132,85 +135,127 @@ export default function LoteDetalle() {
           </div>
 
           {/* COLUMNA INFORMACIÓN */}
-          <div className="lg:col-span-5 flex flex-col gap-8">
-            <section className="bg-agro-charcoal border border-white/5 p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 text-4xl opacity-5 pointer-events-none">🐂</div>
-              
-              <div className="flex flex-wrap gap-2 mb-6">
-                <span className="bg-agro-teal/10 text-agro-teal text-[9px] font-black px-4 py-2 rounded-full uppercase tracking-widest border border-agro-teal/10 shadow-inner">
+          <div className="lg:col-span-5 flex flex-col gap-6">
+            <section className="bg-surface-container-high border border-outline-variant/10 p-10 rounded-[3rem] shadow-2xl relative">
+              <div className="flex flex-wrap gap-2 mb-8">
+                <span className="bg-primary/10 text-primary text-[9px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest border border-primary/20 italic">
                   {lote.categoria}
                 </span>
-                <span className="bg-white/5 text-white/40 text-[9px] font-black px-4 py-2 rounded-full uppercase tracking-widest">
-                  REG: {lote._id.slice(-6).toUpperCase()}
+                <span className="bg-surface-variant/30 text-on-surface-variant text-[9px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest border border-outline-variant/10">
+                  ID: {lote._id.slice(-8).toUpperCase()}
                 </span>
+                {lote.documentoPropiedad && lote.numeroDicose && (
+                  <span className="bg-[#00E5FF]/10 text-[#00E5FF] text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border border-[#00E5FF]/30 italic flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[12px]">verified_user</span> Verificado
+                  </span>
+                )}
               </div>
 
-              <h1 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter leading-tight mb-8 uppercase">
+              <h1 className="text-4xl md:text-5xl font-black text-on-surface italic tracking-tighter leading-[0.9] mb-8 uppercase glow-text">
                 {lote.titulo}
               </h1>
 
-              {/* FICHA TÉCNICA */}
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="bg-agro-midnight/50 p-4 rounded-2xl border border-white/5 text-center group hover:border-agro-teal/30 transition-colors">
-                  <p className="text-[8px] font-black text-agro-teal uppercase mb-1 tracking-widest">Raza</p>
-                  <p className="text-white font-black text-xs uppercase">{lote.raza || "N/A"}</p>
+              {/* VALUACIÓN */}
+              <div className="bg-surface-container-lowest p-8 rounded-[2rem] border border-outline-variant/10 mb-8 shadow-inner relative group overflow-hidden">
+                <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                  <span className="material-symbols-outlined text-8xl">payments</span>
                 </div>
-                <div className="bg-agro-midnight/50 p-4 rounded-2xl border border-white/5 text-center group hover:border-agro-teal/30 transition-colors">
-                  <p className="text-[8px] font-black text-agro-teal uppercase mb-1 tracking-widest">Cabezas</p>
-                  <p className="text-white font-black text-xs">{lote.cantidad || 0}</p>
-                </div>
-                <div className="bg-agro-midnight/50 p-4 rounded-2xl border border-white/5 text-center group hover:border-agro-teal/30 transition-colors">
-                  <p className="text-[8px] font-black text-agro-teal uppercase mb-1 tracking-widest">Peso Prom.</p>
-                  <p className="text-white font-black text-xs">{lote.pesoPromedio || 0}kg</p>
-                </div>
-              </div>
-
-              <div className="bg-agro-midnight p-8 rounded-[2rem] border border-white/5 mb-8 shadow-inner">
-                <p className="text-[9px] text-agro-cream/20 font-black uppercase mb-2 tracking-widest">Valuación del Lote</p>
-                <p className="text-5xl font-black text-white italic tracking-tighter shadow-teal-glow-sm">
-                  USD {lote.precio?.toLocaleString() || "0"}
+                <p className="text-[10px] text-on-surface-variant/40 font-bold uppercase mb-2 tracking-widest italic">Valuación del Activo</p>
+                <p className="text-5xl font-black text-on-surface italic tracking-tighter">
+                  <span className="text-xl not-italic text-primary mr-1">USD</span>{lote.precio?.toLocaleString() || "0"}
                 </p>
               </div>
 
-              <p className="text-agro-cream/40 italic text-sm mb-10 leading-relaxed border-l-2 border-agro-teal/20 pl-4">
-                "{lote.descripcion}"
-              </p>
+              {/* FICHA TÉCNICA ÉLITE */}
+              <div className="grid grid-cols-3 gap-3 mb-8">
+                <div className="bg-surface-container-low/50 p-5 rounded-3xl border border-outline-variant/10 text-center group hover:bg-primary-container transition-all">
+                  <p className="text-[8px] font-bold text-primary uppercase mb-2 tracking-widest group-hover:text-on-primary-container italic">Raza</p>
+                  <p className="text-on-surface text-xs font-black uppercase tracking-tighter group-hover:text-on-primary-container">{lote.raza || "N/A"}</p>
+                </div>
+                <div className="bg-surface-container-low/50 p-5 rounded-3xl border border-outline-variant/10 text-center group hover:bg-primary-container transition-all">
+                  <p className="text-[8px] font-bold text-primary uppercase mb-2 tracking-widest group-hover:text-on-primary-container italic">Cabezas</p>
+                  <p className="text-on-surface text-xl font-black italic tracking-tighter group-hover:text-on-primary-container">{lote.cantidad || 0}</p>
+                </div>
+                <div className="bg-surface-container-low/50 p-5 rounded-3xl border border-outline-variant/10 text-center group hover:bg-primary-container transition-all">
+                  <p className="text-[8px] font-bold text-primary uppercase mb-2 tracking-widest group-hover:text-on-primary-container italic">Peso/Prom</p>
+                  <p className="text-on-surface text-xs font-black group-hover:text-on-primary-container">{lote.pesoPromedio || 0} KG</p>
+                </div>
+              </div>
+
+              <div className="mb-10">
+                <h4 className="text-[10px] font-bold text-primary uppercase tracking-[0.4em] mb-4 italic">Descripción Técnica</h4>
+                <p className="text-on-surface-variant text-sm leading-relaxed font-light italic border-l-2 border-primary/20 pl-6">
+                  {lote.descripcion}
+                </p>
+              </div>
+
+              {/* --- NUEVA SECCIÓN: CERTIFICACIÓN OFICIAL --- */}
+              {lote.numeroDicose && (
+                <div className="mb-10 bg-agro-teal/5 border border-agro-teal/20 p-8 rounded-[2rem] relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-5">
+                    <span className="material-symbols-outlined text-6xl">verified</span>
+                  </div>
+                  <h4 className="text-[10px] font-bold text-agro-teal uppercase tracking-[0.4em] mb-6 italic">Certificación Oficial</h4>
+
+                  <div className="space-y-6 relative z-10">
+                    <div>
+                      <p className="text-[8px] text-on-surface-variant/60 font-bold uppercase tracking-widest mb-1">DICOSE / ID Registrada</p>
+                      <p className="text-xl font-black text-white italic tracking-widest">{lote.numeroDicose}</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-4 pt-4 border-t border-agro-teal/10">
+                      {lote.documentoPropiedad && (
+                        <a
+                          href={`${BASE_URL}${lote.documentoPropiedad}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-2 text-[9px] font-bold text-agro-teal hover:text-white transition-colors border border-agro-teal/30 px-4 py-2 rounded-xl bg-agro-teal/10"
+                        >
+                          <span className="material-symbols-outlined text-sm">description</span> Guía de Propiedad
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-4">
                 {usuarioLogueado ? (
                   <>
-                    <button 
+                    <button
                       onClick={handleContactarWhatsapp}
-                      className="w-full py-5 bg-green-500/10 border border-green-500/20 text-green-500 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-green-500 hover:text-white transition-all shadow-xl"
+                      className="w-full py-5 bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] rounded-2xl font-bold text-[11px] uppercase tracking-widest hover:bg-[#25D366] hover:text-white transition-all shadow-xl flex items-center justify-center gap-3"
                     >
-                      📲 Negociar vía WhatsApp
+                      <span className="material-symbols-outlined text-lg">chat</span> Negociar vía WhatsApp
                     </button>
-                    <button 
+                    <button
                       onClick={() => setMostrarModal(true)}
-                      className="w-full py-5 bg-white/5 text-white border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-agro-teal hover:text-agro-midnight transition-all"
+                      className="w-full py-4.5 bg-surface-variant/20 text-on-surface border border-outline-variant/20 rounded-2xl font-bold text-[11px] uppercase tracking-widest hover:bg-surface-variant transition-all flex items-center justify-center gap-3"
                     >
-                      ✉️ Consulta de Red Interna
+                      <span className="material-symbols-outlined text-lg">mail</span> Enviar mensaje
                     </button>
                   </>
                 ) : (
-                  <Link to="/login" className="btn-emerald w-full py-5 text-[10px] block text-center uppercase tracking-widest shadow-teal-glow">
-                    Inicie Sesión para Negociar
+                  <Link to="/login" className="machined-gradient w-full py-5 text-[11px] font-bold block text-center uppercase tracking-widest shadow-[0_0_25px_rgba(63,111,118,0.4)] rounded-full text-on-tertiary-fixed">
+                    Autenticarse para Negociar
                   </Link>
                 )}
               </div>
             </section>
 
             {/* CARD PRODUCTOR */}
-            <div className="bg-agro-charcoal/40 p-8 rounded-[2.5rem] flex items-center justify-between border border-white/5">
+            <div className="bg-surface-container-high border border-outline-variant/10 p-8 rounded-[2.5rem] flex items-center justify-between group">
               <div>
-                <p className="text-[9px] text-agro-cream/20 font-black uppercase mb-1">Productor Responsable</p>
-                <p className="text-xl font-black text-white italic uppercase tracking-tighter">{lote.usuario?.nombre}</p>
-                <div className="flex items-center gap-2 mt-1">
-                    <span className="w-1.5 h-1.5 bg-agro-teal rounded-full animate-pulse"></span>
-                    <span className="text-[8px] font-black text-agro-teal uppercase tracking-widest">Plan {lote.usuario?.plan}</span>
+                <p className="text-[10px] text-on-surface-variant/40 font-bold uppercase mb-1 italic tracking-widest">Productor Responsable</p>
+                <p className="text-xl font-black text-on-surface italic uppercase tracking-tighter group-hover:text-primary transition-colors">{lote.usuario?.nombre}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_rgba(63,111,118,0.8)]"></span>
+                  <span className="text-[9px] font-bold text-primary uppercase tracking-widest">Socio Estratégico {lote.usuario?.plan}</span>
                 </div>
               </div>
-              <div className="w-14 h-14 bg-agro-midnight rounded-xl flex items-center justify-center text-2xl border border-agro-teal/10 shadow-inner">👨‍🌾</div>
+              <div className="w-16 h-16 bg-surface-container-lowest rounded-2xl flex items-center justify-center text-3xl border border-outline-variant/5 shadow-inner group-hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-primary text-4xl">verified_user</span>
+              </div>
             </div>
           </div>
         </div>
@@ -218,19 +263,21 @@ export default function LoteDetalle() {
 
       {/* MODAL MÁS LIMPIO */}
       {mostrarModal && (
-        <div className="fixed inset-0 bg-agro-midnight/90 backdrop-blur-md flex items-center justify-center z-[200] p-6 animate-in fade-in duration-300">
-          <div className="bg-agro-charcoal border border-white/10 rounded-[3rem] w-full max-w-lg p-10 relative shadow-[0_0_100px_rgba(0,0,0,0.8)]">
-            <button onClick={() => setMostrarModal(false)} className="absolute top-6 right-8 text-white/20 hover:text-white transition-colors">✕</button>
-            <h2 className="text-2xl font-black text-white italic uppercase mb-2 tracking-tighter">Propuesta Directa</h2>
-            <p className="text-[9px] font-black text-agro-cream/20 uppercase tracking-widest mb-8">El mensaje se enviará a la terminal del productor</p>
-            <textarea 
-              className="w-full bg-agro-midnight border border-white/10 rounded-2xl p-6 text-white text-sm outline-none focus:border-agro-teal/50 h-40 transition-all shadow-inner leading-relaxed"
-              placeholder="Describa su oferta o consulta técnica..."
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-xl flex items-center justify-center z-[200] p-6 animate-in fade-in duration-300">
+          <div className="bg-surface-container-highest border border-outline-variant/20 rounded-[3rem] w-full max-w-lg p-10 relative shadow-[0_40px_100px_rgba(0,0,0,0.8)]">
+            <button onClick={() => setMostrarModal(false)} className="absolute top-8 right-8 text-on-surface-variant/40 hover:text-on-surface transition-colors">
+              <span className="material-symbols-outlined">close</span>
+            </button>
+            <h2 className="text-2xl font-black text-on-surface italic uppercase mb-2 tracking-tighter glow-text">Propuesta Directa</h2>
+            <p className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-8 italic">El mensaje se enviará a la terminal del productor</p>
+            <textarea
+              className="w-full bg-surface-container-lowest border-2 border-outline-variant/30 rounded-3xl p-6 text-on-surface text-sm outline-none focus:border-primary/50 h-40 transition-all shadow-inner leading-relaxed placeholder:text-on-surface-variant/20"
+              placeholder="Describa su oferta comercial o consulta técnica..."
               value={mensaje}
               onChange={(e) => setMensaje(e.target.value)}
             />
-            <button onClick={enviarMensaje} className="btn-emerald w-full mt-8 py-5 text-[10px] uppercase tracking-widest shadow-teal-glow">
-                ENVIAR AL PRODUCTOR ➔
+            <button onClick={enviarMensaje} className="machined-gradient w-full mt-8 py-5 text-[11px] font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(63,111,118,0.4)] rounded-full text-on-tertiary-fixed">
+              ENVIAR PROPUESTA ➔
             </button>
           </div>
         </div>

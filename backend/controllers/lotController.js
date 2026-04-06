@@ -3,12 +3,12 @@ import User from "../models/userModel.js";
 import TempUpload from "../models/tempUploadModel.js";
 import Proveedor from "../models/proveedorModel.js";
 
+// ✅ Planes sincronizados con tu Frontend
 const limitePorPlan = {
-  gratis: 2,
-  bronce: 5,
-  plata: 15,
-  oro: Infinity,
-  empresa: Infinity,
+  gratis: 0,
+  basico: 5,
+  pro: Infinity,
+  empresa: Infinity
 };
 
 /* --- MÉTODOS DE ARCHIVOS --- */
@@ -16,27 +16,33 @@ const limitePorPlan = {
 export const subirFotosTemporales = async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) return res.status(400).json({ mensaje: "No hay fotos" });
-    const rutas = req.files.map((file) => `/uploads/${file.filename}`);
+    const rutas = req.files.map((file) => `/uploads/lotes/${file.filename}`);
     let temp = await TempUpload.findOneAndUpdate(
       { usuario: req.user._id },
       { $push: { fotos: { $each: rutas } } },
       { upsert: true, new: true }
     );
     res.status(200).json({ fotos: temp.fotos });
-  } catch (error) { res.status(500).json({ mensaje: "Error en imágenes" }); }
+  } catch (error) {
+    console.error("Error en subirFotosTemporales:", error);
+    res.status(500).json({ mensaje: "Error en imágenes" });
+  }
 };
 
 export const subirVideoTemporal = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ mensaje: "No hay video" });
-    const rutaVideo = `/uploads/${req.file.filename}`;
+    const rutaVideo = `/uploads/lotes/${req.file.filename}`;
     let temp = await TempUpload.findOneAndUpdate(
       { usuario: req.user._id },
       { video: rutaVideo },
       { upsert: true, new: true }
     );
     res.status(200).json({ video: temp.video });
-  } catch (error) { res.status(500).json({ mensaje: "Error en video" }); }
+  } catch (error) {
+    console.error("Error en subirVideoTemporal:", error);
+    res.status(500).json({ mensaje: "Error en video" });
+  }
 };
 
 /* --- MÉTODOS DE LOTE --- */
@@ -44,43 +50,82 @@ export const subirVideoTemporal = async (req, res) => {
 export const crearLote = async (req, res) => {
   try {
     const usuario = await User.findById(req.user._id);
-    const planUser = usuario.plan?.toLowerCase() || "gratis";
-    const limite = limitePorPlan[planUser] || 2;
+    if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
 
-    const lotesActivos = await Lote.countDocuments({ usuario: usuario._id });
+    const planUser = usuario.plan?.toLowerCase() || "gratis";
+    const limite = limitePorPlan[planUser] || 0;
+
+    const lotesActivos = await Lote.countDocuments({ usuario: usuario._id }) || 0;
     const proveedor = await Proveedor.findOne({ usuario: usuario._id });
-    const serviciosActivos = proveedor ? proveedor.servicios.length : 0;
+    const serviciosActivos = proveedor?.servicios?.length || 0;
 
     if (lotesActivos + serviciosActivos >= limite) {
       return res.status(403).json({ mensaje: `Límite alcanzado (${limite} activos).` });
     }
 
-    const temp = await TempUpload.findOne({ usuario: req.user._id });
-    const fotos = temp?.fotos || [];
-    const video = temp?.video || null;
+    // ✅ REPARACIÓN CRÍTICA: Aseguramos que body exista antes de leer propiedades
+    const body = req.body || {};
 
-    const nuevoLote = await Lote.create({
-      ...req.body,
+    const temp = await TempUpload.findOne({ usuario: req.user._id });
+
+    // 🔥 UNIFICACIÓN: Si no hay temp, usamos los que vienen directo en el body (Multer)
+    let fotos = temp?.fotos || [];
+    let video = temp?.video || null;
+
+    if (fotos.length === 0 && req.files) {
+      fotos = req.files
+        .filter(f => f.fieldname === "fotos")
+        .map(f => `/uploads/lotes/${f.filename}`);
+    }
+
+    if (!video && req.files) {
+      const vFile = req.files.find(f => f.fieldname === "video");
+      if (vFile) video = `/uploads/lotes/${vFile.filename}`;
+    }
+
+    // --- NUEVO: DOCUMENTACIÓN OFICIAL ---
+    let documentoPropiedad = null;
+    let certificadoSanitario = null;
+    if (req.files) {
+      const propFile = req.files.find(f => f.fieldname === "documentoPropiedad");
+      if (propFile) documentoPropiedad = `/uploads/lotes/${propFile.filename}`;
+
+      const sanFile = req.files.find(f => f.fieldname === "certificadoSanitario");
+      if (sanFile) certificadoSanitario = `/uploads/lotes/${sanFile.filename}`;
+    }
+
+    // CREACIÓN DEL LOTE
+    const nuevoLote = new Lote({
+      ...body,
       fotos,
       video,
+      documentoPropiedad,
+      certificadoSanitario,
+      numeroDicose: body.numeroDicose || null,
       usuario: req.user._id,
-      destacado: ["oro", "empresa"].includes(planUser) && req.body.destacado
+      // Manejamos el booleano que viene de FormData (que llega como string)
+      destacado: ["oro", "empresa", "élite pro", "pro"].includes(planUser) && (body.destacado === "true" || body.destacado === true)
     });
 
-    if (temp) await temp.deleteOne();
+    await nuevoLote.save();
+
+    if (temp) {
+      await TempUpload.deleteOne({ usuario: req.user._id });
+    }
+
     res.status(201).json(nuevoLote);
-  } catch (error) { res.status(500).json({ mensaje: "Error al crear lote" }); }
+  } catch (error) {
+    console.error("DETALLE ERROR 500 CREAR LOTE:", error);
+    res.status(500).json({ mensaje: "Error al crear lote", detalle: error.message });
+  }
 };
 
-// 🔍 OPTIMIZADO: Obtener todos los lotes con soporte para Buscador Universal
 export const obtenerLotes = async (req, res) => {
   try {
     const { q, search, categoria } = req.query;
     const queryTerm = q || search;
-
     let filtro = {};
 
-    // Si hay término de búsqueda, filtramos por campos clave
     if (queryTerm) {
       filtro.$or = [
         { titulo: { $regex: queryTerm, $options: "i" } },
@@ -90,18 +135,18 @@ export const obtenerLotes = async (req, res) => {
       ];
     }
 
-    // Filtro por categoría específica (si viene del explorador)
     if (categoria && categoria !== "Todas") {
       filtro.categoria = categoria;
     }
 
     const lotes = await Lote.find(filtro)
       .sort("-createdAt")
-      .populate("usuario", "nombre plan");
+      .populate("usuario", "nombre plan esVerificado rating");
 
     res.status(200).json(lotes);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener mercado de hacienda" });
+    console.error("Error obtenerLotes:", error);
+    res.status(500).json({ mensaje: "Error al obtener mercado" });
   }
 };
 
@@ -111,45 +156,59 @@ export const obtenerLotePorId = async (req, res) => {
       req.params.id,
       { $inc: { "estadisticas.visitas": 1 } },
       { new: true }
-    ).populate("usuario", "nombre plan email");
+    ).populate("usuario", "nombre plan email esVerificado rating");
 
     if (!lote) return res.status(404).json({ mensaje: "Lote no encontrado" });
     res.status(200).json(lote);
-  } catch (error) { res.status(500).json({ mensaje: "Error al obtener detalle" }); }
+  } catch (error) {
+    console.error("Error obtenerLotePorId:", error);
+    res.status(500).json({ mensaje: "Error al obtener detalle" });
+  }
 };
 
 export const editarLote = async (req, res) => {
   try {
+    const body = req.body || {};
     const lote = await Lote.findById(req.params.id);
     if (!lote) return res.status(404).json({ mensaje: "Lote no encontrado" });
     if (lote.usuario.toString() !== req.user._id.toString()) return res.status(403).json({ mensaje: "No autorizado" });
 
     const loteActualizado = await Lote.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body },
+      { $set: body },
       { new: true }
     );
     res.status(200).json(loteActualizado);
-  } catch (error) { res.status(500).json({ mensaje: "Error al editar" }); }
+  } catch (error) {
+    console.error("Error editarLote:", error);
+    res.status(500).json({ mensaje: "Error al editar" });
+  }
 };
 
 export const registrarInteraccionLote = async (req, res) => {
   try {
     const { id } = req.params;
-    const { tipo } = req.body;
+    const body = req.body || {};
+    const { tipo } = body;
     if (!['whatsapp', 'contactos'].includes(tipo)) return res.status(400).json({ mensaje: "Tipo inválido" });
 
     const campo = `estadisticas.${tipo}`;
     await Lote.findByIdAndUpdate(id, { $inc: { [campo]: 1 } });
     res.status(200).json({ mensaje: "Métrica registrada" });
-  } catch (error) { res.status(500).json({ mensaje: "Error en métricas" }); }
+  } catch (error) {
+    console.error("Error métricas:", error);
+    res.status(500).json({ mensaje: "Error en métricas" });
+  }
 };
 
 export const obtenerMisLotes = async (req, res) => {
   try {
     const lotes = await Lote.find({ usuario: req.user._id }).sort("-createdAt");
     res.status(200).json(lotes);
-  } catch (error) { res.status(500).json({ mensaje: "Error al obtener tus activos" }); }
+  } catch (error) {
+    console.error("Error obtenerMisLotes:", error);
+    res.status(500).json({ mensaje: "Error al obtener tus activos" });
+  }
 };
 
 export const eliminarLote = async (req, res) => {
@@ -159,5 +218,8 @@ export const eliminarLote = async (req, res) => {
     if (lote.usuario.toString() !== req.user._id.toString()) return res.status(403).send();
     await lote.deleteOne();
     res.status(200).json({ mensaje: "Eliminado" });
-  } catch (error) { res.status(500).json({ mensaje: "Error al eliminar" }); }
+  } catch (error) {
+    console.error("Error eliminarLote:", error);
+    res.status(500).json({ mensaje: "Error al eliminar" });
+  }
 };

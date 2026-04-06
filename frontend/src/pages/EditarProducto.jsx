@@ -4,7 +4,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import productoApi from "../api/productoApi";
 import { toast } from "react-hot-toast";
 
-const BASE_URL = "http://localhost:5000";
+import { BASE_URL } from "../api/axiosConfig";
 
 export default function EditarProducto() {
   const { id } = useParams();

@@ -22,18 +22,9 @@ export default function CrearServicio() {
 
   const [fotos, setFotos] = useState([]);
 
+  // Eliminamos el bloqueo de 'yaExiste' para permitir multirrubro y múltiples servicios
   useEffect(() => {
-    const verificar = async () => {
-      try {
-        const res = await servicioApi.obtenerMiServicio();
-        if (res.data) setYaExiste(true);
-      } catch (_) { 
-        // Si falla es porque no tiene servicio, lo cual está bien aquí
-      } finally {
-        setVerificando(false);
-      }
-    };
-    verificar();
+    setVerificando(false);
   }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -41,7 +32,7 @@ export default function CrearServicio() {
   const handleFotos = (e) => {
     const arr = Array.from(e.target.files);
     if (fotos.length + arr.length > 6) {
-        return toast.error("Máximo 6 evidencias técnicas permitidas");
+      return toast.error("Máximo 6 evidencias técnicas permitidas");
     }
     setFotos((prev) => [...prev, ...arr]);
   };
@@ -54,18 +45,24 @@ export default function CrearServicio() {
     const tId = toast.loading("Configurando terminal profesional...");
 
     try {
-      // 1. Crear el registro base
-      await servicioApi.crearServicio(form);
+      // ✅ UNIFICACIÓN: Enviamos TODO en un solo FormData (Igual que en Lotes)
+      const data = new FormData();
 
-      // 2. Vincular activos visuales si existen
-      if (fotos.length > 0) {
-        const fd = new FormData();
-        fotos.forEach((f) => fd.append("fotos", f));
-        await servicioApi.subirFotos(fd);
-      }
+      // Agregamos campos de texto
+      Object.keys(form).forEach((key) => {
+        data.append(key, form[key]);
+      });
+
+      // Agregamos las fotos
+      fotos.forEach((f) => {
+        data.append("fotos", f);
+      });
+
+      // Enviamos una sola petición al backend
+      await servicioApi.crearServicio(data);
 
       toast.success("PERFIL TÉCNICO DESPLEGADO", { id: tId });
-      navigate("/panel/proveedor"); // Redirigimos al panel central para ver el estado
+      navigate("/mis-servicios");
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.mensaje || "ERROR EN LA INDEXACIÓN", { id: tId });
@@ -76,7 +73,7 @@ export default function CrearServicio() {
 
   if (verificando) return (
     <div className="bg-agro-midnight min-h-screen flex justify-center items-center">
-        <div className="animate-pulse text-agro-teal font-black uppercase tracking-widest">Validando Credenciales...</div>
+      <div className="animate-pulse text-agro-teal font-black uppercase tracking-widest">Validando Credenciales...</div>
     </div>
   );
 
@@ -84,12 +81,12 @@ export default function CrearServicio() {
     return (
       <div className="bg-agro-midnight min-h-screen flex items-center justify-center px-6">
         <div className="card-midnight p-16 bg-agro-charcoal/40 text-center max-w-xl border border-white/5 rounded-[3rem] shadow-2xl">
-          <div className="text-7xl mb-10 group-hover:rotate-12 transition-transform">⚙️</div>
+          <div className="text-7xl mb-10">⚙️</div>
           <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase mb-6">Registro Activo</h2>
           <p className="text-agro-cream/30 text-sm font-black uppercase tracking-widest mb-10 leading-loose">
             "Su terminal de servicios profesionales ya se encuentra operativa en la red de Élite Agro."
           </p>
-          <Link to="/panel/proveedor" className="btn-emerald py-5 px-10 inline-block">GESTIONAR MI SERVICIO ➔</Link>
+          <Link to="/mis-servicios" className="btn-emerald py-5 px-10 inline-block font-black uppercase tracking-widest">GESTIONAR MI SERVICIO ➔</Link>
         </div>
       </div>
     );
@@ -111,7 +108,7 @@ export default function CrearServicio() {
         <form onSubmit={handleSubmit} className="space-y-12">
 
           {/* IDENTIDAD TÉCNICA */}
-          <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-8">
+          <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-8 rounded-[2.5rem] border backdrop-blur-sm">
             <h2 className="text-agro-teal font-black text-[10px] uppercase tracking-[0.4em] mb-6">Especificaciones de Servicio</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -121,7 +118,7 @@ export default function CrearServicio() {
               </div>
               <div className="flex flex-col gap-3">
                 <label className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-1">Área de Especialidad</label>
-                <select name="tipoServicio" value={form.tipoServicio} onChange={handleChange} required className="bg-agro-midnight p-5 rounded-2xl text-white outline-none border border-white/5 focus:border-agro-teal/30 transition-all font-black text-[10px] uppercase tracking-widest appearance-none">
+                <select name="tipoServicio" value={form.tipoServicio} onChange={handleChange} required className="bg-agro-midnight p-5 rounded-2xl text-white outline-none border border-white/5 focus:border-agro-teal/30 transition-all font-black text-[10px] uppercase tracking-widest appearance-none cursor-pointer">
                   <option value="">Seleccionar área...</option>
                   <option value="siembra">🌱 Siembra Profesional</option>
                   <option value="fumigación">🪰 Control de Plagas / Fumigación</option>
@@ -146,7 +143,7 @@ export default function CrearServicio() {
           </section>
 
           {/* CONTACTO */}
-          <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-8">
+          <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-8 rounded-[2.5rem] border backdrop-blur-sm">
             <h2 className="text-agro-teal font-black text-[10px] uppercase tracking-[0.4em] mb-6">Canales de Enlace Directo</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="flex flex-col gap-3">
@@ -161,7 +158,7 @@ export default function CrearServicio() {
           </section>
 
           {/* EVIDENCIA */}
-          <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-8">
+          <section className="card-midnight p-10 bg-agro-charcoal/40 border-white/5 space-y-8 rounded-[2.5rem] border backdrop-blur-sm">
             <h2 className="text-agro-teal font-black text-[10px] uppercase tracking-[0.4em] mb-6">Showcase de Operaciones</h2>
             <label className="block w-full h-32 border-2 border-dashed border-white/5 rounded-[2rem] hover:border-agro-teal/30 transition-all cursor-pointer relative overflow-hidden group">
               <input type="file" accept="image/*" multiple onChange={handleFotos} className="hidden" />
@@ -173,7 +170,7 @@ export default function CrearServicio() {
 
             <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-8">
               {fotos.map((f, i) => (
-                <div key={i} className="relative group h-20 rounded-xl overflow-hidden border border-white/10">
+                <div key={i} className="relative group h-20 rounded-xl overflow-hidden border border-white/10 shadow-lg">
                   <img src={URL.createObjectURL(f)} className="h-full w-full object-cover" />
                   <button type="button" onClick={() => eliminarFoto(i)} className="absolute inset-0 bg-red-900/80 text-white font-black text-[10px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">⨯</button>
                 </div>
@@ -182,7 +179,7 @@ export default function CrearServicio() {
           </section>
 
           <footer className="pt-8">
-            <button type="submit" disabled={loading} className="btn-emerald w-full py-7 shadow-teal-glow-lg uppercase tracking-[0.4em] text-xs">
+            <button type="submit" disabled={loading} className="btn-emerald w-full py-7 shadow-teal-glow-lg uppercase tracking-[0.4em] text-xs font-black">
               {loading ? "Indexando Perfil..." : "🏗️ DESPLEGAR EN LA RED"}
             </button>
           </footer>

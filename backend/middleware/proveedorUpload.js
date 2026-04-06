@@ -61,6 +61,18 @@ export const uploadFotos = multer({
 }).array("fotos", 8);
 
 // =============================================
+// 🟢 Subida COMBINADA (Logo + Fotos) para Creación
+// =============================================
+export const uploadTienda = multer({
+  storage,
+  fileFilter,
+  limits,
+}).fields([
+  { name: "logo", maxCount: 1 },
+  { name: "fotos", maxCount: 8 }
+]);
+
+// =============================================
 // 🛑 Manejo de errores de Multer
 // =============================================
 export const manejarErroresMulter = (err, req, res, next) => {

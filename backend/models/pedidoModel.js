@@ -21,7 +21,7 @@ const pedidoSchema = new mongoose.Schema(
     {
         comprador: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Usuario",
+            ref: "User",
             required: true,
         },
         // Almacenamos el Proveedor (Tienda) al que pertenece el pedido

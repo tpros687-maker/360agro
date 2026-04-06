@@ -6,32 +6,36 @@ import bcrypt from "bcryptjs";
 export const registrarUsuario = async (req, res) => {
   try {
     const { nombre, email, password } = req.body;
+    const emailLower = email.toLowerCase();
 
-    const existeUsuario = await User.findOne({ email });
+    const existeUsuario = await User.findOne({ email: emailLower });
     if (existeUsuario) {
       return res.status(400).json({ mensaje: "El usuario ya existe" });
     }
 
-    const usuario = await User.create({ nombre, email, password });
+    const usuario = await User.create({ nombre, email: emailLower, password });
 
     res.status(201).json({
       _id: usuario._id,
       nombre: usuario.nombre,
       email: usuario.email,
       plan: usuario.plan,
+      tipoUsuario: usuario.tipoUsuario,
       token: generarToken(usuario._id),
     });
 
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al registrar usuario" });
+    console.error("Error en registro:", error);
+    res.status(500).json({ mensaje: "Error al registrar usuario", error: error.message });
   }
 };
 
 // 🟢 LOGIN
 export const loginUsuario = async (req, res) => {
   const { email, password } = req.body;
+  const emailLower = email.toLowerCase();
 
-  const usuario = await User.findOne({ email });
+  const usuario = await User.findOne({ email: emailLower });
 
   if (!usuario) {
     return res.status(400).json({ mensaje: "Usuario no encontrado" });
@@ -48,6 +52,7 @@ export const loginUsuario = async (req, res) => {
     nombre: usuario.nombre,
     email: usuario.email,
     plan: usuario.plan,
+    tipoUsuario: usuario.tipoUsuario,
     token: generarToken(usuario._id),
   });
 };
@@ -91,6 +96,7 @@ export const actualizarPerfil = async (req, res) => {
         nombre: usuario.nombre,
         email: usuario.email,
         plan: usuario.plan,
+        tipoUsuario: usuario.tipoUsuario,
       },
     });
 
@@ -104,7 +110,7 @@ export const actualizarPlan = async (req, res) => {
   try {
     const { plan } = req.body;
 
-    const planesValidos = ["gratis", "basico", "pro", "empresa"];
+    const planesValidos = ["gratis", "basico", "productor", "bronce", "plata", "oro", "pro", "élite pro", "empresa"];
     if (!planesValidos.includes(plan)) {
       return res.status(400).json({ mensaje: "Plan inválido" });
     }

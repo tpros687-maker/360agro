@@ -66,29 +66,29 @@ export default function BuscadorUniversal() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="BUSCAR LOTES, TIENDAS O SERVICIOS..."
-          className="w-full bg-white/5 border border-white/10 px-6 py-3 rounded-2xl text-[10px] font-black text-white uppercase tracking-widest outline-none focus:border-agro-teal/50 focus:bg-white/10 transition-all"
+          className="w-full bg-white/5 border border-white/10 px-6 py-4 rounded-2xl text-[10px] font-black text-white uppercase tracking-widest outline-none focus:border-agro-ocean/50 focus:bg-white/10 transition-all shadow-blue-accent"
         />
-        <span className="absolute right-5 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-agro-teal group-focus-within:opacity-100 transition-all text-xs">🔍</span>
+        <span className="absolute right-5 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-agro-sky group-focus-within:opacity-100 transition-all text-xs">🔍</span>
       </div>
 
       {show && (
-        <div className="absolute top-full left-0 w-full mt-4 bg-agro-midnight/95 backdrop-blur-2xl border border-white/10 rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-[100]">
-          
+        <div className="absolute top-full left-0 w-full mt-6 bg-agro-midnight/95 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_rgba(0,116,217,0.2)] z-[100] animate-in slide-in-from-top-4 duration-500">
+
           {loading ? (
-            <div className="p-8 text-center text-[9px] font-black text-agro-teal animate-pulse uppercase tracking-widest">Sincronizando Red 360...</div>
+            <div className="p-10 text-center text-[10px] font-black text-agro-sky animate-pulse uppercase tracking-[0.4em] italic shadow-blue-accent">Sincronizando Terminal 360...</div>
           ) : (
-            <div className="max-h-[450px] overflow-y-auto custom-scrollbar p-4">
-              
+            <div className="max-h-[500px] overflow-y-auto custom-scrollbar p-6">
+
               {/* SECCIÓN LOTES */}
               {resultados.lotes.length > 0 && (
-                <div className="mb-6">
-                  <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] mb-4 ml-4 font-black">Lotes Ganaderos</p>
+                <div className="mb-8">
+                  <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.5em] mb-5 ml-4 italic border-l-2 border-agro-ocean/30 pl-4">Activos en Remate</p>
                   {resultados.lotes.map(l => (
-                    <div key={l._id} onClick={() => handleSelect(`/lotes/${l._id}`)} className="flex items-center gap-4 p-3 hover:bg-white/5 rounded-2xl cursor-pointer transition-all group">
-                      <div className="w-10 h-10 bg-agro-teal/10 rounded-xl flex items-center justify-center group-hover:bg-agro-teal group-hover:text-agro-midnight transition-colors">🐂</div>
+                    <div key={l._id} onClick={() => handleSelect(`/lotes/${l._id}`)} className="flex items-center gap-5 p-4 hover:bg-agro-ocean/10 rounded-2xl cursor-pointer transition-all group">
+                      <div className="w-12 h-12 bg-agro-ocean/10 rounded-xl flex items-center justify-center group-hover:bg-agro-ocean group-hover:text-white transition-all shadow-blue-accent italic text-xl">🐂</div>
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-white uppercase tracking-tighter truncate">{l.titulo}</span>
-                        <span className="text-[8px] text-white/40 uppercase font-black">{l.raza} • {l.zona}</span>
+                        <span className="text-[11px] font-black text-white uppercase tracking-tighter truncate group-hover:text-agro-sky transition-colors">{l.titulo}</span>
+                        <span className="text-[9px] text-white/30 uppercase font-black tracking-widest">{l.raza} • {l.zona}</span>
                       </div>
                     </div>
                   ))}
@@ -97,14 +97,14 @@ export default function BuscadorUniversal() {
 
               {/* SECCIÓN TIENDAS (NEGOCIOS) */}
               {resultados.tiendas.length > 0 && (
-                <div className="mb-6">
-                  <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] mb-4 ml-4 font-black">Tiendas y Agroveterinarias</p>
+                <div className="mb-8">
+                  <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.5em] mb-5 ml-4 italic border-l-2 border-agro-ocean/30 pl-4">Nodos Comerciales</p>
                   {resultados.tiendas.map(t => (
-                    <div key={t._id} onClick={() => handleSelect(`/tienda/${t.slug}`)} className="flex items-center gap-4 p-3 hover:bg-white/5 rounded-2xl cursor-pointer transition-all group">
-                      <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-agro-teal group-hover:text-agro-midnight transition-colors">🏪</div>
+                    <div key={t._id} onClick={() => handleSelect(`/tienda/${t.slug}`)} className="flex items-center gap-5 p-4 hover:bg-agro-ocean/10 rounded-2xl cursor-pointer transition-all group">
+                      <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-agro-ocean group-hover:text-white transition-all shadow-blue-accent italic text-xl">🏪</div>
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-white uppercase tracking-tighter truncate">{t.nombre}</span>
-                        <span className="text-[8px] text-agro-teal uppercase font-black tracking-widest italic">{t.zona}</span>
+                        <span className="text-[11px] font-black text-white uppercase tracking-tighter truncate group-hover:text-agro-sky transition-colors">{t.nombre}</span>
+                        <span className="text-[9px] text-agro-sky uppercase font-black tracking-widest italic">{t.zona}</span>
                       </div>
                     </div>
                   ))}
@@ -114,13 +114,13 @@ export default function BuscadorUniversal() {
               {/* SECCIÓN SERVICIOS (CONTRATISTAS) */}
               {resultados.servicios.length > 0 && (
                 <div className="mb-2">
-                  <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] mb-4 ml-4 font-black">Servicios y Contratistas</p>
+                  <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.5em] mb-5 ml-4 italic border-l-2 border-agro-ocean/30 pl-4">Red de Contratistas</p>
                   {resultados.servicios.map(s => (
-                    <div key={s._id} onClick={() => handleSelect(`/servicio/${s._id}`)} className="flex items-center gap-4 p-3 hover:bg-white/5 rounded-2xl cursor-pointer transition-all group">
-                      <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-agro-teal group-hover:text-agro-midnight transition-colors">🚜</div>
+                    <div key={s._id} onClick={() => handleSelect(`/servicio/${s._id}`)} className="flex items-center gap-5 p-4 hover:bg-agro-ocean/10 rounded-2xl cursor-pointer transition-all group">
+                      <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-agro-ocean group-hover:text-white transition-all shadow-blue-accent italic text-xl">🚜</div>
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-white uppercase tracking-tighter truncate">{s.nombre}</span>
-                        <span className="text-[8px] text-white/40 uppercase font-black italic">{s.tipoServicio}</span>
+                        <span className="text-[11px] font-black text-white uppercase tracking-tighter truncate group-hover:text-agro-sky transition-colors">{s.nombre}</span>
+                        <span className="text-[9px] text-white/30 uppercase font-black italic tracking-widest">{s.tipoServicio}</span>
                       </div>
                     </div>
                   ))}
@@ -128,7 +128,7 @@ export default function BuscadorUniversal() {
               )}
 
               {Object.values(resultados).every(arr => arr.length === 0) && (
-                <div className="p-8 text-center text-[9px] font-black text-white/20 uppercase tracking-widest italic">No se hallaron resultados en la red</div>
+                <div className="p-12 text-center text-[10px] font-black text-white/10 uppercase tracking-[0.5em] italic">No se hallaron nodos activos en la red</div>
               )}
             </div>
           )}

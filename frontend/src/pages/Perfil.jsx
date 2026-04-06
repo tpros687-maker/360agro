@@ -25,7 +25,7 @@ export default function Perfil() {
         const { data: lotesData } = await API.get("/lots/mis-lotes");
         setLotes(lotesData);
 
-        const { data: mensajesData } = await API.get("/mensajes/recibidos");
+        const { data: mensajesData } = await API.get("/mensajes/bandeja");
         setMensajes(mensajesData);
       } catch (error) {
         console.error("❌ Error al cargar perfil:", error);

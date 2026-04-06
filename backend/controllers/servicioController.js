@@ -5,207 +5,178 @@ import fs from "fs";
 import path from "path";
 
 /**
- * 🔥 Límites de publicaciones por plan globales (Lotes + Servicios)
+ * 🔥 Límites de publicaciones por plan (Sincronizados)
  */
 const limitePorPlan = {
-  gratis: 5,
+  gratis: 0,
   basico: 5,
-  pro: 10,
+  productor: 5,
+  bronce: 5,
+  plata: 15,
+  pro: Infinity,
+  oro: Infinity,
+  "élite pro": Infinity,
   empresa: Infinity,
 };
 
 /* =======================================================
-    📌 OBTENER TODOS LOS SERVICIOS (Listado público con Buscador)
+    📌 OBTENER TODOS LOS SERVICIOS (CATÁLOGO GLOBAL)
+    Estrategia: Flattening de todos los proveedores
 ======================================================= */
 export const obtenerServicios = async (req, res) => {
   try {
     const { q, search } = req.query;
-    const queryTerm = q || search; // Soporta parámetros del Navbar y del Buscador local
+    const queryTerm = (q || search || "").trim();
 
-    const proveedores = await Proveedor.find();
-
-    // Blindaje con validación de existencia de 'servicios'
-    let servicios = proveedores.flatMap((p) => {
-      if (!p.servicios || !Array.isArray(p.servicios)) return [];
-      
-      return p.servicios.map((s) => ({
-        ...s.toObject(),
-        proveedorId: p._id,
-        proveedorNombre: p.nombre,
-        proveedorSlug: p.slug,
-        zona: p.zona,
-      }));
+    // Traemos todos los proveedores que tengan al menos un servicio registrado
+    const proveedores = await Proveedor.find({
+      servicios: { $exists: true, $not: { $size: 0 } }
     });
 
-    // 🔍 Lógica de filtrado para el Buscador Universal
+    // 🔥 FLATTENING: Extraemos y unificamos los servicios en un array plano
+    let todosLosServicios = [];
+
+    proveedores.forEach((p) => {
+      if (p.servicios && Array.isArray(p.servicios)) {
+        p.servicios.forEach((s) => {
+          const servicioData = s.toObject();
+          todosLosServicios.push({
+            ...servicioData,
+            proveedorId: p._id,
+            proveedorNombre: p.nombre,
+            proveedorSlug: p.slug,
+            proveedorEsVerificado: p.esVerificado,
+            proveedorRating: p.rating,
+            // Priorizamos la zona del servicio, sino la del proveedor
+            zona: servicioData.zona || p.zona || "Uruguay"
+          });
+        });
+      }
+    });
+
+    // Filtro por búsqueda si existe
     if (queryTerm) {
       const regex = new RegExp(queryTerm, "i");
-      servicios = servicios.filter(s => 
-        regex.test(s.nombre) || 
-        regex.test(s.tipoServicio) || 
+      todosLosServicios = todosLosServicios.filter(s =>
+        regex.test(s.nombre) ||
+        regex.test(s.tipoServicio) ||
         regex.test(s.descripcion) ||
         regex.test(s.zona)
       );
     }
 
-    res.status(200).json(servicios);
+    res.status(200).json(todosLosServicios);
   } catch (error) {
-    console.error("❌ ERROR obtenerServicios:", error);
     res.status(500).json({ mensaje: error.message });
   }
 };
 
 /* =======================================================
-    📌 OBTENER MIS SERVICIOS (Dashboard)
+    📌 OBTENER MIS SERVICIOS (PANEL DE CONTROL)
 ======================================================= */
 export const obtenerMiServicio = async (req, res) => {
   try {
+    if (!req.user || !req.user._id) return res.status(401).json({ mensaje: "No autorizado" });
+
+    // Intentamos buscar el proveedor sin lean por si acaso
     const proveedor = await Proveedor.findOne({ usuario: req.user._id });
 
-    if (!proveedor || !proveedor.servicios || proveedor.servicios.length === 0) {
-        return res.status(200).json([]);
+    if (!proveedor) {
+      return res.status(200).json([]);
     }
 
-    const servicios = proveedor.servicios.map(servicio => {
-      const s = servicio.toObject();
-      s.estadisticas = s.estadisticas || { visitas: 0, whatsapp: 0, telefono: 0, email: 0 };
-      s.fotos = s.fotos || [];
-      return s;
-    });
-
-    res.status(200).json(servicios);
+    res.status(200).json(proveedor.servicios || []);
   } catch (error) {
-    console.error("❌ ERROR obtenerMisServicios:", error);
-    res.status(500).json({ mensaje: error.message });
+    console.error("DEBUG - Fallo en obtenerMiServicio:", error);
+    res.status(200).json([]); // Devolvemos vacío para no romper el panel
   }
 };
 
 /* =======================================================
-    📌 OBTENER SERVICIO POR ID (Detalle con Contador)
+    📌 OBTENER SERVICIO POR ID (DETALLE)
 ======================================================= */
 export const obtenerServicio = async (req, res) => {
   try {
-    const proveedor = await Proveedor.findOne({
-      "servicios._id": req.params.id,
-    });
+    const { id } = req.params;
+    const proveedor = await Proveedor.findOne({ "servicios._id": id });
+    if (!proveedor) return res.status(404).json({ mensaje: "Servicio no encontrado" });
 
-    if (!proveedor)
-      return res.status(404).json({ mensaje: "Servicio no encontrado" });
+    const servicio = proveedor.servicios.id(id);
 
-    const servicio = proveedor.servicios.id(req.params.id);
-
-    // Incrementar visitas automáticamente al entrar al detalle
-    servicio.estadisticas = servicio.estadisticas || { visitas: 0, whatsapp: 0, telefono: 0, email: 0 };
-    servicio.estadisticas.visitas += 1;
-    
+    // Sumar visita silenciosa
+    servicio.estadisticas.visitas = (servicio.estadisticas.visitas || 0) + 1;
     await proveedor.save();
 
     res.status(200).json({
       ...servicio.toObject(),
       proveedorNombre: proveedor.nombre,
       proveedorSlug: proveedor.slug,
-      zona: proveedor.zona,
+      proveedorWhatsapp: proveedor.whatsapp,
+      proveedorTelefono: proveedor.telefono,
+      proveedorEsVerificado: proveedor.esVerificado,
+      proveedorRating: proveedor.rating,
+      zona: servicio.zona || proveedor.zona
     });
   } catch (error) {
-    console.error("❌ ERROR obtenerServicio:", error);
     res.status(500).json({ mensaje: error.message });
   }
 };
 
 /* =======================================================
-    📌 REGISTRAR CLICK (Métricas WhatsApp/Email/Tel)
-======================================================= */
-export const registrarClick = async (req, res) => {
-  try {
-    const proveedor = await Proveedor.findOne({
-      "servicios._id": req.params.id,
-    });
-
-    if (!proveedor)
-      return res.status(404).json({ mensaje: "Servicio no encontrado" });
-
-    const servicio = proveedor.servicios.id(req.params.id);
-    const { tipo } = req.params;
-
-    servicio.estadisticas = servicio.estadisticas || { visitas: 0, whatsapp: 0, telefono: 0, email: 0 };
-
-    if (servicio.estadisticas[tipo] === undefined)
-      return res.status(400).json({ mensaje: "Tipo de click inválido" });
-
-    servicio.estadisticas[tipo] += 1;
-    await proveedor.save();
-
-    res.status(200).json({ mensaje: "Métrica registrada" });
-  } catch (error) {
-    console.error("❌ ERROR registrarClick:", error);
-    res.status(500).json({ mensaje: error.message });
-  }
-};
-
-/* =======================================================
-    📌 CREAR SERVICIO (Con Validación de Planes)
+    📌 CREAR SERVICIO (PROTOCOL "MATRIOSHKA")
 ======================================================= */
 export const crearServicio = async (req, res) => {
   try {
+    const body = req.body;
     let proveedor = await Proveedor.findOne({ usuario: req.user._id });
 
+    // Si el usuario no tiene perfil de proveedor, lo creamos automáticamente
     if (!proveedor) {
       proveedor = await Proveedor.create({
         usuario: req.user._id,
-        nombre: req.user.nombre,
-        rubro: "servicio",
+        nombre: req.user.nombre || body.nombre,
+        rubro: "Servicios Profesionales",
         tipoProveedor: "servicio",
-        descripcion: "Perfil de servicios profesional",
-        zona: req.body.zona || "No especificado",
+        descripcion: body.descripcion || "Proveedor de servicios profesionales registrado en la red.",
+        zona: body.zona || "No especificada",
         email: req.user.email,
-        servicios: [],
+        servicios: []
       });
     }
 
+    // Validación de límites según plan
     const lotesActivos = await Lote.countDocuments({ usuario: req.user._id });
-    const serviciosActivos = proveedor.servicios ? proveedor.servicios.length : 0;
-    const publicacionesTotales = lotesActivos + serviciosActivos;
-    const limite = limitePorPlan[req.user.plan] || 5;
+    const serviciosActivos = proveedor.servicios?.length || 0;
+    const planUser = (req.user.plan || "gratis").toLowerCase();
+    const limite = limitePorPlan[planUser] || 0;
 
-    if (publicacionesTotales >= limite) {
+    if (lotesActivos + serviciosActivos >= limite) {
       return res.status(403).json({
-        mensaje: `Tu plan (${req.user.plan}) permite máximo ${limite} publicaciones. Tienes ${publicacionesTotales}.`,
+        mensaje: `Límite de publicaciones para el plan ${planUser.toUpperCase()} alcanzado. Actualiza tu plan para seguir publicando.`
       });
     }
 
-    if (req.user.plan === "gratis" || req.user.plan === "basico") {
-      return res.status(403).json({
-        mensaje: "Tu plan no permite registro de Servicios Profesionales. Mejora tu membresía."
-      });
-    }
+    // Procesar fotos enviadas por Multer (upload.any())
+    const fotos = req.files?.map(f => `/uploads/servicios/${f.filename}`) || [];
 
-    if (req.user.plan !== "empresa" && serviciosActivos >= 1) {
-      return res.status(400).json({
-        mensaje: "Para registrar múltiples servicios necesitas el Plan Empresa."
-      });
-    }
+    const nuevoServicio = {
+      nombre: body.nombre,
+      tipoServicio: body.tipoServicio,
+      descripcion: body.descripcion,
+      telefono: body.telefono,
+      whatsapp: body.whatsapp,
+      email: body.email,
+      zona: body.zona,
+      fotos: fotos,
+      estadisticas: { visitas: 0, whatsapp: 0, telefono: 0, email: 0 }
+    };
 
-    proveedor.servicios.push({
-      nombre: req.body.nombre,
-      tipoServicio: req.body.tipoServicio,
-      descripcion: req.body.descripcion,
-      telefono: req.body.telefono || "",
-      whatsapp: req.body.whatsapp || "",
-      email: req.body.email || "",
-      website: req.body.website || "",
-      fotos: [],
-      estadisticas: { visitas: 0, whatsapp: 0, telefono: 0, email: 0 },
-    });
-
-    if (proveedor.tipoProveedor === "tienda") {
-      proveedor.tipoProveedor = "servicio"; 
-    }
-
+    proveedor.servicios.push(nuevoServicio);
     await proveedor.save();
-    res.status(201).json(proveedor.servicios[proveedor.servicios.length - 1]);
 
+    // Devolver el último servicio creado
+    res.status(201).json(proveedor.servicios[proveedor.servicios.length - 1]);
   } catch (error) {
-    console.error("❌ Error crear servicio:", error);
     res.status(500).json({ mensaje: error.message });
   }
 };
@@ -216,20 +187,30 @@ export const crearServicio = async (req, res) => {
 export const editarServicio = async (req, res) => {
   try {
     const proveedor = await Proveedor.findOne({ usuario: req.user._id });
-    if (!proveedor) return res.status(404).json({ mensaje: "No tienes perfil de proveedor." });
+    if (!proveedor) return res.status(404).json({ mensaje: "Perfil de proveedor no encontrado" });
 
     const servicio = proveedor.servicios.id(req.params.id);
-    if (!servicio) return res.status(404).json({ mensaje: "Servicio no encontrado." });
+    if (!servicio) return res.status(404).json({ mensaje: "Servicio no encontrado" });
 
-    const campos = ["nombre", "tipoServicio", "descripcion", "telefono", "whatsapp", "email", "website", "zona"];
-    campos.forEach((campo) => {
-      if (req.body[campo] !== undefined) servicio[campo] = req.body[campo];
-    });
+    // Actualizamos campos de texto
+    const { nombre, tipoServicio, descripcion, zona, telefono, whatsapp, email } = req.body;
+    if (nombre) servicio.nombre = nombre;
+    if (tipoServicio) servicio.tipoServicio = tipoServicio;
+    if (descripcion) servicio.descripcion = descripcion;
+    if (zona) servicio.zona = zona;
+    if (telefono) servicio.telefono = telefono;
+    if (whatsapp) servicio.whatsapp = whatsapp;
+    if (email) servicio.email = email;
+
+    // Agregar nuevas fotos si existen
+    if (req.files && req.files.length > 0) {
+      const nuevasFotos = req.files.map(f => `/uploads/servicios/${f.filename}`);
+      servicio.fotos = [...servicio.fotos, ...nuevasFotos];
+    }
 
     await proveedor.save();
     res.status(200).json(servicio);
   } catch (error) {
-    console.error("❌ ERROR editarServicio:", error);
     res.status(500).json({ mensaje: error.message });
   }
 };
@@ -240,46 +221,71 @@ export const editarServicio = async (req, res) => {
 export const eliminarServicio = async (req, res) => {
   try {
     const proveedor = await Proveedor.findOne({ usuario: req.user._id });
-    if (!proveedor) return res.status(404).json({ mensaje: "Perfil no encontrado." });
+    if (!proveedor) return res.status(404).json({ mensaje: "No autorizado" });
 
     const servicio = proveedor.servicios.id(req.params.id);
-    if (!servicio) return res.status(404).json({ mensaje: "Servicio no encontrado." });
+    if (!servicio) return res.status(404).json({ mensaje: "No encontrado" });
 
-    // Borrado de archivos físicos
-    servicio.fotos?.forEach((foto) => {
-      const relative = foto.replace("/uploads/", "");
-      const local = path.join("uploads", relative);
-      if (fs.existsSync(local)) fs.unlinkSync(local);
+    // Borrado físico de fotos
+    servicio.fotos?.forEach(foto => {
+      const fileName = path.basename(foto);
+      const ruta = path.join(process.cwd(), "uploads", "servicios", fileName);
+      if (fs.existsSync(ruta)) {
+        try { fs.unlinkSync(ruta); } catch (e) { console.error("Error al borrar foto:", e); }
+      }
     });
 
-    servicio.deleteOne();
+    proveedor.servicios.pull(req.params.id);
     await proveedor.save();
 
-    res.status(200).json({ mensaje: "Servicio eliminado correctamente" });
+    res.status(200).json({ mensaje: "Servicio eliminado exitosamente" });
   } catch (error) {
-    console.error("❌ ERROR eliminarServicio:", error);
     res.status(500).json({ mensaje: error.message });
   }
 };
 
 /* =======================================================
-    📌 SUBIR FOTOS
+    📌 REGISTRAR MÉTRICAS DINÁMICAS (PUT)
+======================================================= */
+export const registrarClick = async (req, res) => {
+  try {
+    const { id, tipo } = req.params; // tipo: 'whatsapp', 'telefono', 'email'
+    const proveedor = await Proveedor.findOne({ "servicios._id": id });
+    if (!proveedor) return res.status(404).json({ mensaje: "Servicio no rastreable" });
+
+    const servicio = proveedor.servicios.id(id);
+    if (servicio && servicio.estadisticas[tipo] !== undefined) {
+      servicio.estadisticas[tipo] += 1;
+      await proveedor.save();
+      return res.status(200).json({ mensaje: `Métrica ${tipo} actualizada` });
+    }
+
+    res.status(400).json({ mensaje: "Tipo de métrica inválido" });
+  } catch (error) {
+    res.status(500).json({ mensaje: error.message });
+  }
+};
+
+/* =======================================================
+    📌 CARGA EXTRA DE FOTOS (Mantenimiento)
 ======================================================= */
 export const subirFotosServicio = async (req, res) => {
   try {
-    const proveedor = await Proveedor.findOne({ usuario: req.user._id });
-    if (!proveedor) return res.status(404).json({ mensaje: "Perfil no encontrado." });
+    const id = req.params.id || req.body.servicioId;
 
-    const servicio = proveedor.servicios.id(req.body.servicioId);
-    if (!servicio) return res.status(404).json({ mensaje: "Servicio inexistente." });
+    // Buscamos el proveedor que contiene este servicio
+    const proveedor = await Proveedor.findOne({ "servicios._id": id });
+    if (!proveedor) return res.status(404).json({ mensaje: "Servicio no localizado en el sistema" });
 
-    const nuevas = req.files.map(file => `/uploads/servicios/${file.filename}`);
-    servicio.fotos.push(...nuevas);
+    const servicio = proveedor.servicios.id(id);
+    if (!servicio) return res.status(404).json({ mensaje: "Error al indexar el servicio dentro del proveedor" });
+
+    const nuevasFotos = req.files?.map(f => `/uploads/servicios/${f.filename}`) || [];
+    servicio.fotos.push(...nuevasFotos);
+
     await proveedor.save();
-
-    res.status(200).json({ mensaje: "Fotos subidas", fotos: servicio.fotos });
+    res.status(200).json({ mensaje: "Galería actualizada", fotos: servicio.fotos });
   } catch (error) {
-    console.error("❌ ERROR subirFotosServicio:", error);
     res.status(500).json({ mensaje: error.message });
   }
 };

@@ -26,7 +26,10 @@ export default function CrearTienda() {
   const verificarTienda = async () => {
     try {
       const res = await tiendaApi.obtenerMiTienda();
-      if (res.data) setYaExiste(true);
+      // 🛡️ FIX: Solo marcar como existente si el backend NO devuelve noExiste:true
+      if (res.data && !res.data.noExiste) {
+        setYaExiste(true);
+      }
     } catch (_) { }
   };
 
@@ -55,13 +58,14 @@ export default function CrearTienda() {
     try {
       // ✅ UNIFICACIÓN EN FORMDATA: Clave para evitar errores de red
       const fd = new FormData();
-      
+
       // Inyectar campos de texto
       Object.keys(form).forEach(key => fd.append(key, form[key]));
-      
+      fd.append("tipoProveedor", "tienda"); // 🔥 Asegurar que sea una tienda
+
       // Inyectar Logo
       if (logo) fd.append("logo", logo);
-      
+
       // Inyectar Galería
       if (fotos.length > 0) {
         fotos.forEach((f) => fd.append("fotos", f));
@@ -86,7 +90,7 @@ export default function CrearTienda() {
       <div className="bg-agro-midnight min-h-screen flex items-center justify-center px-6">
         <div className="card-midnight p-12 bg-agro-charcoal/40 text-center max-w-xl border border-white/5 rounded-[3.5rem] shadow-2xl animate-reveal">
           <div className="text-6xl mb-8">🏢</div>
-          <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-6 leading-none">Terminal <br/><span className="text-agro-teal">Ya Activa</span></h2>
+          <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-6 leading-none">Terminal <br /><span className="text-agro-teal">Ya Activa</span></h2>
           <p className="text-agro-cream/40 text-[10px] font-black uppercase tracking-[0.3em] mb-10 italic leading-relaxed">
             "Su identidad corporativa ya se encuentra indexada. Proceda a la gestión de inventario desde su panel de operaciones."
           </p>
@@ -107,7 +111,7 @@ export default function CrearTienda() {
         <header className="mb-16">
           <span className="text-agro-teal font-black text-[10px] uppercase tracking-[0.5em] mb-4 block italic">Fundación de Marca Corporativa</span>
           <h1 className="text-5xl md:text-7xl font-black text-white italic tracking-tighter leading-none uppercase">
-            INICIAR <span className="text-agro-teal not-italic font-black">SHOWROOM</span>
+            INICIAR <span className="text-agro-teal not-italic font-black">TIENDA</span>
           </h1>
         </header>
 
@@ -194,7 +198,7 @@ export default function CrearTienda() {
               </div>
 
               <div className="space-y-6">
-                <label className="text-[9px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Galería de Showroom</label>
+                <label className="text-[9px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Galería de Tienda</label>
                 <label className="block w-full h-40 border-2 border-dashed border-white/10 rounded-[2rem] hover:border-agro-teal/30 transition-all cursor-pointer relative bg-agro-midnight/50 group">
                   <input type="file" accept="image/*" multiple onChange={handleFotos} className="hidden" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -208,7 +212,7 @@ export default function CrearTienda() {
 
           <footer className="pt-8 text-center">
             <button type="submit" disabled={loading} className="btn-emerald w-full py-6 text-sm shadow-teal-glow-lg transition-all active:scale-95">
-              {loading ? "INICIALIZANDO TERMINAL..." : "🏢 FUNDAR SHOWROOM EN LA RED"}
+              {loading ? "INICIALIZANDO TERMINAL..." : "🏢 FUNDAR TIENDA EN LA RED"}
             </button>
           </footer>
         </form>

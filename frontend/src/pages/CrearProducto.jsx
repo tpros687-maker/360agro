@@ -48,9 +48,9 @@ export default function CrearProducto() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ 
-      ...form, 
-      [name]: (name === "stock" || name === "precio") ? Number(value) : value 
+    setForm({
+      ...form,
+      [name]: (name === "stock" || name === "precio") ? Number(value) : value
     });
   };
 
@@ -69,9 +69,9 @@ export default function CrearProducto() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!tienda) return toast.error("Debe configurar su tienda primero.");
-    
+
     setEnviando(true);
-    const tId = toast.loading("Sincronizando inventario con la red...");
+    const tId = toast.loading("Sincronizando on la red...");
 
     try {
       // 1. Crear el registro base
@@ -95,8 +95,8 @@ export default function CrearProducto() {
 
   if (loading) return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-agro-midnight">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-agro-teal mb-4 shadow-teal-glow"></div>
-        <p className="text-agro-teal font-black uppercase tracking-widest text-[10px]">Verificando Credenciales...</p>
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-agro-teal mb-4 shadow-teal-glow"></div>
+      <p className="text-agro-teal font-black uppercase tracking-widest text-[10px]">Verificando Credenciales...</p>
     </div>
   );
 
@@ -119,10 +119,10 @@ export default function CrearProducto() {
     <div className="bg-agro-midnight min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
       <div className="container mx-auto max-w-4xl relative z-10">
         <header className="mb-16">
-            <span className="text-agro-teal font-black text-[10px] uppercase tracking-[0.5em] mb-4 block italic">Carga de Insumos</span>
-            <h1 className="text-5xl md:text-6xl font-black text-white italic tracking-tighter leading-none">
-                NUEVO <span className="text-agro-teal not-italic font-black">PRODUCTO</span>
-            </h1>
+          <span className="text-agro-teal font-black text-[10px] uppercase tracking-[0.5em] mb-4 block italic">Carga de Insumos</span>
+          <h1 className="text-5xl md:text-6xl font-black text-white italic tracking-tighter leading-none">
+            NUEVO <span className="text-agro-teal not-italic font-black">PRODUCTO</span>
+          </h1>
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-12">
@@ -163,24 +163,24 @@ export default function CrearProducto() {
             </div>
 
             <div className="flex flex-col gap-3">
-                <label className="text-[10px] text-white/20 font-black uppercase tracking-widest ml-1">Especificaciones Técnicas</label>
-                <textarea name="descripcion" placeholder="Describa la marca, principios activos y recomendaciones de uso..." className="w-full bg-agro-midnight p-8 rounded-3xl text-white border border-white/5 h-48 resize-none outline-none focus:border-agro-teal/30 transition-all font-medium leading-relaxed shadow-inner" required onChange={handleChange}></textarea>
+              <label className="text-[10px] text-white/20 font-black uppercase tracking-widest ml-1">Especificaciones Técnicas</label>
+              <textarea name="descripcion" placeholder="Describa la marca, principios activos y recomendaciones de uso..." className="w-full bg-agro-midnight p-8 rounded-3xl text-white border border-white/5 h-48 resize-none outline-none focus:border-agro-teal/30 transition-all font-medium leading-relaxed shadow-inner" required onChange={handleChange}></textarea>
             </div>
           </section>
 
           {/* SECCIÓN IMÁGENES */}
           <section className="p-10 bg-agro-charcoal/30 rounded-[3rem] border border-white/5 shadow-2xl">
             <header className="flex justify-between items-center mb-10">
-                <h2 className="text-agro-teal font-black uppercase text-[10px] tracking-[0.3em] italic">Galería de Imágenes</h2>
-                <span className="text-white/10 text-[9px] font-black uppercase tracking-[0.4em]">{fotos.length} / 5</span>
+              <h2 className="text-agro-teal font-black uppercase text-[10px] tracking-[0.3em] italic">Galería de Imágenes</h2>
+              <span className="text-white/10 text-[9px] font-black uppercase tracking-[0.4em]">{fotos.length} / 5</span>
             </header>
-            
+
             <div className="flex items-center justify-center w-full mb-10">
-                <label className="w-full flex flex-col items-center px-4 py-10 bg-agro-midnight text-agro-teal rounded-[2rem] border-2 border-dashed border-white/5 cursor-pointer hover:border-agro-teal/20 transition-all group">
-                    <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">📸</span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em]">Cargar Fotografías</span>
-                    <input type="file" multiple accept="image/*" onChange={handleFotos} className="hidden" />
-                </label>
+              <label className="w-full flex flex-col items-center px-4 py-10 bg-agro-midnight text-agro-teal rounded-[2rem] border-2 border-dashed border-white/5 cursor-pointer hover:border-agro-teal/20 transition-all group">
+                <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">📸</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Cargar Fotografías</span>
+                <input type="file" multiple accept="image/*" onChange={handleFotos} className="hidden" />
+              </label>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
@@ -193,8 +193,12 @@ export default function CrearProducto() {
             </div>
           </section>
 
-          <button type="submit" disabled={enviando} className="w-full bg-agro-teal py-8 rounded-[2rem] font-black text-agro-midnight hover:shadow-teal-glow transition-all uppercase tracking-[0.5em] text-[10px]">
-            {enviando ? "Indexando en la Red..." : "📤 PUBLICAR EN MI TIENDA ➔"}
+          <button
+            type="submit"
+            disabled={enviando}
+            className="w-full btn-emerald py-10 shadow-[0_0_50px_rgba(16,185,129,0.4)] text-sm"
+          >
+            {enviando ? "INDEXANDO EN LA RED..." : "📤 CARGAR PRODUCTO ➔"}
           </button>
         </form>
       </div>

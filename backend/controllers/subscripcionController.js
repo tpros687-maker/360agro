@@ -1,73 +1,62 @@
+import Subscripcion from "../models/subscripcionModel.js";
 import User from "../models/userModel.js";
-import Plan from "../models/planModel.js";
 
-/**
- * Obtener todos los planes disponibles
- */
-export const obtenerPlanes = async (req, res) => {
+// Obtener la solicitud actual del usuario logueado
+export const obtenerMiSolicitud = async (req, res) => {
   try {
-    const planes = await Plan.find();
-    res.status(200).json(planes);
+    const solicitud = await Subscripcion.findOne({ usuario: req.user._id, status: "Pendiente" });
+    res.json(solicitud);
   } catch (error) {
-    console.error("❌ Error al obtener planes:", error);
-    res.status(500).json({ mensaje: "Error al obtener los planes" });
+    res.status(500).json({ mensaje: "Error al obtener solicitud", error: error.message });
   }
 };
 
-/**
- * Asignar o cambiar plan del usuario autenticado
- */
-export const cambiarPlan = async (req, res) => {
+// Crear una solicitud de subscripción
+export const crearSolicitud = async (req, res) => {
   try {
-    const { planId } = req.body;
+    const { planSolicitado } = req.body;
+    const usuarioId = req.user._id;
 
-    // Validar que se haya enviado un ID de plan
-    if (!planId) {
-      return res.status(400).json({ mensaje: "Debe indicar el ID del plan" });
+    // Verificar si ya tiene una solicitud pendiente
+    const existente = await Subscripcion.findOne({ usuario: usuarioId, status: "Pendiente" });
+    if (existente) {
+      return res.status(400).json({ mensaje: "Ya tienes una solicitud de activación en proceso." });
     }
 
-    // Buscar el plan en la base de datos
-    const plan = await Plan.findById(planId);
-    if (!plan) {
-      return res.status(404).json({ mensaje: "Plan no encontrado" });
-    }
-
-    // Actualizar el usuario con el nuevo plan
-    const usuario = await User.findById(req.user._id);
-    if (!usuario) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado" });
-    }
-
-    usuario.plan = plan.nombre;
-    await usuario.save();
-
-    res.status(200).json({
-      mensaje: `Plan actualizado correctamente a: ${plan.nombre}`,
-      plan: plan.nombre,
+    const nuevaSolicitud = await Subscripcion.create({
+      usuario: usuarioId,
+      planSolicitado,
     });
+
+    res.status(201).json(nuevaSolicitud);
   } catch (error) {
-    console.error("❌ Error al cambiar plan:", error);
-    res.status(500).json({ mensaje: "Error al cambiar plan" });
+    res.status(500).json({ mensaje: "Error al crear la solicitud", error: error.message });
   }
 };
 
-/**
- * Consultar plan actual del usuario
- */
-export const obtenerMiPlan = async (req, res) => {
+// Aprobar subscripción (Solo Admin - por ahora simulado con una check simple)
+export const aprobarSubscripcion = async (req, res) => {
   try {
-    const usuario = await User.findById(req.user._id).select("nombre email plan");
-    if (!usuario) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    const { id } = req.params;
+    const solicitud = await Subscripcion.findById(id);
+
+    if (!solicitud) return res.status(404).json({ mensaje: "Solicitud no encontrada" });
+    if (solicitud.status !== "Pendiente") return res.status(400).json({ mensaje: "Esta solicitud ya fue procesada" });
+
+    // Actualizar status de la solicitud
+    solicitud.status = "Aprobado";
+    solicitud.fechaAprobacion = Date.now();
+    await solicitud.save();
+
+    // Actualizar plan del usuario
+    const usuario = await User.findById(solicitud.usuario);
+    if (usuario) {
+      usuario.plan = solicitud.planSolicitado;
+      await usuario.save();
     }
 
-    res.status(200).json({
-      nombre: usuario.nombre,
-      email: usuario.email,
-      planActual: usuario.plan,
-    });
+    res.json({ mensaje: "Subscripción aprobada con éxito", plan: solicitud.planSolicitado });
   } catch (error) {
-    console.error("❌ Error al obtener plan:", error);
-    res.status(500).json({ mensaje: "Error al obtener plan del usuario" });
+    res.status(500).json({ mensaje: "Error al aprobar la subscripción", error: error.message });
   }
 };

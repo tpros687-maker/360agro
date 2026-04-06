@@ -1,16 +1,11 @@
 import express from "express";
-import {
-  obtenerPlanes,
-  cambiarPlan,
-  obtenerMiPlan
-} from "../controllers/subscripcionController.js";
+import { crearSolicitud, aprobarSubscripcion, obtenerMiSolicitud } from "../controllers/subscripcionController.js";
 import proteger from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// 🔹 Rutas disponibles
-router.get("/planes", obtenerPlanes);
-router.get("/mi-plan", proteger, obtenerMiPlan);
-router.post("/cambiar", proteger, cambiarPlan);
+router.get("/mi-solicitud", proteger, obtenerMiSolicitud);
+router.post("/solicitar", proteger, crearSolicitud);
+router.patch("/:id/aprobar", proteger, aprobarSubscripcion); // En prod añadir middleware de admin
 
-export default router; // 👈 ESTA LÍNEA ES LA CLAVE
+export default router;
