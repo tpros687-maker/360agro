@@ -98,8 +98,8 @@ const proveedorSchema = new mongoose.Schema(
 
     plan: {
       type: String,
-      enum: ["gratis", "basico", "pro", "empresa"],
-      default: "gratis"
+      enum: ["observador", "productor", "pro", "empresa"],
+      default: "observador"
     },
     destacado: { type: Boolean, default: false },
     esVerificado: { type: Boolean, default: false },

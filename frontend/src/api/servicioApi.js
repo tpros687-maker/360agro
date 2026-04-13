@@ -1,4 +1,4 @@
-import api from "./userApi";
+import api from "./axiosConfig";
 
 const servicioApi = {
 

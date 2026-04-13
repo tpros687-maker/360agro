@@ -66,7 +66,7 @@ export default function ModalPago({ isOpen, onClose, plan, onSuccess }) {
                         onClick={handleWhatsApp}
                         className="py-5 rounded-2xl bg-agro-teal text-agro-midnight font-black text-[10px] uppercase tracking-widest shadow-teal-glow hover:shadow-teal-glow-lg transition-all"
                     >
-                        WHATSAPP ➔
+                        WHATSAPP <span className="material-symbols-outlined text-sm">arrow_forward</span>
                     </button>
                 </div>
             </div>

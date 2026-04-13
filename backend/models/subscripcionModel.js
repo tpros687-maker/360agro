@@ -9,7 +9,7 @@ const subscripcionSchema = new mongoose.Schema(
         },
         planSolicitado: {
             type: String,
-            enum: ["basico", "pro", "empresa"],
+            enum: ["productor", "pro", "empresa"],
             required: true,
         },
         status: {

@@ -4,7 +4,11 @@ import {
   loginUsuario,
   obtenerPerfil,
   actualizarPerfil,
-  actualizarPlan
+  actualizarPlan,
+  verificarEmail,
+  cambiarPassword,
+  solicitarResetPassword,
+  resetPassword
 } from "../controllers/userController.js";
 import proteger from "../middleware/authMiddleware.js";
 
@@ -22,5 +26,15 @@ router.put("/perfil", proteger, actualizarPerfil);
 
 // Actualizar plan del usuario
 router.put("/plan", proteger, actualizarPlan);
+
+// Verificar email con código
+router.post("/verificar-email", proteger, verificarEmail);
+
+// Cambiar contraseña
+router.put("/cambiar-password", proteger, cambiarPassword);
+
+// Reset de contraseña (sin autenticación)
+router.post("/solicitar-reset", solicitarResetPassword);
+router.post("/reset-password", resetPassword);
 
 export default router;

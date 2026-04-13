@@ -30,7 +30,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 // === límite ===
-const limits = { fileSize: 15 * 1024 * 1024 }; // 15MB para videos
+const limits = { fileSize: 50 * 1024 * 1024 }; // 50MB para videos
 
 // === EXPORT CORRECTO ===
 export const uploadLote = multer({

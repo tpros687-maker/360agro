@@ -32,6 +32,8 @@ export function AuthProvider({ children }) {
         email: data.email,
         plan: data.plan?.toLowerCase() || "gratis",
         tipoUsuario: data.tipoUsuario,
+        foto: data.foto || null,
+        telefono: data.telefono || null,
       };
 
       setUsuario(userFull);
@@ -62,6 +64,9 @@ export function AuthProvider({ children }) {
         email: data.email,
         plan: data.plan?.toLowerCase() || "gratis",
         tipoUsuario: data.tipoUsuario,
+        foto: data.foto || null,
+        telefono: data.telefono || null,
+        emailVerificado: data.emailVerificado || false,
       };
 
       setUsuario(userFull);
@@ -71,6 +76,26 @@ export function AuthProvider({ children }) {
     } catch (error) {
       logout();
       throw error;
+    }
+  };
+
+  // ✔ Refrescar usuario desde el backend (útil tras un pago)
+  const refrescarUsuario = async () => {
+    try {
+      const { data } = await api.get("/users/perfil");
+      const userFull = {
+        _id: data._id,
+        nombre: data.nombre,
+        email: data.email,
+        plan: data.plan?.toLowerCase() || "gratis",
+        tipoUsuario: data.tipoUsuario,
+        foto: data.foto || null,
+        telefono: data.telefono || null,
+      };
+      setUsuario(userFull);
+      localStorage.setItem("user", JSON.stringify(userFull));
+    } catch (error) {
+      console.error("Error al refrescar usuario:", error.message);
     }
   };
 
@@ -88,6 +113,7 @@ export function AuthProvider({ children }) {
         loadingAuth,
         login,
         logout,
+        refrescarUsuario,
         actualizarUsuario: setUsuario, // Útil para actualizar el plan tras un pago
       }}
     >

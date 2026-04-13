@@ -58,9 +58,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto pt-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-4">
         <p className="text-[0.65rem] text-outline tracking-widest uppercase italic">© 2026 AGRO-NOIR. TODOS LOS DERECHOS RESERVADOS.</p>
         <div className="flex gap-8 text-[0.65rem] text-outline tracking-widest uppercase italic">
-          <Link className="hover:text-on-surface" to="/">Política de Privacidad</Link>
-          <Link className="hover:text-on-surface" to="/">Cookies</Link>
-          <Link className="hover:text-on-surface" to="/">Legal</Link>
+          <Link className="hover:text-on-surface" to="/terminos">Términos y Condiciones</Link>
+          <Link className="hover:text-on-surface" to="/privacidad">Política de Privacidad</Link>
         </div>
       </div>
     </footer>

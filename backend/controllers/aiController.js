@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const consultarIA = async (req, res) => {
+    console.log("GEMINI_API_KEY present:", !!process.env.GEMINI_API_KEY);
     try {
         const { mensaje, contexto, historial } = req.body;
 
@@ -32,22 +33,19 @@ export const consultarIA = async (req, res) => {
 
         // --- CONFIGURACIÓN DE MODELO ---
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
-            // Algunas versiones del SDK prefieren este formato para instrucciones de sistema
-            systemInstruction: {
-                role: "system",
-                parts: [{ text: systemInstruction }]
-            }
+            model: "gemini-1.5-flash-latest",
         });
 
         // Preparar y limpiar historial para Gemini (Debe empezar con 'user' y alternar)
-        let historyCleaned = [];
-        let lastRole = null;
+        let historyCleaned = [
+            { role: "user", parts: [{ text: systemInstruction }] },
+            { role: "model", parts: [{ text: "Entendido." }] },
+        ];
+        let lastRole = "model";
 
         if (historial && Array.isArray(historial) && historial.length > 0) {
             historial.forEach(h => {
                 const currentRole = h.role === 'ia' ? 'model' : 'user';
-                if (historyCleaned.length === 0 && currentRole !== 'user') return;
                 if (currentRole !== lastRole) {
                     historyCleaned.push({
                         role: currentRole,

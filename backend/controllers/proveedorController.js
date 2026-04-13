@@ -103,7 +103,7 @@ export const crearProveedor = async (req, res) => {
     const usuario = req.user; // Obtenido por el middleware 'proteger'
 
     // 🛡️ VALIDACIÓN DE PLAN: Solo planes pagados pueden fundar showroom
-    const planesPermitidos = ["basico", "pro", "empresa", "élite pro"];
+    const planesPermitidos = ["productor", "pro", "empresa"];
     if (!planesPermitidos.includes(usuario.plan?.toLowerCase())) {
       return res.status(403).json({
         mensaje: "Tu plan actual no permite la creación de un Showroom Corporativo. Por favor, actualiza tu suscripción."

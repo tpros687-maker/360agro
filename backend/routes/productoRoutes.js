@@ -31,8 +31,6 @@ router.get("/buscar/global", buscarProductosGlobal);
  * Uso: GET /api/productos/tienda/:slug
  */
 router.get("/tienda/:slug", obtenerProductosPorTienda);
-router.get("/:id", obtenerProductoPorId);
-
 
 // =======================================================
 // 🔐 RUTAS PRIVADAS (Requieren Token de Proveedor)
@@ -42,6 +40,8 @@ router.get("/:id", obtenerProductoPorId);
  * 📋 Listado de mis productos (Dashboard)
  */
 router.get("/mios", proteger, obtenerProductosProveedor);
+
+router.get("/:id", obtenerProductoPorId);
 
 /**
  * ➕ Crear nuevo producto

@@ -8,14 +8,9 @@ import path from "path";
  * 🔥 Límites de publicaciones por plan (Sincronizados)
  */
 const limitePorPlan = {
-  gratis: 0,
-  basico: 5,
-  productor: 5,
-  bronce: 5,
-  plata: 15,
+  observador: 0,
+  productor: 3,
   pro: Infinity,
-  oro: Infinity,
-  "élite pro": Infinity,
   empresa: Infinity,
 };
 
@@ -98,7 +93,8 @@ export const obtenerMiServicio = async (req, res) => {
 export const obtenerServicio = async (req, res) => {
   try {
     const { id } = req.params;
-    const proveedor = await Proveedor.findOne({ "servicios._id": id });
+    const proveedor = await Proveedor.findOne({ "servicios._id": id })
+      .populate("usuario", "_id nombre");
     if (!proveedor) return res.status(404).json({ mensaje: "Servicio no encontrado" });
 
     const servicio = proveedor.servicios.id(id);
@@ -115,7 +111,9 @@ export const obtenerServicio = async (req, res) => {
       proveedorTelefono: proveedor.telefono,
       proveedorEsVerificado: proveedor.esVerificado,
       proveedorRating: proveedor.rating,
-      zona: servicio.zona || proveedor.zona
+      zona: servicio.zona || proveedor.zona,
+      proveedorUsuarioId: proveedor.usuario._id,
+      proveedorUsuarioNombre: proveedor.usuario.nombre
     });
   } catch (error) {
     res.status(500).json({ mensaje: error.message });
@@ -130,15 +128,15 @@ export const crearServicio = async (req, res) => {
     const body = req.body;
     let proveedor = await Proveedor.findOne({ usuario: req.user._id });
 
-    // Si el usuario no tiene perfil de proveedor, lo creamos automáticamente
+    // Si el usuario no tiene perfil de proveedor, lo creamos con datos mínimos
     if (!proveedor) {
       proveedor = await Proveedor.create({
         usuario: req.user._id,
-        nombre: req.user.nombre || body.nombre,
-        rubro: "Servicios Profesionales",
+        nombre: body.nombre,
+        rubro: body.tipoServicio || "Servicios Profesionales",
         tipoProveedor: "servicio",
-        descripcion: body.descripcion || "Proveedor de servicios profesionales registrado en la red.",
-        zona: body.zona || "No especificada",
+        descripcion: body.descripcion || "Proveedor de servicios",
+        zona: body.zona || "Uruguay",
         email: req.user.email,
         servicios: []
       });
@@ -147,7 +145,7 @@ export const crearServicio = async (req, res) => {
     // Validación de límites según plan
     const lotesActivos = await Lote.countDocuments({ usuario: req.user._id });
     const serviciosActivos = proveedor.servicios?.length || 0;
-    const planUser = (req.user.plan || "gratis").toLowerCase();
+    const planUser = (req.user.plan || "observador").toLowerCase();
     const limite = limitePorPlan[planUser] || 0;
 
     if (lotesActivos + serviciosActivos >= limite) {
@@ -171,11 +169,14 @@ export const crearServicio = async (req, res) => {
       estadisticas: { visitas: 0, whatsapp: 0, telefono: 0, email: 0 }
     };
 
-    proveedor.servicios.push(nuevoServicio);
-    await proveedor.save();
+    const proveedorActualizado = await Proveedor.findByIdAndUpdate(
+      proveedor._id,
+      { $push: { servicios: nuevoServicio } },
+      { new: true, runValidators: true }
+    );
 
     // Devolver el último servicio creado
-    res.status(201).json(proveedor.servicios[proveedor.servicios.length - 1]);
+    res.status(201).json(proveedorActualizado.servicios[proveedorActualizado.servicios.length - 1]);
   } catch (error) {
     res.status(500).json({ mensaje: error.message });
   }

@@ -13,7 +13,7 @@ export default function ModalConfirmar({ abierto, alCerrar, alConfirmar, titulo,
         <div className="bg-agro-charcoal border border-white/10 w-full max-w-md p-10 rounded-[3.5rem] shadow-teal-glow-lg relative z-10 animate-reveal">
           <div className="text-center">
             <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-8 shadow-inner">
-              ⚠️
+              <span className="material-symbols-outlined text-sm">warning</span>
             </div>
             
             <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase mb-4 leading-tight">
@@ -29,7 +29,7 @@ export default function ModalConfirmar({ abierto, alCerrar, alConfirmar, titulo,
                 onClick={alConfirmar}
                 className="w-full bg-red-500 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.4em] hover:bg-red-600 transition-all shadow-lg active:scale-95"
               >
-                Confirmar ➔
+                Confirmar <span className="material-symbols-outlined text-sm">arrow_forward</span>
               </button>
               
               <button

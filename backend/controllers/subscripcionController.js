@@ -50,10 +50,9 @@ export const aprobarSubscripcion = async (req, res) => {
 
     // Actualizar plan del usuario
     const usuario = await User.findById(solicitud.usuario);
-    if (usuario) {
-      usuario.plan = solicitud.planSolicitado;
-      await usuario.save();
-    }
+    if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    usuario.plan = solicitud.planSolicitado;
+    await usuario.save();
 
     res.json({ mensaje: "Subscripción aprobada con éxito", plan: solicitud.planSolicitado });
   } catch (error) {

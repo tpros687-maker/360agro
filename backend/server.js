@@ -1,10 +1,13 @@
 import express from "express";
 import dotenv from "dotenv";
+import { initDefaults } from "./controllers/siteSettingsController.js";
 import cors from "cors";
 import fs from "fs";
 import http from "http";
 import path from "path"; // Añadido para manejo de rutas
 import { Server } from "socket.io";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
 
 // 1. Configuración inicial (Actualizado: 2026-03-22T04:14:00)
@@ -41,21 +44,46 @@ import expenseRoutes from "./routes/expenseRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import gisRoutes from "./routes/gisRoutes.js";
-import { initDefaults } from "./controllers/siteSettingsController.js";
 
 const app = express();
 const server = http.createServer(app);
 
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+// app.use(helmet({
+//   crossOriginResourcePolicy: { policy: "cross-origin" },
+//   crossOriginOpenerPolicy: false,
+//   contentSecurityPolicy: false
+// }));
+
+const limiterGeneral = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { mensaje: "Demasiadas solicitudes, intentá en 15 minutos" }
+});
+app.use("/api", limiterGeneral);
+
+// const limiterLogin = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: 10,
+//   message: { mensaje: "Demasiados intentos de login, intentá en 15 minutos" }
+// });
+// app.use("/api/users/login", limiterLogin);
+// app.use("/api/users/register", limiterLogin);
+
 // ⭐ CONFIG SOCKET.IO
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
 
 // ✅ MIDDLEWARES ESENCIALES (El orden importa)
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // 👈 CRUCIAL: Para entender los datos del formulario
 

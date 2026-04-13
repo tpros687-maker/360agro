@@ -64,6 +64,27 @@ export default function AdminDashboard() {
         cargarDatos();
     }, []);
 
+    const handleCambiarPlan = async (userId, nuevoPlan) => {
+        try {
+            await api.patch(`/admin/users/${userId}/plan`, { plan: nuevoPlan });
+            toast.success("Plan actualizado");
+            setUsuarios(usuarios.map(u => u._id === userId ? { ...u, plan: nuevoPlan } : u));
+        } catch (error) {
+            toast.error("Error al cambiar plan");
+        }
+    };
+
+    const handleEliminarUsuario = async (userId, nombre) => {
+        if (!window.confirm(`¿Eliminar usuario "${nombre}"? Esta acción no se puede deshacer.`)) return;
+        try {
+            await api.delete(`/admin/users/${userId}`);
+            toast.success("Usuario eliminado");
+            setUsuarios(usuarios.filter(u => u._id !== userId));
+        } catch (error) {
+            toast.error("Error al eliminar usuario");
+        }
+    };
+
     const handleToggleVerificacion = async (userId) => {
         try {
             const { data } = await api.patch(`/admin/users/${userId}/verificar`);
@@ -101,48 +122,50 @@ export default function AdminDashboard() {
     };
 
     if (loading) return (
-        <div className="bg-agro-midnight min-h-screen flex justify-center items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-agro-teal shadow-teal-glow"></div>
+        <div className="bg-background min-h-screen flex justify-center items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary shadow-xl"></div>
         </div>
     );
 
     return (
-        <div className="bg-agro-midnight min-h-screen pt-32 pb-20 px-6 text-white overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-agro-teal/5 blur-[200px] pointer-events-none"></div>
+        <div className="bg-background min-h-screen pt-24 pb-20 px-6 text-on-surface overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[200px] pointer-events-none opacity-40"></div>
 
             <div className="container mx-auto">
                 {/* HEADER MISSION CONTROL */}
-                <header className="mb-16 border-b border-white/5 pb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                <header className="mb-8 border-b border-outline-variant/60 pb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                     <div className="reveal">
                         <div className="flex items-center gap-3 mb-4">
-                            <Terminal className="w-5 h-5 text-agro-teal" />
-                            <span className="text-agro-teal font-black text-[10px] uppercase tracking-[0.5em] italic">System Administrator</span>
+                            <Terminal className="w-5 h-5 text-primary" />
+                            <span className="text-primary font-black text-[10px] uppercase tracking-[0.5em] italic">System Administrator</span>
                         </div>
-                        <h1 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-none">
-                            MISSION <span className="text-agro-teal not-italic">CONTROL</span>
+                        <h1 className="text-4xl font-black text-on-surface italic tracking-tighter uppercase leading-none">
+                            MISSION <span className="text-primary not-italic">CONTROL</span>
                         </h1>
                     </div>
 
                     <div className="flex gap-4">
                         <button
                             onClick={() => setActiveTab("stats")}
-                            className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'stats' ? 'bg-agro-teal text-agro-midnight shadow-teal-glow' : 'bg-white/5 text-white/30 hover:bg-white/10'}`}
+                            className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'stats' ? 'bg-primary text-white shadow-xl' : 'bg-surface-container text-on-surface-variant border border-outline-variant/60 hover:bg-surface-container-high'}`}
                         >
                             Monitor Global
                         </button>
                         <button
                             onClick={() => setActiveTab("users")}
-                            className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'users' ? 'bg-agro-teal text-agro-midnight shadow-teal-glow' : 'bg-white/5 text-white/30 hover:bg-white/10'}`}
+                            className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'users' ? 'bg-primary text-white shadow-xl' : 'bg-surface-container text-on-surface-variant border border-outline-variant/60 hover:bg-surface-container-high'}`}
                         >
                             Usuarios
                         </button>
                         <button
-                            onClick={() => setSolicitudes([])} // Placeholder/Clear if needed
-                            className="hidden"
-                        ></button>
+                            onClick={() => setActiveTab("subs")}
+                            className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'subs' ? 'bg-primary text-white shadow-xl' : 'bg-surface-container text-on-surface-variant border border-outline-variant/60 hover:bg-surface-container-high'}`}
+                        >
+                            Suscripciones
+                        </button>
                         <button
                             onClick={() => setActiveTab("settings")}
-                            className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'settings' ? 'bg-agro-teal text-agro-midnight shadow-teal-glow' : 'bg-white/5 text-white/30 hover:bg-white/10'}`}
+                            className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'settings' ? 'bg-primary text-white shadow-xl' : 'bg-surface-container text-on-surface-variant border border-outline-variant/60 hover:bg-surface-container-high'}`}
                         >
                             Ajustes Web
                         </button>
@@ -161,46 +184,63 @@ export default function AdminDashboard() {
                     )}
 
                     {activeTab === "users" && (
-                        <div className="bg-agro-charcoal/40 border border-white/5 rounded-[3rem] overflow-hidden backdrop-blur-3xl shadow-2xl">
+                        <div className="bg-surface-container-high border border-outline-variant/60 rounded-[3rem] overflow-hidden backdrop-blur-3xl shadow-2xl">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="border-b border-white/5 bg-white/5">
-                                        <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-widest italic">Usuario</th>
-                                        <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-widest italic">Plan Actual</th>
-                                        <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-widest italic">Agro-Trust</th>
-                                        <th className="p-8 text-[10px] font-black text-white/40 uppercase tracking-widest italic text-right">Acciones</th>
+                                    <tr className="border-b border-outline-variant/60 bg-surface-container-low">
+                                        <th className="p-8 text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic">Usuario</th>
+                                        <th className="p-8 text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic">Plan Actual</th>
+                                        <th className="p-8 text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic">Agro-Trust</th>
+                                        <th className="p-8 text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic text-right">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-white/5">
+                                <tbody className="divide-y divide-outline-variant/30">
                                     {usuarios.map(u => (
-                                        <tr key={u._id} className="hover:bg-white/[0.02] transition-colors group">
+                                        <tr key={u._id} className="hover:bg-surface-container-lowest/40 transition-colors group">
                                             <td className="p-8">
-                                                <p className="text-white font-black uppercase italic tracking-tighter text-lg">{u.nombre}</p>
-                                                <p className="text-white/20 text-[10px] font-medium">{u.email}</p>
+                                                <p className="text-on-surface font-black uppercase italic tracking-tighter text-lg">{u.nombre}</p>
+                                                <p className="text-on-surface-variant/40 text-[10px] font-medium">{u.email}</p>
                                             </td>
                                             <td className="p-8">
-                                                <span className={`text-[10px] font-black uppercase px-4 py-1.5 rounded-full border ${u.plan === 'gratis' ? 'text-white/20 border-white/5' : 'text-agro-teal border-agro-teal/20 shadow-teal-glow-sm'}`}>
+                                                <span className={`text-[10px] font-black uppercase px-4 py-1.5 rounded-full border ${u.plan === 'gratis' ? 'text-on-surface-variant/20 border-outline-variant/10' : 'text-primary border-primary/20 shadow-sm'}`}>
                                                     {u.plan}
                                                 </span>
                                             </td>
                                             <td className="p-8">
                                                 {u.esVerificado ? (
-                                                    <div className="flex items-center gap-2 text-agro-teal font-black text-[9px] uppercase italic">
+                                                    <div className="flex items-center gap-2 text-primary font-black text-[9px] uppercase italic">
                                                         <CheckCircle className="w-4 h-4" /> Certificado
                                                     </div>
                                                 ) : (
-                                                    <div className="flex items-center gap-2 text-white/10 font-black text-[9px] uppercase italic">
+                                                    <div className="flex items-center gap-2 text-on-surface-variant/20 font-black text-[9px] uppercase italic">
                                                         <XCircle className="w-4 h-4" /> Sin Validar
                                                     </div>
                                                 )}
                                             </td>
                                             <td className="p-8 text-right">
-                                                <button
-                                                    onClick={() => handleToggleVerificacion(u._id)}
-                                                    className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${u.esVerificado ? 'bg-white/5 text-white/40 hover:bg-white/10' : 'bg-agro-teal text-agro-midnight shadow-teal-glow hover:scale-105'}`}
-                                                >
-                                                    {u.esVerificado ? "Retirar Verificación" : "Verificar Ahora"}
-                                                </button>
+                                                <div className="flex items-center justify-end gap-3">
+                                                    <select
+                                                        value={u.plan}
+                                                        onChange={(e) => handleCambiarPlan(u._id, e.target.value)}
+                                                        className="bg-surface-container-lowest border border-outline-variant/50 text-on-surface text-[9px] font-black uppercase rounded-xl px-3 py-2 outline-none focus:border-primary/40 transition-all cursor-pointer shadow-sm"
+                                                    >
+                                                        {["gratis", "observador", "productor", "pro", "empresa"].map(p => (
+                                                            <option key={p} value={p} className="bg-surface-container text-on-surface">{p}</option>
+                                                        ))}
+                                                    </select>
+                                                    <button
+                                                        onClick={() => handleToggleVerificacion(u._id)}
+                                                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${u.esVerificado ? 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' : 'machined-gradient text-on-tertiary-fixed shadow-md hover:scale-105'}`}
+                                                    >
+                                                        {u.esVerificado ? "Retirar" : "Verificar"}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEliminarUsuario(u._id, u.nombre)}
+                                                        className="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest bg-surface-container text-red-500/60 hover:bg-red-500/10 hover:text-red-500 transition-all border border-outline-variant/60"
+                                                    >
+                                                        Eliminar
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -209,45 +249,45 @@ export default function AdminDashboard() {
                         </div>
                     )}
 
-                    {activeTab === "subs" && (
+                     {activeTab === "subs" && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {solicitudes.length > 0 ? solicitudes.map(s => (
-                                <div key={s._id} className="bg-agro-charcoal/40 border border-white/5 p-12 rounded-[3.5rem] backdrop-blur-md flex flex-col justify-between group hover:border-agro-teal/30 transition-all duration-500 shadow-2xl overflow-hidden relative">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-agro-teal/5 blur-3xl -mr-10 -mt-10"></div>
+                                <div key={s._id} className="bg-surface-container-high border border-outline-variant/60 p-12 rounded-[3.5rem] backdrop-blur-md flex flex-col justify-between group hover:border-primary/30 transition-all duration-500 shadow-2xl overflow-hidden relative">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl -mr-10 -mt-10"></div>
 
                                     <div>
                                         <div className="flex justify-between items-start mb-10">
                                             <div>
-                                                <span className="text-[10px] font-black text-agro-teal uppercase tracking-[0.5em] mb-3 block italic">Solicitud de Activación</span>
-                                                <h3 className="text-4xl font-black text-white italic tracking-tighter uppercase leading-none">{s.usuario?.nombre}</h3>
+                                                <span className="text-[10px] font-black text-primary uppercase tracking-[0.5em] mb-3 block italic">Solicitud de Activación</span>
+                                                <h3 className="text-4xl font-black text-on-surface italic tracking-tighter uppercase leading-none">{s.usuario?.nombre}</h3>
                                             </div>
-                                            <div className="bg-agro-teal text-agro-midnight p-3 rounded-2xl shadow-teal-glow">
+                                            <div className="machined-gradient text-on-tertiary-fixed p-3 rounded-2xl shadow-xl">
                                                 <Zap className="w-6 h-6 animate-pulse" />
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-6 mb-12">
-                                            <div className="bg-white/5 p-6 rounded-3xl border border-white/5">
-                                                <p className="text-[9px] font-black text-white/20 uppercase mb-2">Plan Solicitado</p>
-                                                <p className="text-2xl font-black text-agro-sky italic uppercase">{s.planSolicitado}</p>
+                                            <div className="bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/30">
+                                                <p className="text-[9px] font-black text-on-surface-variant/40 uppercase mb-2 italic">Plan Solicitado</p>
+                                                <p className="text-2xl font-black text-primary italic uppercase">{s.planSolicitado}</p>
                                             </div>
-                                            <div className="bg-white/5 p-6 rounded-3xl border border-white/5">
-                                                <p className="text-[9px] font-black text-white/20 uppercase mb-2">Plan Actual</p>
-                                                <p className="text-2xl font-black text-white/40 italic uppercase">{s.usuario?.plan}</p>
+                                            <div className="bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/30">
+                                                <p className="text-[9px] font-black text-on-surface-variant/40 uppercase mb-2 italic">Plan Actual</p>
+                                                <p className="text-2xl font-black text-on-surface-variant/40 italic uppercase">{s.usuario?.plan}</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <button
                                         onClick={() => handleAprobarSub(s._id)}
-                                        className="w-full bg-agro-teal text-agro-midnight font-black py-7 rounded-2xl text-[12px] uppercase tracking-[0.4em] shadow-teal-glow hover:scale-[1.02] active:scale-95 transition-all"
+                                        className="w-full machined-gradient text-on-tertiary-fixed font-black py-7 rounded-2xl text-[12px] uppercase tracking-[0.4em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all italic"
                                     >
                                         APROBAR Y ACTIVAR ACCESO
                                     </button>
                                 </div>
                             )) : (
-                                <div className="col-span-full py-40 text-center border-2 border-dashed border-white/5 rounded-[4rem]">
-                                    <p className="text-white/10 text-xl font-black uppercase tracking-[0.5em] italic">No hay solicitudes pendientes de activación</p>
+                                <div className="col-span-full py-40 text-center border-2 border-dashed border-outline-variant/30 rounded-[4rem]">
+                                    <p className="text-on-surface-variant/10 text-xl font-black uppercase tracking-[0.5em] italic">No hay solicitudes pendientes de activación</p>
                                 </div>
                             )}
                         </div>
@@ -255,29 +295,29 @@ export default function AdminDashboard() {
 
                     {activeTab === "settings" && (
                         <div className="max-w-4xl mx-auto">
-                            <form onSubmit={handleUpdateSettings} className="bg-agro-charcoal/40 border border-white/5 p-12 rounded-[3.5rem] backdrop-blur-3xl shadow-2xl">
-                                <h3 className="text-3xl font-black italic uppercase tracking-tighter mb-10 border-l-4 border-agro-teal pl-8">Configuración Maestra</h3>
+                            <form onSubmit={handleUpdateSettings} className="bg-surface-container-high border border-outline-variant/60 p-12 rounded-[3.5rem] backdrop-blur-3xl shadow-2xl">
+                                <h3 className="text-3xl font-black italic uppercase tracking-tighter mb-10 border-l-4 border-primary pl-8 text-on-surface">Configuración Maestra</h3>
 
                                 <div className="space-y-16">
                                     {["general", "home", "mapa", "ia"].map(cat => (
                                         <div key={cat} className="space-y-8">
-                                            <h4 className="text-agro-teal font-black uppercase tracking-[0.6em] text-[11px] border-b border-agro-teal/20 pb-4 mb-8 italic">{cat} - operational_layer</h4>
-                                            <div className="space-y-10 pl-4 border-l border-white/5">
+                                            <h4 className="text-primary font-black uppercase tracking-[0.6em] text-[11px] border-b border-outline-variant/30 pb-4 mb-8 italic">{cat} - operational_layer</h4>
+                                            <div className="space-y-10 pl-4 border-l border-outline-variant/30">
                                                 {adminSettings.filter(s => s.category === cat).map(s => (
                                                     <div key={s.key} className="flex flex-col gap-4">
-                                                        <label className="text-[10px] text-white/40 font-black uppercase tracking-[0.4em] ml-4 italic group-hover:text-agro-teal transition-colors">{s.label || s.key}</label>
+                                                        <label className="text-[10px] text-on-surface-variant/40 font-black uppercase tracking-[0.4em] ml-4 italic group-hover:text-primary transition-colors">{s.label || s.key}</label>
                                                         {s.type === "textarea" ? (
                                                             <textarea
                                                                 value={s.value}
                                                                 onChange={(e) => handleSettingChange(s.key, e.target.value)}
-                                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white text-[11px] outline-none focus:border-agro-teal/40 transition-all font-bold min-h-[100px]"
+                                                                className="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-2xl px-6 py-5 text-on-surface text-[11px] outline-none focus:border-primary/40 transition-all font-bold min-h-[100px] shadow-sm"
                                                             />
                                                         ) : (
                                                             <input
                                                                 type={s.type || "text"}
                                                                 value={s.value}
                                                                 onChange={(e) => handleSettingChange(s.key, e.target.value)}
-                                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white text-[11px] outline-none focus:border-agro-teal/40 transition-all font-bold"
+                                                                className="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-2xl px-6 py-5 text-on-surface text-[11px] outline-none focus:border-primary/40 transition-all font-bold shadow-sm"
                                                             />
                                                         )}
                                                     </div>
@@ -289,9 +329,9 @@ export default function AdminDashboard() {
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-agro-teal text-agro-midnight font-black py-7 rounded-2xl text-[12px] uppercase tracking-[0.4em] shadow-teal-glow mt-16 hover:scale-[1.02] active:scale-95 transition-all"
+                                    className="w-full machined-gradient text-on-tertiary-fixed font-black py-7 rounded-2xl text-[12px] uppercase tracking-[0.4em] shadow-xl mt-16 hover:scale-[1.02] active:scale-95 transition-all italic"
                                 >
-                                    SINCRONIZAR TERMINAL CORE ➔
+                                    SINCRONIZAR TERMINAL CORE <span className="material-symbols-outlined text-sm">arrow_forward</span>
                                 </button>
                             </form>
                         </div>
@@ -304,13 +344,13 @@ export default function AdminDashboard() {
 
 function StatCard({ icon, label, value, color }) {
     return (
-        <div className="bg-agro-charcoal/40 border border-white/5 p-10 rounded-[3.5rem] backdrop-blur-md hover:border-agro-teal/20 transition-all shadow-2xl relative overflow-hidden group">
-            <div className={`absolute top-0 right-0 w-32 h-32 opacity-10 blur-3xl -mr-10 -mt-10 bg-agro-${color === 'teal' ? 'teal' : 'ocean'}`}></div>
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 border border-white/10 text-agro-${color === 'teal' ? 'teal' : 'sky'} bg-white/5 group-hover:scale-110 transition-transform`}>
+        <div className="bg-surface-container-high border border-outline-variant/60 p-5 rounded-[3.5rem] backdrop-blur-md hover:border-primary/20 transition-all shadow-2xl relative overflow-hidden group">
+            <div className={`absolute top-0 right-0 w-32 h-32 opacity-10 blur-3xl -mr-10 -mt-10 ${color === 'teal' ? 'bg-primary' : 'bg-secondary'}`}></div>
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 border border-outline-variant/50 ${color === 'teal' ? 'text-primary' : 'text-primary'} bg-surface-container-lowest group-hover:scale-110 transition-transform shadow-inner`}>
                 {icon}
             </div>
-            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] italic mb-3">{label}</p>
-            <p className="text-5xl font-black text-white italic tracking-tighter shadow-blue-accent">{value || 0}</p>
+            <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.4em] italic mb-3">{label}</p>
+            <p className="text-3xl font-black text-on-surface italic tracking-tighter">{value || 0}</p>
         </div>
     );
 }

@@ -8,11 +8,13 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 import AgroIA from "./components/AgroIA";
+import BannerCookies from "./components/BannerCookies";
 
 // Páginas generales
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerificarEmail from "./pages/VerificarEmail";
 import Explorar from "./pages/Explorar";
 import Publicar from "./pages/Publicar";
 
@@ -26,8 +28,8 @@ import EditarLote from "./pages/EditarLote";
 // USUARIO
 import Perfil from "./pages/Perfil";
 import Planes from "./pages/Planes";
-import AgroLedger from "./components/AgroLedger";
-
+import TerminosCondiciones from "./pages/TerminosCondiciones";
+import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 // MENSAJERÍA
 import Mensajes from "./pages/Mensajes";
 import Chat from "./pages/Chat";
@@ -45,7 +47,6 @@ import MisOrdenes from "./pages/MisOrdenes";
 import Servicios from "./pages/Servicios";
 import ServicioDetalle from "./pages/ServicioDetalle";
 import CrearServicio from "./pages/CrearServicio";
-import MisServicios from "./pages/MisServicios";
 import EditarServicio from "./pages/EditarServicio";
 
 // PRODUCTOS
@@ -93,11 +94,8 @@ export default function App() {
     </div>
   );
 
-  // Lista de planes que pueden vender (Sincronizado con Navbar)
-  const ES_VENDEDOR = ["empresa", "bronce", "plata", "oro", "pro", "basico", "élite pro"].includes(usuario?.plan?.toLowerCase());
+  const ES_VENDEDOR = ["productor", "pro", "empresa"].includes(usuario?.plan?.toLowerCase());
 
-  // Acceso a herramientas premium (Calculadora AgroProfit)
-  const ES_PREMIUM = ["empresa", "pro", "basico", "élite pro"].includes(usuario?.plan?.toLowerCase());
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-on-surface font-body">
@@ -110,6 +108,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verificar-email" element={<VerificarEmail />} />
           <Route path="/explorar" element={<Explorar />} />
           <Route path="/tiendas" element={<Tiendas />} />
           <Route path="/tienda/:slug" element={<TiendaPublica />} />
@@ -119,6 +118,8 @@ export default function App() {
           <Route path="/lotes" element={<Lotes />} />
           <Route path="/lotes/:id" element={<LoteDetalle />} />
           <Route path="/planes" element={<Planes />} />
+          <Route path="/terminos" element={<TerminosCondiciones />} />
+          <Route path="/privacidad" element={<PoliticaPrivacidad />} />
 
           {/* --- RUTAS PROTEGIDAS (Cualquier usuario logueado) --- */}
           <Route element={<ProtectedRoute />}>
@@ -129,11 +130,6 @@ export default function App() {
             <Route path="/mis-ordenes" element={<MisOrdenes />} />
             <Route path="/publicar" element={<Publicar />} />
 
-            {/* Agro Ledger (Premium Tool) */}
-            <Route
-              path="/agro-ledger"
-              element={ES_PREMIUM ? <AgroLedger /> : <Navigate to="/planes" />}
-            />
 
             {/* RUTAS DE VENDEDOR (Anidadas por lógica de plan) */}
             {ES_VENDEDOR ? (
@@ -147,7 +143,6 @@ export default function App() {
                 <Route path="/editar-tienda/:id" element={<EditarTienda />} />
                 <Route path="/crear-producto" element={<CrearProducto />} />
                 <Route path="/editar-producto/:id" element={<EditarProducto />} />
-                <Route path="/mis-servicios" element={<MisServicios />} />
                 <Route path="/crear-servicio" element={<CrearServicio />} />
                 <Route path="/editar-servicio/:id" element={<EditarServicio />} />
               </>
@@ -167,6 +162,7 @@ export default function App() {
       </main>
 
       <AgroIA />
+      <BannerCookies />
       <Footer />
     </div>
   );

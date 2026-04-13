@@ -11,12 +11,18 @@ export default function Planes() {
   const [modalOpen, setModalOpen] = useState(false);
   const [planSeleccionado, setPlanSeleccionado] = useState(null);
   const [solicitudPendiente, setSolicitudPendiente] = useState(null);
+  const [periodo, setPeriodo] = useState("mensual");
 
   useEffect(() => {
     const cargarEstado = async () => {
       try {
         const { data } = await subscripcionApi.obtenerMiSolicitud();
-        if (data) setSolicitudPendiente(data.planSolicitado);
+        if (data && data.planSolicitado) {
+          const fechaSolicitud = new Date(data.fechaSolicitud);
+          const ahora = new Date();
+          const horas = (ahora - fechaSolicitud) / (1000 * 60 * 60);
+          if (horas < 24) setSolicitudPendiente(data.planSolicitado);
+        }
       } catch (error) {
         console.log("Sin solicitudes pendientes.");
       }
@@ -47,94 +53,123 @@ export default function Planes() {
     {
       nombre: "Observador",
       key: "gratis",
-      precio: "FREE",
-      desc: ["Navegación en el Radar", "Acceso a Precios de Referencia", "Búsqueda de Servicios"],
+      precioMensual: 0,
+      precioTrimestral: 0,
+      precioAnual: 0,
+      limites: ["Solo lectura del marketplace", "Contactar vendedores", "Mensajería interna"],
       icon: Globe,
     },
     {
       nombre: "Productor",
-      key: "basico",
-      precio: "USD 19",
-      desc: ["Hasta 5 Lotes Activos", "5 Ofertas de Servicios", "Calculadora Agro Profit", "Mensajería Directa"],
+      key: "productor",
+      precioMensual: 9,
+      precioTrimestral: 23,
+      precioAnual: 81,
+      limites: ["Hasta 3 lotes activos", "Hasta 3 servicios", "Acceso a AgroIA", "Mensajería directa", "Métricas básicas"],
       icon: Zap,
     },
     {
-      nombre: "Élite Pro",
+      nombre: "Pro",
       key: "pro",
-      precio: "USD 49",
-      desc: ["Publicaciones Ilimitadas", "Agro Profit Ilimitado", "Prioridad en Búsquedas", "Sello de Confianza Pro", "Analíticas de Visitas"],
+      precioMensual: 24,
+      precioTrimestral: 61,
+      precioAnual: 216,
+      limites: ["Lotes y servicios ilimitados", "AgroIA ilimitada", "Métricas completas", "Publicaciones destacadas"],
       icon: ShieldCheck,
       popular: true,
     },
     {
-      nombre: "Business",
+      nombre: "Empresa",
       key: "empresa",
-      precio: "CONSULTAR",
-      desc: ["Showroom Corporativo", "Gestión de Insumos (Tienda)", "Validación de Empresa", "Herramientas de Inteligencia", "Soporte VIP 24/7"],
+      precioMensual: 49,
+      precioTrimestral: 125,
+      precioAnual: 441,
+      limites: ["Todo lo de Pro", "Tienda online", "Panel de métricas avanzado", "Productos destacados", "Soporte prioritario"],
       icon: ShieldCheck,
     },
   ];
 
+  const precioLabel = (p) => {
+    if (p.key === "gratis") return "Gratis";
+    const mapa = { mensual: p.precioMensual, trimestral: p.precioTrimestral, anual: p.precioAnual };
+    return `USD ${mapa[periodo]}`;
+  };
+
   return (
-    <div className="bg-agro-midnight min-h-screen pt-48 pb-32 px-6 relative overflow-hidden">
+    <div className="bg-background min-h-screen pt-48 pb-32 px-6 relative overflow-hidden">
 
       {/* Background Decor */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] bg-agro-ocean/5 blur-[250px] rounded-full pointer-events-none opacity-40"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] bg-primary/5 blur-[250px] rounded-full pointer-events-none opacity-40"></div>
 
       <div className="container mx-auto max-w-7xl relative z-10">
 
-        <header className="text-center mb-32 reveal">
-          <span className="text-agro-sky font-black text-[11px] uppercase tracking-[0.8em] mb-4 block italic shadow-blue-accent">Escalabilidad de Negocio</span>
-          <h1 className="text-8xl md:text-[9rem] font-black text-white italic tracking-tighter uppercase leading-none">
-            MEMBRESÍAS <span className="text-agro-ocean not-italic">SOBERANAS</span>
+        <header className="text-center mb-12 reveal">
+          <span className="text-primary font-black text-[11px] uppercase tracking-[0.8em] mb-4 block italic">Escalabilidad de Negocio</span>
+          <h1 className="text-5xl md:text-7xl font-black text-on-surface italic tracking-tighter uppercase leading-none">
+            MEMBRESÍAS <span className="text-primary not-italic">SOBERANAS</span>
           </h1>
-          <p className="text-white/20 text-lg mt-12 font-bold uppercase tracking-[0.3em] italic max-w-3xl mx-auto leading-relaxed border-t border-white/5 pt-10">
+          <p className="text-on-surface-variant/60 text-lg mt-12 font-bold uppercase tracking-[0.3em] italic max-w-3xl mx-auto leading-relaxed border-t border-outline-variant/30 pt-10">
             GESTIONE SU CRECIMIENTO ESTRATÉGICO CON ACCESO AI E INFRAESTRUCTURA DE ALTA TRACCIÓN COMERCIAL.
           </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 items-stretch">
+        <div className="flex justify-center gap-3 mb-16">
+          {[["mensual", "Mensual"], ["trimestral", "Trimestral (-15%)"], ["anual", "Anual (-25%)"]].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setPeriodo(key)}
+              className={`px-8 py-3.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all border ${periodo === key
+                ? "machined-gradient text-on-tertiary-fixed border-none shadow-[0_0_20px_rgba(35,83,71,0.3)] scale-105"
+                : "bg-surface-container-low text-on-surface-variant border-outline-variant/10 hover:border-primary/40 hover:text-on-surface"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           {planes.map((p, index) => {
-            const esActual = usuario?.plan?.toLowerCase() === p.key;
+            const esActual = usuario?.plan?.toLowerCase() === p.key.toLowerCase();
             const esPro = p.popular;
             const Icon = p.icon;
 
             return (
               <div
                 key={p.key}
-                className={`relative p-14 rounded-[4rem] border transition-all duration-700 reveal-delayed flex flex-col h-full group
+                className={`relative p-8 rounded-[4rem] border transition-all duration-700 reveal-delayed flex flex-col h-full group
                   ${esPro
-                    ? "bg-agro-charcoal/60 border-agro-ocean shadow-blue-accent-lg scale-105 z-20 backdrop-blur-3xl"
-                    : "bg-white/5 border-white/10 hover:border-agro-ocean/30"} 
+                    ? "bg-surface-container-high border-primary shadow-2xl scale-105 z-20 backdrop-blur-3xl"
+                    : "bg-surface-container-high border-outline-variant/60 hover:border-primary/30"} 
                   ${esActual ? "opacity-100" : "opacity-90 hover:opacity-100 disabled:opacity-50"}`}
               >
                 {esPro && (
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-white text-agro-navy px-10 py-3 rounded-full font-black text-[10px] uppercase tracking-[0.4em] shadow-2xl italic border border-agro-sky/30">
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 machined-gradient text-on-tertiary-fixed px-10 py-3 rounded-full font-black text-[10px] uppercase tracking-[0.4em] shadow-2xl italic">
                     Recomendación Pro
                   </div>
                 )}
 
                 <div className="mb-14 text-center">
-                  <div className={`w-20 h-20 rounded-[2rem] mx-auto mb-10 flex items-center justify-center border shadow-2xl transition-all duration-500
-                    ${esPro ? "bg-agro-ocean text-white border-white/20" : "bg-white/5 text-agro-sky/40 border-white/10 group-hover:bg-agro-ocean group-hover:text-white"}`}>
+                  <div className={`w-20 h-20 rounded-[2rem] mx-auto mb-10 flex items-center justify-center border shadow-xl transition-all duration-500
+                    ${esPro ? "bg-primary text-white border-primary/20" : "bg-surface-container-lowest text-primary/40 border-outline-variant/30 group-hover:bg-primary group-hover:text-white"}`}>
                     <Icon className="w-10 h-10 group-hover:scale-110 transition-transform" />
                   </div>
-                  <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-6 ${esPro ? "text-white" : "text-white/60"}`}>
+                  <h3 className={`text-3xl font-black uppercase italic tracking-tighter mb-6 ${esPro ? "text-on-surface" : "text-on-surface"}`}>
                     {p.nombre}
                   </h3>
                   <div className="flex items-baseline justify-center gap-2">
-                    <span className={`text-6xl font-black italic tracking-tighter ${esPro ? "text-white text-glow-blue" : "text-white"}`}>
-                      {p.precio}
+                    <span className={`text-4xl font-black italic tracking-tighter ${esPro ? "text-primary" : "text-on-surface"}`}>
+                      {precioLabel(p)}
                     </span>
-                    {p.precio !== "FREE" && p.precio !== "CONSULTAR" && <span className="text-[11px] text-white/20 font-black uppercase tracking-[0.4em] ml-2 italic">/ mes</span>}
+                    {p.key !== "gratis" && <span className="text-[11px] text-on-surface-variant/40 font-black uppercase tracking-[0.4em] ml-2 italic">/ {periodo}</span>}
                   </div>
                 </div>
 
                 <ul className="flex-1 space-y-8 mb-20 px-4">
-                  {p.desc.map((d, idx) => (
+                  {p.limites.map((d, idx) => (
                     <li key={idx} className="flex items-start gap-5">
-                      <CheckCircle2 className={`w-5 h-5 mt-0.5 ${esPro ? "text-agro-sky shadow-blue-accent" : "text-white/10"}`} />
-                      <span className="text-[11px] font-bold text-white/40 uppercase tracking-[0.2em] leading-relaxed italic group-hover:text-white/60 transition-colors">
+                      <CheckCircle2 className={`w-5 h-5 mt-0.5 ${esPro ? "text-primary shadow-sm" : "text-outline-variant/40"}`} />
+                      <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.2em] leading-relaxed italic group-hover:text-on-surface transition-colors">
                         {d}
                       </span>
                     </li>
@@ -146,12 +181,12 @@ export default function Planes() {
                   disabled={esActual || solicitudPendiente === p.key}
                   className={`w-full py-7 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.5em] transition-all hover:scale-[1.05] active:scale-95 shadow-2xl
                     ${esActual
-                      ? "bg-white/5 text-white/10 border border-white/5 cursor-default"
+                      ? "bg-surface-container-low text-on-surface-variant/20 border border-outline-variant/30 cursor-default"
                       : (solicitudPendiente === p.key)
-                        ? "bg-agro-charcoal border border-agro-ocean/20 text-agro-sky/40 cursor-wait"
+                        ? "bg-surface-container-high border border-primary/20 text-primary/40 cursor-wait italic"
                         : esPro
-                          ? "bg-white text-agro-navy hover:bg-agro-sky"
-                          : "bg-agro-navy border border-white/10 text-white hover:bg-agro-ocean hover:border-agro-ocean"}`}
+                          ? "machined-gradient text-on-tertiary-fixed shadow-primary/20"
+                          : "bg-surface-container-lowest border border-outline-variant/60 text-on-surface hover:bg-primary hover:text-white hover:border-primary"}`}
                 >
                   {esActual ? "Estatus Actual" : (solicitudPendiente === p.key) ? "Sincronizando..." : "Activar Terminal"}
                 </button>
@@ -167,8 +202,14 @@ export default function Planes() {
           onSuccess={(key) => setSolicitudPendiente(key)}
         />
 
-        <div className="mt-40 text-center">
-          <p className="text-[11px] font-black text-white/5 uppercase tracking-[1.5em] italic">
+        <div className="mt-16 text-center space-y-6">
+          <a
+            href="mailto:contacto@360agro.com"
+            className="text-[10px] font-bold text-on-surface-variant/30 hover:text-primary uppercase tracking-widest transition-colors"
+          >
+            ¿Problemas con tu plan? Contactar soporte
+          </a>
+          <p className="text-[11px] font-black text-on-surface-variant/10 uppercase tracking-[1.5em] italic">
             Certificación de Transacciones Soberanas
           </p>
         </div>

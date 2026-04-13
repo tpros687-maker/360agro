@@ -199,12 +199,12 @@ export default function PanelServicio() {
           onClick={guardarCambios}
           className="mt-6 w-full bg-agro-teal hover:bg-agro-tealDark text-white py-3 rounded-xl font-bold transition"
         >
-          💾 Guardar Cambios
+          <span className="material-symbols-outlined text-sm">save</span> Guardar Cambios
         </button>
 
         {/* FOTOS */}
         <h2 className="text-xl font-bold text-agro-tealDark mt-10 mb-4">
-          📸 Galería de Fotos
+          <span className="material-symbols-outlined text-sm">photo_camera</span> Galería de Fotos
         </h2>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">

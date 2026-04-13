@@ -47,7 +47,7 @@ export default function Mensajes() {
           {conversaciones.length > 0 ? conversaciones.map((chat) => {
             // ✅ LÓGICA DE REFERENCIA DINÁMICA
             // Determinamos el ID de referencia (Lote o Producto)
-            const referenciaId = chat.lote?._id || chat.producto?._id || 'general';
+            const referenciaId = chat.lote?._id || chat.producto?._id || chat.servicio?._id || 'general';
 
             return (
               <Link
@@ -57,7 +57,14 @@ export default function Mensajes() {
               >
                 {/* Icono de Tipo de Negocio */}
                 <div className="w-16 h-16 bg-agro-midnight rounded-2xl flex items-center justify-center text-3xl border border-white/5 group-hover:border-agro-teal/30 transition-all shadow-inner">
-                  {chat.lote ? "🐂" : chat.producto ? "📦" : "💬"}
+                  {chat.lote
+                    ? <span className="material-symbols-outlined text-primary text-2xl">pets</span>
+                    : chat.producto
+                    ? <span className="material-symbols-outlined text-primary text-2xl">inventory_2</span>
+                    : chat.servicio
+                    ? <span className="material-symbols-outlined text-primary text-2xl">handyman</span>
+                    : <span className="material-symbols-outlined text-primary text-2xl">chat</span>
+                  }
                 </div>
 
                 {/* Info de la Conversación */}
@@ -74,10 +81,10 @@ export default function Mensajes() {
                   {/* Etiqueta de Referencia */}
                   <div className="flex items-center gap-2 mb-3">
                     <span className="bg-agro-teal/10 text-agro-teal text-[8px] font-black px-3 py-1 rounded-full border border-agro-teal/10 uppercase tracking-widest italic">
-                      {chat.lote ? "Hacienda" : chat.producto ? "Insumos" : "General"}
+                      {chat.lote ? "Hacienda" : chat.producto ? "Insumos" : chat.servicio ? "Servicios" : "General"}
                     </span>
                     <p className="text-white/40 text-[9px] font-bold uppercase tracking-tighter truncate italic">
-                      {chat.lote?.titulo || chat.producto?.titulo || "Consulta Externa"}
+                      {chat.lote?.titulo || chat.producto?.titulo || chat.servicio?.nombre || "Consulta Externa"}
                     </p>
                   </div>
 
@@ -94,7 +101,7 @@ export default function Mensajes() {
                     </span>
                   )}
                   <div className="text-white/5 group-hover:text-agro-teal transition-all text-xl translate-x-0 group-hover:translate-x-2">
-                    ➔
+                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
                   </div>
                 </div>
               </Link>

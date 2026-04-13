@@ -21,6 +21,7 @@ export default function Home() {
   const [destacados, setDestacados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({});
+  const [stats, setStats] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,172 +48,164 @@ export default function Home() {
       }
     };
 
+    const fetchStats = async () => {
+      try {
+        const { data: statsData } = await api.get("/admin/stats/publicas");
+        setStats(statsData);
+      } catch (error) {
+        console.error("Error al cargar stats:", error);
+      }
+    };
+
     fetchDestacados();
     fetchSettings();
+    fetchStats();
   }, []);
 
   // Navigation handler removed
 
   return (
-    <div className="bg-background text-on-surface min-h-screen selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
-
+    <div className="bg-background text-on-surface min-h-screen font-sans">
+      
       {/* Hero Section */}
-      <section className="relative px-6 py-20 overflow-hidden min-h-[716px] flex items-center">
-        <div className="absolute inset-0 z-0 opacity-40">
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background z-10"></div>
-          <img
-            className="w-full h-full object-cover"
-            alt="360AGRO Hero"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuA93n17aJ2iWq5lbmWqPXYfCbMC7QLJkMHU4nI_MC7vVqb2oeTg3Maciqo0JyN_M8OhffNv36Gsfk75WDK6SQ2EohuXqXDVkgzv8c7HKmAMF_VJoithTNYO8PcibOYrMTfjnZemZAg6Bct5L978UYZRU71DEB281_9QWgsKmhRcjahDMmn8LUQdimmOFI15jJ59ZnbMXqA2f9YnvypX4BHY6nK2PMk2cycI5Xv2GI-lTFm4cZ-7k_7G1BU4AyaNyZXPC7jGhlJJz9bf"
-          />
-        </div>
-        <div className="relative z-10 max-w-5xl mx-auto text-center pt-20">
-          <span className="uppercase tracking-[0.4em] text-primary-fixed mb-4 block text-xs font-bold"></span>
-          <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-on-surface mb-6 glow-text leading-[0.9]">
-            {settings.home_hero_title || "AL ALCANCE DEL"} <br /> <span className="text-primary not-italic text-glow-teal">{settings.home_hero_title_highlight || "PRODUCTOR"}</span>
+      <section
+        className="relative pt-32 pb-10 px-6 overflow-hidden"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1920&q=60')", backgroundSize: "cover", backgroundPosition: "center" }}
+      >
+        <div className="absolute inset-0 bg-white/85"></div>
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-on-surface leading-[0.85] mb-8 uppercase italic">
+            El ecosistema <br />
+            <span className="text-primary">rural digital</span>
           </h1>
-          <p className="text-lg md:text-2xl text-on-surface-variant max-w-2xl mx-auto mb-10 leading-relaxed font-light italic">
-            {settings.home_hero_subtitle || "La terminal digital líder para el mercado soberano. Operaciones seguras y trazabilidad absoluta integradas en un solo comando."}
+          <p className="text-lg md:text-xl text-on-surface-variant max-w-2xl mx-auto mb-12 font-bold italic uppercase tracking-widest opacity-70">
+            La plataforma líder para conectar productores, lotes y servicios en todo el país con trazabilidad corporativa.
           </p>
           <div className="flex flex-wrap justify-center gap-6">
-            <Link to="/lotes" className="px-12 py-5 machined-gradient text-on-tertiary-fixed font-bold rounded-full hover:scale-105 transition-transform duration-300 shadow-[0_0_20px_rgba(63,111,118,0.4)] uppercase text-xs tracking-widest">
-              {settings.home_hero_cta_l || "EXPLORAR ACTIVOS"}
+            <Link to="/explorar" className="px-12 py-5 machined-gradient text-on-tertiary-fixed font-black rounded-full hover:scale-105 transition-transform uppercase text-[10px] tracking-[0.3em] shadow-xl italic">
+              Explorar Mercado
             </Link>
-            <Link to="/panel-vendedor" className="px-12 py-5 bg-surface-variant/40 backdrop-blur-md border border-outline-variant/30 text-on-surface font-semibold rounded-full hover:bg-surface-variant transition-colors uppercase text-xs tracking-widest">
-              {settings.home_hero_cta_r || "PANEL DE CONTROL"}
+            <Link to="/publicar" className="px-12 py-5 border-2 border-primary/20 text-primary font-black rounded-full hover:bg-primary/5 transition-all uppercase text-[10px] tracking-[0.3em] italic">
+              Publicar Activo
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Interactive Map Section */}
-      <section className="px-6 py-8">
-        <RadarNacional />
+      {/* Stats Bar */}
+      <section className="px-6 mb-10 relative z-10">
+        <div className="max-w-5xl mx-auto bg-surface-container-high rounded-[2.5rem] shadow-2xl p-10 flex flex-wrap justify-around gap-12 border border-outline-variant/60">
+          <div className="text-center group">
+            <p className="text-4xl font-black text-primary italic tracking-tighter group-hover:scale-110 transition-transform">{stats.totalLotes || 0}</p>
+            <p className="text-[9px] uppercase font-black tracking-[0.4em] text-on-surface-variant/40 italic">Lotes Publicados</p>
+          </div>
+          <div className="text-center group">
+            <p className="text-4xl font-black text-primary italic tracking-tighter group-hover:scale-110 transition-transform">{stats.totalProveedores || 0}</p>
+            <p className="text-[9px] uppercase font-black tracking-[0.4em] text-on-surface-variant/40 italic">Tiendas</p>
+          </div>
+          <div className="text-center group">
+            <p className="text-4xl font-black text-primary italic tracking-tighter group-hover:scale-110 transition-transform">{stats.totalServicios || 0}</p>
+            <p className="text-[9px] uppercase font-black tracking-[0.4em] text-on-surface-variant/40 italic">Servicios</p>
+          </div>
+        </div>
       </section>
 
-      {/* Value Architecture Bento Grid */}
-      <section className="px-6 py-16">
-        <div className="mb-12 text-center">
-          <h2 className="text-[0.75rem] font-bold uppercase tracking-[0.4em] text-[#3F6F76] mb-2">Nuestra Propuesta</h2>
-          <h3 className="text-4xl md:text-5xl font-black italic tracking-tight text-on-surface glow-text">Arquitectura de Valor</h3>
+      {/* Radar Nacional (Map Restore) */}
+      <section className="py-10 px-6">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-black text-primary uppercase
+            tracking-tight mb-8 text-center">Radar Nacional</h2>
+          <RadarNacional />
         </div>
+      </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Large Bento Card */}
-          <div className="md:col-span-2 p-10 rounded-3xl bg-surface-container-high relative overflow-hidden group">
-            <div className="relative z-10 max-w-md">
-              <div className="w-16 h-16 bg-primary-container rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-primary-container/20">
-                <span className="material-symbols-outlined text-on-tertiary-fixed text-4xl">inventory_2</span>
-              </div>
-              <div className="flex flex-col h-full">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-4 italic">Sistema de Activos</span>
-                <h3 className="text-4xl font-black text-on-surface italic tracking-tighter mb-4 leading-none uppercase">
-                  {settings.home_bento_l_title || "Mercado de Lotes"}
-                </h3>
-                <p className="text-on-surface-variant/60 text-sm font-medium leading-relaxed italic mb-8 uppercase tracking-wider">
-                  {settings.home_bento_l_text || "Gestión de activos territoriales con precisión satelital."}
-                </p>
-                <div className="mt-auto flex items-center gap-3 text-primary text-[10px] font-black uppercase tracking-widest group-hover:gap-5 transition-all">
-                  ACCEDER AL MERCADO <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </div>
-              </div>
-            </div>
-            <div className="absolute right-0 bottom-0 w-1/2 opacity-20 group-hover:scale-110 transition-transform duration-700">
-              <img className="w-full h-full object-cover" alt="Logistics" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVKPJO5XkhLy1me3SixJPHKG_T_BqnFKCHsKR3GET30FZu7d69DVnfekxZhZIq1e4-Y4kECSqPc6QzFxvYVM_urhyMS9by5guJrFEbctsGDYmuBGJrZWJrmSp_Tn4q7BNWsVXSQB3b5HGwE-gpeOLLHY3wj-zscdeU9uMQLSR5YfqCguC29eT8ppkyenRqxwFaYf4UzY0DEbWJMuSl6JB_g8BnYbaQDSWyQQ1aw_lK-fJbu9wp2kwU0nz7MB5uFRGc3Mn-iyLMus-l" />
-            </div>
-          </div>
-
-          {/* Secondary Bento Card */}
-          <div className="p-10 rounded-3xl bg-surface-variant/20 border border-outline-variant/15 flex flex-col group">
-            <div className="w-16 h-16 bg-surface-container-highest border border-primary-container/30 rounded-2xl flex items-center justify-center mb-8">
-              <span className="material-symbols-outlined text-primary text-3xl">insights</span>
-            </div>
-            <h4 className="text-2xl font-bold italic text-on-surface mb-4">Mercado Transparente</h4>
-            <p className="text-on-surface-variant text-sm leading-relaxed mb-auto">
-              Visualización de precios en tiempo real sin intermediarios opacos. Datos puros para decisiones inteligentes.
-            </p>
-            <div className="mt-8 pt-8 border-t border-outline-variant/10">
-              <div className="flex items-center justify-between">
-                <span className="text-xs uppercase tracking-widest text-outline">Volumen Diario</span>
-                <span className="text-lg font-black text-primary">+12.4%</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Tertiary Bento Card */}
-          <div className="p-10 rounded-3xl bg-surface-container-high border border-outline-variant/15 group hover:border-primary-container/40 transition-colors">
-            <span className="material-symbols-outlined text-primary text-5xl mb-6 block">precision_manufacturing</span>
-            <h4 className="text-2xl font-bold italic text-on-surface mb-4">Logística de Precisión</h4>
-            <p className="text-on-surface-variant text-sm leading-relaxed">
-              Optimización de rutas y gestión de flotas integrada con inteligencia satelital para reducir costos operativos.
-            </p>
-          </div>
-
-          <div className="md:col-span-2 p-10 rounded-3xl bg-gradient-to-br from-surface-container-high to-surface-container-low border border-outline-variant/15 flex items-center justify-between">
+      {/* Activos de Prestigio (Featured Lots) */}
+      <section className="py-10 px-6 bg-white/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-end mb-8">
             <div>
-              <h4 className="text-2xl font-bold italic text-on-surface mb-2">Central de Operaciones</h4>
-              <p className="text-on-surface-variant max-w-sm">Acceda a todas sus herramientas críticas desde una interfaz unificada.</p>
+              <h2 className="text-4xl font-black text-primary leading-none uppercase">Activos de <br/><span className="text-secondary">Prestigio</span></h2>
             </div>
-            <Link to="/panel-vendedor" className="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center text-on-tertiary-fixed hover:scale-110 transition-transform shadow-xl">
-              <span className="material-symbols-outlined text-3xl">play_arrow</span>
+            <Link to="/lotes" className="text-xs font-bold text-primary uppercase tracking-[0.2em] border-b-2 border-secondary/30 pb-2 hover:border-secondary transition-all italic">
+              Ver Catálogo Completo
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Stats Footer Section */}
-      <section className="bg-surface-container-lowest py-20 border-t border-outline-variant/10">
-        <div className="px-6 max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-          <div>
-            <p className="text-5xl font-black italic tracking-tighter text-primary mb-2 glow-text">1.2M</p>
-            <p className="text-[0.6rem] uppercase tracking-[0.3em] text-on-surface-variant">Hectáreas Protegidas</p>
-          </div>
-          <div>
-            <p className="text-5xl font-black italic tracking-tighter text-primary mb-2 glow-text">15k</p>
-            <p className="text-[0.6rem] uppercase tracking-[0.3em] text-on-surface-variant">Productores Verificados</p>
-          </div>
-          <div>
-            <p className="text-5xl font-black italic tracking-tighter text-primary mb-2 glow-text">24/7</p>
-            <p className="text-[0.6rem] uppercase tracking-[0.3em] text-on-surface-variant">Monitoreo Ledger</p>
-          </div>
-          <div>
-            <p className="text-5xl font-black italic tracking-tighter text-primary mb-2 glow-text">100%</p>
-            <p className="text-[0.6rem] uppercase tracking-[0.3em] text-on-surface-variant">Soberanía de Datos</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Activos de Prestigio Section (Existing Dynamic Data) */}
-      <section className="py-24 px-6 bg-surface-container-low/30 relative">
-        <div className="container mx-auto">
-          <header className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-            <h2 className="text-6xl font-black text-on-surface italic tracking-tighter leading-none uppercase">Activos de <br /><span className="text-primary">Prestigio</span></h2>
-            <Link to="/lotes" className="text-primary font-bold text-[10px] uppercase tracking-[0.5em] border-b-2 border-primary-container/30 pb-4 hover:border-primary transition-all italic">CATÁLOGO ESTRATÉGICO ➔</Link>
-          </header>
 
           {loading ? (
             <div className="flex justify-center py-20">
-              <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+              <div className="w-10 h-10 border-4 border-secondary/20 border-t-secondary rounded-full animate-spin"></div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              {destacados.map((lote) => (
-                <Link key={lote._id} to={`/lotes/${lote._id}`} className="rounded-3xl bg-surface-container-high border border-outline-variant/10 overflow-hidden group hover:scale-[1.02] transition-all duration-500 shadow-xl">
-                  <div className="h-64 overflow-hidden relative">
-                    <img src={lote.fotos?.[0] ? `${BASE_URL}${lote.fotos[0]}` : "https://images.unsplash.com/photo-1516253593875-bd7ba052fbc5?q=80&w=2070&auto=format&fit=crop"} className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" alt={lote.titulo} />
-                  </div>
-                  <div className="p-8">
-                    <span className="text-[0.6rem] font-bold uppercase tracking-widest text-primary mb-2 block">{lote.categoria}</span>
-                    <h3 className="text-2xl font-black text-on-surface mb-6 uppercase italic leading-none">{lote.titulo}</h3>
-                    <div className="flex justify-between items-center pt-6 border-t border-outline-variant/10">
-                      <span className="text-2xl font-black text-on-surface">USD {lote.precio?.toLocaleString()}</span>
-                      <span className="material-symbols-outlined text-primary group-hover:translate-x-2 transition-transform">arrow_forward</span>
+              {[...destacados, ...Array(Math.max(0, 3 - destacados.length)).fill(null)].map((lote, idx) =>
+                lote ? (
+                  <Link key={lote._id} to={`/lote/${lote._id}`} className="group bg-surface-container-high rounded-[3rem] overflow-hidden shadow-xl hover:shadow-primary/5 hover:scale-[1.02] transition-all duration-500 border border-outline-variant/60 flex flex-col">
+                    <div className="h-60 overflow-hidden relative bg-surface-container-lowest">
+                      <img
+                        src={lote.fotos?.[0] ? `${BASE_URL}${lote.fotos[0]}` : "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80"}
+                        className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
+                        alt={lote.titulo}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-surface-container-high/90 via-transparent to-transparent"></div>
                     </div>
+                    <div className="p-8 flex-1 flex flex-col">
+                      <p className="text-[8px] font-black text-primary uppercase tracking-[0.4em] mb-2 italic">{lote.categoria}</p>
+                      <h3 className="text-2xl font-black text-on-surface mb-6 leading-[0.9] uppercase italic tracking-tighter group-hover:text-primary transition-colors line-clamp-2 min-h-[3.5rem]">{lote.titulo}</h3>
+                      <div className="mt-auto flex justify-between items-center pt-6 border-t border-outline-variant/10">
+                        <p className="text-2xl font-black text-on-surface italic tracking-tighter">USD {lote.precio?.toLocaleString()}</p>
+                        <div className="w-12 h-12 machined-gradient text-on-tertiary-fixed rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                          <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ) : (
+                  <div key={`placeholder-${idx}`} className="bg-surface-container-low rounded-[3rem] overflow-hidden border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center h-80 text-center p-8">
+                    <span className="material-symbols-outlined text-4xl text-primary/20 mb-4">agriculture</span>
+                    <p className="text-on-surface-variant/40 font-black uppercase tracking-widest text-xs italic">Próximamente</p>
                   </div>
-                </Link>
-              ))}
+                )
+              )}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-12 px-6">
+        <div className="max-w-7xl mx-auto text-center mb-8">
+          <h2 className="text-3xl font-black text-primary uppercase tracking-tight mb-4">Cómo funciona</h2>
+          <div className="w-20 h-1 bg-secondary mx-auto rounded-full"></div>
+        </div>
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+          {[
+            { step: "01", title: "Registrarse", desc: "Crea tu perfil profesional como productor o proveedor en segundos.", icon: "person_add" },
+            { step: "02", title: "Publicar o Buscar", desc: "Sube tus lotes o navega por el mercado de activos y servicios.", icon: "search" },
+            { step: "03", title: "Cerrar Negocio", desc: "Conecta directamente y opera con total seguridad y trazabilidad.", icon: "handshake" }
+          ].map((item, idx) => (
+            <div key={idx} className="text-center group">
+              <div className="w-20 h-20 bg-white rounded-3xl shadow-soft flex items-center justify-center mx-auto mb-6 border border-outline-variant/30 group-hover:bg-primary group-hover:text-white transition-colors">
+                <span className="material-symbols-outlined text-3xl">{item.icon}</span>
+              </div>
+              <p className="text-xs font-bold text-secondary uppercase tracking-[0.2em] mb-2">{item.step}</p>
+              <h4 className="text-xl font-black text-primary uppercase mb-4">{item.title}</h4>
+              <p className="text-sm text-outline leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA Bottom */}
+      <section className="py-10 px-6">
+        <div className="max-w-5xl mx-auto machined-gradient rounded-[4rem] p-16 text-center text-on-tertiary-fixed relative overflow-hidden shadow-2xl border border-primary/20">
+          <div className="relative z-10">
+            <h2 className="text-5xl md:text-7xl font-black uppercase mb-8 leading-[0.85] italic tracking-tighter">Únete a la <br/>revolución rural</h2>
+            <Link to="/register" className="inline-block px-16 py-6 bg-white text-primary font-black rounded-full hover:scale-105 transition-transform uppercase text-[11px] tracking-[0.4em] shadow-2xl italic">
+              Empezar ahora
+            </Link>
+          </div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
         </div>
       </section>
 

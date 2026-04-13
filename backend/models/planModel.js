@@ -5,7 +5,7 @@ const planSchema = new mongoose.Schema({
   nombre: {
     type: String,
     required: true,
-    enum: ["gratis", "basico", "pro", "empresa"]
+    enum: ["gratis", "productor", "pro", "empresa"]
   },
 
   // Precio en USD, mensual o anual según el caso
@@ -20,7 +20,7 @@ const planSchema = new mongoose.Schema({
   // Tipo del plan (lo mismo que nombre)
   tipo: {
     type: String,
-    enum: ["gratis", "basico", "pro", "empresa"],
+    enum: ["gratis", "productor", "pro", "empresa"],
     required: true
   },
 

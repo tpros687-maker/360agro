@@ -3,14 +3,20 @@ import proteger from "../middleware/authMiddleware.js";
 import admin from "../middleware/adminMiddleware.js";
 import {
     getStats,
+    getStatsPublicas,
     getUsers,
     toggleVerificacion,
-    getSolicitudesSub
+    getSolicitudesSub,
+    cambiarPlanUsuario,
+    eliminarUsuario
 } from "../controllers/adminController.js";
 import { aprobarSubscripcion } from "../controllers/subscripcionController.js";
 import { getAdminSettings, updateSettings } from "../controllers/siteSettingsController.js";
 
 const router = express.Router();
+
+// Ruta pública (antes del middleware de admin)
+router.get("/stats/publicas", getStatsPublicas);
 
 // Todas las rutas de este archivo requieren estar logueado Y ser admin
 router.use(proteger, admin);
@@ -18,6 +24,8 @@ router.use(proteger, admin);
 router.get("/stats", getStats);
 router.get("/users", getUsers);
 router.patch("/users/:id/verificar", toggleVerificacion);
+router.patch("/users/:id/plan", cambiarPlanUsuario);
+router.delete("/users/:id", eliminarUsuario);
 router.get("/subscripciones", getSolicitudesSub);
 router.patch("/subscripciones/:id/aprobar", aprobarSubscripcion);
 

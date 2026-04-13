@@ -66,9 +66,9 @@ export default function BuscadorUniversal() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="BUSCAR LOTES, TIENDAS O SERVICIOS..."
-          className="w-full bg-white/5 border border-white/10 px-6 py-4 rounded-2xl text-[10px] font-black text-white uppercase tracking-widest outline-none focus:border-agro-ocean/50 focus:bg-white/10 transition-all shadow-blue-accent"
+          className="w-full bg-background border border-outline-variant/50 px-6 py-3 rounded-full text-[10px] font-bold text-primary uppercase tracking-widest outline-none focus:border-primary transition-all pb-3"
         />
-        <span className="absolute right-5 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-agro-sky group-focus-within:opacity-100 transition-all text-xs">🔍</span>
+        <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-sm opacity-20 group-focus-within:text-agro-sky group-focus-within:opacity-100 transition-all">search</span>
       </div>
 
       {show && (
@@ -85,7 +85,7 @@ export default function BuscadorUniversal() {
                   <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.5em] mb-5 ml-4 italic border-l-2 border-agro-ocean/30 pl-4">Activos en Remate</p>
                   {resultados.lotes.map(l => (
                     <div key={l._id} onClick={() => handleSelect(`/lotes/${l._id}`)} className="flex items-center gap-5 p-4 hover:bg-agro-ocean/10 rounded-2xl cursor-pointer transition-all group">
-                      <div className="w-12 h-12 bg-agro-ocean/10 rounded-xl flex items-center justify-center group-hover:bg-agro-ocean group-hover:text-white transition-all shadow-blue-accent italic text-xl">🐂</div>
+                      <div className="w-12 h-12 bg-agro-ocean/10 rounded-xl flex items-center justify-center group-hover:bg-agro-ocean group-hover:text-white transition-all shadow-blue-accent"><span className="material-symbols-outlined text-sm">pets</span></div>
                       <div className="flex flex-col">
                         <span className="text-[11px] font-black text-white uppercase tracking-tighter truncate group-hover:text-agro-sky transition-colors">{l.titulo}</span>
                         <span className="text-[9px] text-white/30 uppercase font-black tracking-widest">{l.raza} • {l.zona}</span>
@@ -101,7 +101,7 @@ export default function BuscadorUniversal() {
                   <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.5em] mb-5 ml-4 italic border-l-2 border-agro-ocean/30 pl-4">Nodos Comerciales</p>
                   {resultados.tiendas.map(t => (
                     <div key={t._id} onClick={() => handleSelect(`/tienda/${t.slug}`)} className="flex items-center gap-5 p-4 hover:bg-agro-ocean/10 rounded-2xl cursor-pointer transition-all group">
-                      <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-agro-ocean group-hover:text-white transition-all shadow-blue-accent italic text-xl">🏪</div>
+                      <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-agro-ocean group-hover:text-white transition-all shadow-blue-accent"><span className="material-symbols-outlined text-sm">storefront</span></div>
                       <div className="flex flex-col">
                         <span className="text-[11px] font-black text-white uppercase tracking-tighter truncate group-hover:text-agro-sky transition-colors">{t.nombre}</span>
                         <span className="text-[9px] text-agro-sky uppercase font-black tracking-widest italic">{t.zona}</span>
@@ -117,7 +117,7 @@ export default function BuscadorUniversal() {
                   <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.5em] mb-5 ml-4 italic border-l-2 border-agro-ocean/30 pl-4">Red de Contratistas</p>
                   {resultados.servicios.map(s => (
                     <div key={s._id} onClick={() => handleSelect(`/servicio/${s._id}`)} className="flex items-center gap-5 p-4 hover:bg-agro-ocean/10 rounded-2xl cursor-pointer transition-all group">
-                      <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-agro-ocean group-hover:text-white transition-all shadow-blue-accent italic text-xl">🚜</div>
+                      <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-agro-ocean group-hover:text-white transition-all shadow-blue-accent"><span className="material-symbols-outlined text-sm">agriculture</span></div>
                       <div className="flex flex-col">
                         <span className="text-[11px] font-black text-white uppercase tracking-tighter truncate group-hover:text-agro-sky transition-colors">{s.nombre}</span>
                         <span className="text-[9px] text-white/30 uppercase font-black italic tracking-widest">{s.tipoServicio}</span>

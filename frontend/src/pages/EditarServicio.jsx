@@ -98,39 +98,39 @@ export default function EditarServicio() {
 
   if (loading) {
     return (
-      <div className="bg-agro-midnight min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-agro-teal shadow-teal-glow"></div>
+      <div className="bg-background min-h-screen flex justify-center items-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-agro-midnight min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
-      <div className="absolute top-0 right-1/2 translate-x-1/2 w-full h-[600px] bg-agro-teal/5 blur-[200px] pointer-events-none opacity-30"></div>
+    <div className="bg-background min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
+      <div className="absolute top-0 right-1/2 translate-x-1/2 w-full h-[600px] bg-primary/5 blur-[200px] pointer-events-none opacity-30"></div>
 
       <div className="container mx-auto max-w-4xl relative z-10">
 
         <header className="mb-16 reveal">
-          <span className="text-agro-teal font-black text-[10px] uppercase tracking-[0.5em] mb-4 block">Gestión de Perfil Profesional</span>
-          <h1 className="text-5xl md:text-7xl font-black text-white italic tracking-tighter leading-none">
-            EDITAR <span className="text-agro-teal not-italic font-black">SERVICIO</span>
+          <span className="text-primary font-black text-[10px] uppercase tracking-[0.5em] mb-4 block">Gestión de Perfil Profesional</span>
+          <h1 className="text-5xl md:text-7xl font-black text-on-surface italic tracking-tighter leading-none">
+            EDITAR <span className="text-primary not-italic font-black">SERVICIO</span>
           </h1>
         </header>
 
         <form className="space-y-12" onSubmit={handleSubmit}>
 
           {/* IDENTIDAD TÉCNICA */}
-          <section className="card-midnight p-10 bg-agro-charcoal space-y-8">
+          <section className="bg-surface-container-high border border-outline-variant/20 rounded-2xl p-10 space-y-8">
             <div className="flex items-center gap-6 mb-4">
-              <h2 className="text-xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap text-agro-teal">Núcleo del Servicio</h2>
-              <div className="h-[1px] bg-white/5 flex-1"></div>
+              <h2 className="text-xl font-black text-primary italic tracking-tighter uppercase whitespace-nowrap">Núcleo del Servicio</h2>
+              <div className="h-[1px] bg-outline-variant/20 flex-1"></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Nombre del Servicio</label>
+                <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Nombre del Servicio</label>
                 <input
-                  className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-bold text-white shadow-inner"
+                  className="w-full bg-background border border-outline-variant/20 focus:border-primary/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-bold text-on-surface shadow-inner"
                   name="nombre"
                   value={form.nombre}
                   onChange={handleChange}
@@ -138,31 +138,31 @@ export default function EditarServicio() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Área de Especialización</label>
+                <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Área de Especialización</label>
                 <select
-                  className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-[10px] text-white uppercase tracking-widest cursor-pointer appearance-none shadow-inner"
+                  className="w-full bg-background border border-outline-variant/20 focus:border-primary/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-[10px] text-on-surface uppercase tracking-widest cursor-pointer appearance-none shadow-inner"
                   name="tipoServicio"
                   value={form.tipoServicio}
                   onChange={handleChange}
                 >
                   <option value="">Selecciona...</option>
-                  <option value="siembra">🌱 Siembra</option>
-                  <option value="fumigación">🪰 Fumigación</option>
-                  <option value="trilla">🚜 Trilla</option>
-                  <option value="enfardado">📦 Enfardado</option>
-                  <option value="transporte">🚚 Transporte</option>
-                  <option value="agrónomo">👨‍🌾 Ingeniero Agrónomo</option>
-                  <option value="técnico">👨‍🔧 Técnico Agropecuario</option>
-                  <option value="gestor">📋 Gestor Agropecuario</option>
-                  <option value="otros">🔧 Otro servicio</option>
+                  <option value="siembra">Siembra</option>
+                  <option value="fumigación">Fumigación</option>
+                  <option value="trilla">Trilla</option>
+                  <option value="enfardado">Enfardado</option>
+                  <option value="transporte">Transporte</option>
+                  <option value="agrónomo">Ingeniero Agrónomo</option>
+                  <option value="técnico">Técnico Agropecuario</option>
+                  <option value="gestor">Gestor Agropecuario</option>
+                  <option value="otros">Otro servicio</option>
                 </select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Descripción y Metodología</label>
+              <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Descripción y Metodología</label>
               <textarea
-                className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-medium text-white shadow-inner leading-relaxed resize-none"
+                className="w-full bg-background border border-outline-variant/20 focus:border-primary/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-medium text-on-surface shadow-inner leading-relaxed resize-none"
                 name="descripcion"
                 rows="4"
                 value={form.descripcion}
@@ -172,45 +172,45 @@ export default function EditarServicio() {
           </section>
 
           {/* CONTACT TERMINAL */}
-          <section className="card-midnight p-10 bg-agro-charcoal space-y-8">
+          <section className="bg-surface-container-high border border-outline-variant/20 rounded-2xl p-10 space-y-8">
             <div className="flex items-center gap-6 mb-4">
-              <h2 className="text-xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap text-agro-teal">Canales de Enlace</h2>
-              <div className="h-[1px] bg-white/5 flex-1"></div>
+              <h2 className="text-xl font-black text-primary italic tracking-tighter uppercase whitespace-nowrap">Canales de Enlace</h2>
+              <div className="h-[1px] bg-outline-variant/20 flex-1"></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Línea Telefónica</label>
+                <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Línea Telefónica</label>
                 <input
                   name="telefono"
-                  className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-white shadow-inner"
+                  className="w-full bg-background border border-outline-variant/20 focus:border-primary/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-on-surface shadow-inner"
                   value={form.telefono}
                   onChange={handleChange}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">WhatsApp Business</label>
+                <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">WhatsApp Business</label>
                 <input
                   name="whatsapp"
-                  className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-white shadow-inner"
+                  className="w-full bg-background border border-outline-variant/20 focus:border-primary/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-on-surface shadow-inner"
                   value={form.whatsapp}
                   onChange={handleChange}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Dirección Email</label>
+                <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Dirección Email</label>
                 <input
                   name="email"
-                  className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-white shadow-inner"
+                  className="w-full bg-background border border-outline-variant/20 focus:border-primary/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-on-surface shadow-inner"
                   value={form.email}
                   onChange={handleChange}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Portal Externo</label>
+                <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Portal Externo</label>
                 <input
                   name="website"
-                  className="w-full bg-agro-midnight border border-white/5 focus:border-agro-teal/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-white shadow-inner"
+                  className="w-full bg-background border border-outline-variant/20 focus:border-primary/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-on-surface shadow-inner"
                   value={form.website}
                   onChange={handleChange}
                 />
@@ -219,15 +219,15 @@ export default function EditarServicio() {
           </section>
 
           {/* ASSETS VISUALES */}
-          <section className="card-midnight p-10 bg-agro-charcoal space-y-8">
+          <section className="bg-surface-container-high border border-outline-variant/20 rounded-2xl p-10 space-y-8">
             <div className="flex items-center gap-6 mb-4">
-              <h2 className="text-xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap text-agro-teal">Evidencia Operativa</h2>
-              <div className="h-[1px] bg-white/5 flex-1"></div>
+              <h2 className="text-xl font-black text-primary italic tracking-tighter uppercase whitespace-nowrap">Evidencia Operativa</h2>
+              <div className="h-[1px] bg-outline-variant/20 flex-1"></div>
             </div>
 
             <div className="space-y-6">
-              <label className="text-[10px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Añadir Nuevos Assets</label>
-              <label className="block w-full h-32 border-2 border-dashed border-white/5 rounded-[2rem] hover:border-agro-teal/30 transition-all duration-500 cursor-pointer relative overflow-hidden group shadow-inner">
+              <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Añadir Nuevos Assets</label>
+              <label className="block w-full h-32 border-2 border-dashed border-outline-variant/20 rounded-[2rem] hover:border-primary/30 transition-all duration-500 cursor-pointer relative overflow-hidden group shadow-inner">
                 <input
                   type="file"
                   multiple
@@ -235,14 +235,14 @@ export default function EditarServicio() {
                   onChange={handleSubirFotos}
                 />
                 <div className="absolute inset-0 flex items-center justify-center gap-4">
-                  <span className="text-3xl">📸</span>
-                  <span className="text-[9px] font-black text-agro-cream/20 uppercase tracking-widest group-hover:text-agro-teal">Seleccionar Archivos</span>
+                  <span className="material-symbols-outlined text-on-surface-variant/20 group-hover:text-primary transition-colors">photo_camera</span>
+                  <span className="text-[9px] font-black text-on-surface-variant/20 uppercase tracking-widest group-hover:text-primary">Seleccionar Archivos</span>
                 </div>
               </label>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4 mt-6">
                 {form.fotos.map((f, i) => (
-                  <div key={i} className="relative group/img rounded-xl overflow-hidden border border-white/5 h-24 shadow-2xl">
+                  <div key={i} className="relative group/img rounded-xl overflow-hidden border border-outline-variant/20 h-24 shadow-2xl">
                     <img
                       src={`${BASE_URL}${f}`}
                       className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition duration-500"
@@ -266,15 +266,15 @@ export default function EditarServicio() {
           <footer className="pt-8 flex flex-col md:flex-row gap-6">
             <Link
               to="/mis-servicios"
-              className="flex-1 py-5 bg-white/5 text-white font-black rounded-xl border border-white/5 hover:bg-white/10 transition-all uppercase tracking-widest text-[10px] text-center"
+              className="flex-1 py-5 bg-surface-container text-on-surface font-black rounded-xl border border-outline-variant/20 hover:bg-surface-container-high transition-all uppercase tracking-widest text-[10px] text-center"
             >
               Cancelar
             </Link>
             <button
               type="submit"
-              className="btn-emerald flex-[2] py-5 shadow-teal-glow-lg"
+              className="machined-gradient text-on-tertiary-fixed flex-[2] py-5 rounded-full font-black text-[10px] uppercase tracking-[0.3em] shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
             >
-              💾 CONSOLIDAR CONFIGURACIÓN
+              <span className="material-symbols-outlined text-sm">save</span> CONSOLIDAR CONFIGURACIÓN
             </button>
           </footer>
         </form>

@@ -2,14 +2,8 @@ import Lote from "../models/lotModel.js";
 import User from "../models/userModel.js";
 import TempUpload from "../models/tempUploadModel.js";
 import Proveedor from "../models/proveedorModel.js";
-
-// ✅ Planes sincronizados con tu Frontend
-const limitePorPlan = {
-  gratis: 0,
-  basico: 5,
-  pro: Infinity,
-  empresa: Infinity
-};
+import Expense from "../models/expenseModel.js";
+import { puedePublicarLote } from "../config/planes.js";
 
 /* --- MÉTODOS DE ARCHIVOS --- */
 
@@ -52,16 +46,12 @@ export const crearLote = async (req, res) => {
     const usuario = await User.findById(req.user._id);
     if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
 
-    const planUser = usuario.plan?.toLowerCase() || "gratis";
-    const limite = limitePorPlan[planUser] || 0;
-
-    const lotesActivos = await Lote.countDocuments({ usuario: usuario._id }) || 0;
-    const proveedor = await Proveedor.findOne({ usuario: usuario._id });
-    const serviciosActivos = proveedor?.servicios?.length || 0;
-
-    if (lotesActivos + serviciosActivos >= limite) {
-      return res.status(403).json({ mensaje: `Límite alcanzado (${limite} activos).` });
+    const lotesActivos = await Lote.countDocuments({ usuario: usuario._id });
+    if (!puedePublicarLote(usuario.plan, lotesActivos)) {
+      return res.status(403).json({ mensaje: "Límite de lotes alcanzado para tu plan." });
     }
+
+    const planUser = usuario.plan?.toLowerCase() || "observador";
 
     // ✅ REPARACIÓN CRÍTICA: Aseguramos que body exista antes de leer propiedades
     const body = req.body || {};
@@ -103,8 +93,11 @@ export const crearLote = async (req, res) => {
       certificadoSanitario,
       numeroDicose: body.numeroDicose || null,
       usuario: req.user._id,
+      departamento: body.departamento || null,
+      localidad: body.localidad || null,
+      ubicacion: body.ubicacion || `${body.localidad || ""}, ${body.departamento || ""}`.trim().replace(/^,\s*/, ""),
       // Manejamos el booleano que viene de FormData (que llega como string)
-      destacado: ["oro", "empresa", "élite pro", "pro"].includes(planUser) && (body.destacado === "true" || body.destacado === true)
+      destacado: ["pro", "empresa"].includes(planUser) && (body.destacado === "true" || body.destacado === true)
     });
 
     await nuevoLote.save();
@@ -124,7 +117,7 @@ export const obtenerLotes = async (req, res) => {
   try {
     const { q, search, categoria } = req.query;
     const queryTerm = q || search;
-    let filtro = {};
+    let filtro = { estado: { $ne: "Vendido" } };
 
     if (queryTerm) {
       filtro.$or = [
@@ -136,7 +129,15 @@ export const obtenerLotes = async (req, res) => {
     }
 
     if (categoria && categoria !== "Todas") {
-      filtro.categoria = categoria;
+      filtro.categoria = { $regex: categoria, $options: "i" };
+    }
+
+    const deptoFiltro = req.query.departamento;
+    if (deptoFiltro) {
+      filtro.$or = [
+        { departamento: { $regex: deptoFiltro, $options: "i" } },
+        { ubicacion: { $regex: deptoFiltro, $options: "i" } }
+      ];
     }
 
     const lotes = await Lote.find(filtro)
@@ -216,6 +217,15 @@ export const eliminarLote = async (req, res) => {
     const lote = await Lote.findById(req.params.id);
     if (!lote) return res.status(404).json({ mensaje: "No encontrado" });
     if (lote.usuario.toString() !== req.user._id.toString()) return res.status(403).send();
+    await Expense.create({
+      usuario: lote.usuario,
+      fecha: new Date(),
+      categoria: "Venta de Ganado",
+      descripcion: `Lote cerrado: ${lote.titulo}`,
+      monto: lote.precio || 0,
+      lote: lote._id,
+      estado: "Pagado",
+    });
     await lote.deleteOne();
     res.status(200).json({ mensaje: "Eliminado" });
   } catch (error) {

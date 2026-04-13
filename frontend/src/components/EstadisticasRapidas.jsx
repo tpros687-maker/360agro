@@ -51,7 +51,7 @@ export default function EstadisticasRapidas({ lotes = [], productos = [], tienda
 
       {/* CARD: ACTIVO ESTRELLA */}
       <div className="bg-agro-teal/5 border border-agro-teal/20 p-8 rounded-[2.5rem] relative overflow-hidden group shadow-2xl">
-        <div className="absolute -right-2 -top-2 text-6xl opacity-10 group-hover:animate-pulse">⭐</div>
+        <div className="absolute -right-2 -top-2 text-6xl opacity-10 group-hover:animate-pulse"><span className="material-symbols-outlined text-xs">star</span></div>
         <header className="relative z-10">
           <p className="text-[10px] font-black text-agro-midnight bg-agro-teal px-3 py-1 rounded-full inline-block uppercase tracking-widest mb-4">
             Activo Estrella

@@ -19,15 +19,16 @@ const lotSchema = new mongoose.Schema(
     },
     categoria: {
       type: String,
-      // ✅ CATEGORÍAS SINCRONIZADAS CON EL FRONTEND
-      enum: ["Ganado", "Invernada", "Cria", "Maquinaria", "Campos", "Ganado Vacuno"],
-      default: "Ganado",
+      enum: ["Terneros", "Terneras", "Novillos", "Vaquillonas", "Vacas", "Toros", "Pieza de Cría"],
+      default: "Novillos",
     },
     raza: { type: String, trim: true },
     cantidad: { type: Number, default: 0 },
     pesoPromedio: { type: Number, default: 0 },
     precio: { type: Number, required: true },
     ubicacion: { type: String, required: true },
+    departamento: { type: String, trim: true, default: null },
+    localidad: { type: String, trim: true, default: null },
     fotos: { type: [String], default: [] },
     video: { type: String, default: null },
 

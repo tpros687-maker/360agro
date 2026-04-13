@@ -11,6 +11,8 @@ export default function Lotes() {
   const [lotes, setLotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtroCat, setFiltroCat] = useState("Todas");
+  const [orden, setOrden] = useState("recientes");
+  const [busqueda, setBusqueda] = useState("");
   const [searchParams] = useSearchParams();
   const deptoQueCarga = searchParams.get("depto");
 
@@ -21,7 +23,14 @@ export default function Lotes() {
 
       let filtrados = data;
       if (deptoQueCarga) {
-        filtrados = data.filter(l => l.departamento?.toLowerCase() === deptoQueCarga.toLowerCase());
+        filtrados = data.filter(l => {
+          const depto = (l.departamento || "").toLowerCase();
+          const ubicacion = (l.ubicacion || "").toLowerCase();
+          const localidad = (l.localidad || "").toLowerCase();
+          return depto.includes(deptoQueCarga.toLowerCase()) ||
+                 ubicacion.includes(deptoQueCarga.toLowerCase()) ||
+                 localidad.includes(deptoQueCarga.toLowerCase());
+        });
       }
 
       setLotes(filtrados);
@@ -36,6 +45,19 @@ export default function Lotes() {
     cargarLotes();
   }, [filtroCat, deptoQueCarga]);
 
+  const lotesFiltrados = busqueda
+    ? lotes.filter(l => {
+        const q = busqueda.toLowerCase();
+        return (
+          l.titulo?.toLowerCase().includes(q) ||
+          l.raza?.toLowerCase().includes(q) ||
+          l.categoria?.toLowerCase().includes(q) ||
+          l.ubicacion?.toLowerCase().includes(q) ||
+          l.departamento?.toLowerCase().includes(q)
+        );
+      })
+    : lotes;
+
   return (
     <div className="bg-background min-h-screen pt-32 pb-32 px-6 relative overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
       {/* Background Decor */}
@@ -45,101 +67,128 @@ export default function Lotes() {
       <div className="container mx-auto relative z-10">
 
         {/* HEADER DE SECCIÓN */}
-        <header className="mb-24 flex flex-col lg:flex-row lg:items-end justify-between gap-12">
-          <div className="max-w-4xl">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-1 machined-gradient shadow-[0_0_15px_rgba(63,111,118,0.4)]"></div>
-              <span className="text-primary font-bold text-[10px] uppercase tracking-[0.5em] italic">Mercado de Activos Vivos</span>
+        <header className="mb-12 relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-8 h-0.5 machined-gradient"></div>
+                <span className="text-primary font-bold text-[10px] uppercase tracking-[0.5em]">Hacienda y activos del campo</span>
+              </div>
+              <h1 className="text-3xl md:text-5xl font-black text-on-surface italic tracking-tighter uppercase leading-none">
+                Mercado de Lotes
+              </h1>
             </div>
-            <h1 className="text-6xl md:text-[9rem] font-black text-on-surface italic tracking-tighter uppercase leading-[0.85] mb-6 glow-text">
-              GESTIÓN <br /><span className="text-primary not-italic">DE LOTES</span>
-            </h1>
-            {deptoQueCarga && (
-              <p className="inline-flex items-center gap-3 px-5 py-2.5 bg-surface-container-high border border-outline-variant/30 rounded-full text-primary text-[10px] font-bold uppercase tracking-widest italic shadow-xl">
-                <span className="material-symbols-outlined text-sm">location_on</span> Jurisdicción: {deptoQueCarga}
-              </p>
-            )}
+
+            {/* FILTROS RÁPIDOS */}
+            <div className="flex flex-col gap-4 lg:items-end">
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg">search</span>
+                <input
+                  type="text"
+                  placeholder="Buscar por raza, categoría o ubicación..."
+                  className="bg-surface-container-low border border-outline-variant/50 focus:border-primary/50 pl-11 pr-5 py-3 rounded-full outline-none transition-all font-bold text-on-surface text-[10px] placeholder:text-on-surface-variant/30 uppercase tracking-widest w-72"
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                />
+              </div>
+              <div className="relative">
+                <select
+                  value={filtroCat}
+                  onChange={(e) => setFiltroCat(e.target.value)}
+                  className="bg-surface-container-low border border-outline-variant/50 text-on-surface-variant font-bold text-[10px] uppercase tracking-widest px-6 py-3 rounded-full outline-none cursor-pointer appearance-none hover:border-primary/40 transition-all pr-10"
+                >
+                  {CATEGORIAS_LOTES.map(cat => (
+                    <option key={cat} value={cat} className="bg-surface-container-highest text-on-surface">{cat}</option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-primary text-sm">expand_more</span>
+              </div>
+              <select
+                value={orden}
+                onChange={e => setOrden(e.target.value)}
+                className="bg-surface-container-low text-on-surface-variant border border-outline-variant/50 hover:border-primary/40 px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest cursor-pointer outline-none transition-all appearance-none"
+              >
+                <option value="recientes">Más recientes</option>
+                <option value="precio_asc">Menor precio</option>
+                <option value="precio_desc">Mayor precio</option>
+                <option value="cantidad_desc">Mayor cantidad</option>
+              </select>
+            </div>
           </div>
 
-          {/* FILTROS RÁPIDOS */}
-          <div className="flex flex-wrap gap-3 lg:justify-end max-w-2xl">
-            {CATEGORIAS_LOTES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setFiltroCat(cat)}
-                className={`px-8 py-3.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all border ${filtroCat === cat
-                  ? "machined-gradient text-on-tertiary-fixed border-none shadow-[0_0_20px_rgba(63,111,118,0.3)] scale-105"
-                  : "bg-surface-container-low text-on-surface-variant border-outline-variant/10 hover:border-primary/40 hover:text-on-surface"
-                  }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+          {deptoQueCarga && (
+            <div className="mt-6 inline-flex items-center gap-3 px-5 py-2 bg-surface-container-high border border-outline-variant/30 rounded-full text-primary text-[10px] font-bold uppercase tracking-widest">
+              <span className="material-symbols-outlined text-sm">location_on</span>
+              {deptoQueCarga}
+            </div>
+          )}
         </header>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map(i => <div key={i} className="h-[550px] bg-surface-container-high/40 animate-pulse rounded-3xl border border-outline-variant/5"></div>)}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {lotes.length > 0 ? lotes.map((lote) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {lotesFiltrados.length > 0 ? [...lotesFiltrados].sort((a, b) => {
+              if (orden === "precio_asc") return a.precio - b.precio;
+              if (orden === "precio_desc") return b.precio - a.precio;
+              if (orden === "cantidad_desc") return b.cantidad - a.cantidad;
+              return new Date(b.createdAt) - new Date(a.createdAt); // recientes
+            }).map((lote) => (
               <Link
                 to={`/lotes/${lote._id}`}
                 key={lote._id}
-                className="group relative flex flex-col h-full bg-surface-container-high rounded-[2.5rem] border border-outline-variant/10 overflow-hidden hover:scale-[1.02] transition-all duration-500 shadow-xl hover:shadow-primary/5"
+                className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
               >
-                {/* Badge de Cantidad */}
-                <div className="absolute top-8 left-8 z-20 machined-gradient text-on-tertiary-fixed px-8 py-4 rounded-2xl font-black text-3xl shadow-2xl italic tracking-tighter">
-                  {lote.cantidad} <span className="text-[10px] uppercase block -mt-1 opacity-60 tracking-widest font-bold">Cabezas</span>
-                </div>
-
-                {/* Imagen con Overlay */}
-                <div className="relative h-[400px] overflow-hidden">
+                <div className="relative aspect-video overflow-hidden">
                   <img
-                    src={lote.fotos?.[0] ? `${BASE_URL}${lote.fotos[0]}` : "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071&auto=format&fit=crop"}
-                    className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-[2s] group-hover:scale-105"
+                    src={lote.fotos?.[0] ? `${BASE_URL}${lote.fotos[0]}` : "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071"}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                     alt={lote.titulo}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-surface-container-high via-transparent to-transparent"></div>
-
-                  {/* Badge de Verificación */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                  <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">{lote.cantidad} cabezas</span>
+                  </div>
                   {lote.documentoPropiedad && lote.numeroDicose && (
-                    <div className="absolute bottom-6 right-8 z-20 flex items-center gap-2 bg-agro-midnight/60 backdrop-blur-md px-4 py-2 rounded-full border border-[#00E5FF]/30 shadow-[0_0_15px_rgba(0,229,255,0.1)]">
-                      <span className="material-symbols-outlined text-[#00E5FF] text-sm font-bold">verified_user</span>
-                      <span className="text-[#00E5FF] text-[9px] font-black uppercase tracking-[0.2em] italic">Verificado</span>
+                    <div className="absolute top-3 right-3 bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1">
+                      <span className="material-symbols-outlined text-white text-xs">verified</span>
+                      <span className="text-[9px] font-bold text-white uppercase tracking-widest">Verificado</span>
                     </div>
                   )}
                 </div>
 
-                {/* Info del Lote */}
-                <div className="p-10 -mt-24 relative z-10 flex flex-col flex-1">
-                  <div className="flex items-center gap-3 mb-6">
-                    <span className="bg-primary/10 text-primary text-[9px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest italic border border-primary/20">
-                      {lote.raza}
-                    </span>
-                    <span className="text-on-surface-variant text-[9px] font-bold uppercase tracking-widest leading-none">
+                <div className="p-5 flex flex-col flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[9px] font-bold text-primary bg-primary/10 px-3 py-1 rounded-full uppercase tracking-widest">
                       {lote.categoria}
                     </span>
+                    <span className="text-[9px] text-on-surface-variant uppercase tracking-widest">{lote.raza}</span>
                   </div>
 
-                  <h3 className="text-3xl font-black text-on-surface italic uppercase tracking-tighter mb-8 group-hover:text-primary transition-colors leading-[0.9] line-clamp-2">
+                  <h3 className="text-sm font-black text-on-surface uppercase tracking-tight mb-4 line-clamp-2 group-hover:text-primary transition-colors leading-tight">
                     {lote.titulo}
                   </h3>
 
-                  <div className="mt-auto flex items-end justify-between pt-8 border-t border-outline-variant/10">
-                    <div className="space-y-1">
-                      <p className="text-on-surface-variant text-[8px] font-bold uppercase tracking-[0.4em] italic mb-1 opacity-50">Tasación Base</p>
-                      <p className="text-4xl font-black text-on-surface italic tracking-tighter group-hover:text-primary transition-colors flex items-baseline gap-1">
-                        <span className="text-sm not-italic opacity-40 font-bold">USD</span>{lote.precio?.toLocaleString()}
-                      </p>
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="bg-surface-container-low rounded-xl p-2.5">
+                      <p className="text-[8px] text-on-surface-variant uppercase tracking-widest mb-0.5">Peso prom.</p>
+                      <p className="text-[11px] font-black text-on-surface">{lote.pesoPromedio || 0} kg</p>
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-center justify-end gap-2 text-primary font-bold uppercase text-[10px] tracking-widest mb-2">
-                        <span className="material-symbols-outlined text-sm">location_on</span> {lote.departamento || lote.zona}
-                      </div>
-                      <p className="text-on-surface-variant text-[9px] font-bold uppercase tracking-widest opacity-60 italic">{lote.pesoPromedio} KG PROM.</p>
+                    <div className="bg-surface-container-low rounded-xl p-2.5">
+                      <p className="text-[8px] text-on-surface-variant uppercase tracking-widest mb-0.5">Ubicación</p>
+                      <p className="text-[11px] font-black text-on-surface truncate">{lote.localidad || lote.departamento || lote.ubicacion}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-auto flex items-center justify-between pt-4 border-t border-outline-variant/30">
+                    <div>
+                      <p className="text-[8px] text-on-surface-variant uppercase tracking-widest mb-0.5">Precio</p>
+                      <p className="text-xl font-black text-primary">USD {lote.precio?.toLocaleString()}</p>
+                    </div>
+                    <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                      <span className="material-symbols-outlined text-sm">arrow_forward</span>
                     </div>
                   </div>
                 </div>

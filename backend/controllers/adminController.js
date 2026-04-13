@@ -15,15 +15,35 @@ export const getStats = async (req, res) => {
         const totalProveedores = await Proveedor.countDocuments();
         const subPendientes = await Subscripcion.countDocuments({ status: "Pendiente" });
 
+        const proveedores = await Proveedor.find();
+        const totalServicios = proveedores.reduce((acc, p) => acc + (p.servicios?.length || 0), 0);
+
         res.json({
             totalUsers,
             totalLotes,
             totalProductos,
             totalProveedores,
+            totalServicios,
             subPendientes
         });
     } catch (error) {
         res.status(500).json({ mensaje: "Error al obtener estadísticas", error: error.message });
+    }
+};
+
+/**
+ * 📊 ESTADÍSTICAS PÚBLICAS (sin auth)
+ */
+export const getStatsPublicas = async (req, res) => {
+    try {
+        const totalLotes = await Lote.countDocuments({ estado: { $ne: "Vendido" } });
+        const totalProveedores = await Proveedor.countDocuments();
+        const proveedores = await Proveedor.find({}, "servicios");
+        const totalServicios = proveedores.reduce((acc, p) => acc + (p.servicios?.length || 0), 0);
+
+        res.json({ totalLotes, totalProveedores, totalServicios });
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al obtener stats" });
     }
 };
 
@@ -71,5 +91,35 @@ export const getSolicitudesSub = async (req, res) => {
         res.json(solicitudes);
     } catch (error) {
         res.status(500).json({ mensaje: "Error al obtener solicitudes", error: error.message });
+    }
+};
+
+export const cambiarPlanUsuario = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { plan } = req.body;
+        const planesValidos = ["observador", "productor", "pro", "empresa"];
+        if (!planesValidos.includes(plan)) {
+            return res.status(400).json({ mensaje: "Plan inválido" });
+        }
+        const usuario = await User.findByIdAndUpdate(
+            id, { plan }, { new: true }
+        ).select("-password");
+        if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
+        res.json({ mensaje: `Plan actualizado a ${plan}`, usuario });
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al cambiar plan", error: error.message });
+    }
+};
+
+export const eliminarUsuario = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const usuario = await User.findById(id);
+        if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
+        await User.findByIdAndDelete(id);
+        res.json({ mensaje: "Usuario eliminado correctamente" });
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al eliminar usuario", error: error.message });
     }
 };

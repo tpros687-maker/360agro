@@ -177,6 +177,7 @@ export const subirFotosProducto = async (req, res) => {
     if (!req.files || req.files.length === 0) return res.status(400).json({ mensaje: "No hay imágenes" });
     const proveedor = await buscarProveedor(req.user._id);
     const producto = await Producto.findOne({ _id: req.params.id, proveedor: proveedor._id });
+    if (!producto) return res.status(404).json({ mensaje: "Producto no encontrado" });
     const nuevas = req.files.map(file => `/uploads/productos/${file.filename}`);
     producto.fotos.push(...nuevas);
     if (!producto.fotoPrincipal) producto.fotoPrincipal = nuevas[0];
@@ -190,6 +191,7 @@ export const eliminarFotoProducto = async (req, res) => {
     const { ruta } = req.body;
     const proveedor = await buscarProveedor(req.user._id);
     const producto = await Producto.findOne({ _id: req.params.id, proveedor: proveedor._id });
+    if (!producto) return res.status(404).json({ mensaje: "Producto no encontrado" });
     borrarArchivoFisico(ruta);
     producto.fotos = producto.fotos.filter(f => f !== ruta);
     if (producto.fotoPrincipal === ruta) producto.fotoPrincipal = producto.fotos[0] || null;
@@ -207,6 +209,7 @@ export const setFotoPrincipal = async (req, res) => {
       { $set: { fotoPrincipal: ruta } },
       { new: true }
     );
+    if (!producto) return res.status(404).json({ mensaje: "Producto no encontrado" });
     res.status(200).json({ fotoPrincipal: producto.fotoPrincipal });
   } catch (error) { res.status(500).json({ mensaje: error.message }); }
 };

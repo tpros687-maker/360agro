@@ -1,11 +1,12 @@
 import User from "../models/userModel.js";
 import generarToken from "../utils/generarToken.js";
 import bcrypt from "bcryptjs";
+import { enviarEmailVerificacion } from "../utils/emailService.js";
 
 // 🟢 REGISTRAR USUARIO
 export const registrarUsuario = async (req, res) => {
   try {
-    const { nombre, email, password } = req.body;
+    const { nombre, email, password, plan } = req.body;
     const emailLower = email.toLowerCase();
 
     const existeUsuario = await User.findOne({ email: emailLower });
@@ -13,7 +14,13 @@ export const registrarUsuario = async (req, res) => {
       return res.status(400).json({ mensaje: "El usuario ya existe" });
     }
 
-    const usuario = await User.create({ nombre, email: emailLower, password });
+    const usuario = await User.create({ nombre, email: emailLower, password, plan: plan || "observador" });
+
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    usuario.codigoVerificacion = codigo;
+    usuario.codigoExpira = new Date(Date.now() + 15 * 60 * 1000);
+    await usuario.save();
+    await enviarEmailVerificacion(usuario.email, usuario.nombre, codigo);
 
     res.status(201).json({
       _id: usuario._id,
@@ -21,6 +28,8 @@ export const registrarUsuario = async (req, res) => {
       email: usuario.email,
       plan: usuario.plan,
       tipoUsuario: usuario.tipoUsuario,
+      foto: usuario.foto || null,
+      telefono: usuario.telefono || null,
       token: generarToken(usuario._id),
     });
 
@@ -32,29 +41,36 @@ export const registrarUsuario = async (req, res) => {
 
 // 🟢 LOGIN
 export const loginUsuario = async (req, res) => {
-  const { email, password } = req.body;
-  const emailLower = email.toLowerCase();
+  try {
+    const { email, password } = req.body;
+    const emailLower = email.toLowerCase();
 
-  const usuario = await User.findOne({ email: emailLower });
+    const usuario = await User.findOne({ email: emailLower });
 
-  if (!usuario) {
-    return res.status(400).json({ mensaje: "Usuario no encontrado" });
+    if (!usuario) {
+      return res.status(400).json({ mensaje: "Usuario no encontrado" });
+    }
+
+    const passwordCorrecto = await bcrypt.compare(password, usuario.password);
+
+    if (!passwordCorrecto) {
+      return res.status(400).json({ mensaje: "Contraseña incorrecta" });
+    }
+
+    res.json({
+      _id: usuario._id,
+      nombre: usuario.nombre,
+      email: usuario.email,
+      plan: usuario.plan,
+      tipoUsuario: usuario.tipoUsuario,
+      foto: usuario.foto || null,
+      telefono: usuario.telefono || null,
+      emailVerificado: usuario.emailVerificado || false,
+      token: generarToken(usuario._id),
+    });
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al iniciar sesión" });
   }
-
-  const passwordCorrecto = await bcrypt.compare(password, usuario.password);
-
-  if (!passwordCorrecto) {
-    return res.status(400).json({ mensaje: "Contraseña incorrecta" });
-  }
-
-  res.json({
-    _id: usuario._id,
-    nombre: usuario.nombre,
-    email: usuario.email,
-    plan: usuario.plan,
-    tipoUsuario: usuario.tipoUsuario,
-    token: generarToken(usuario._id),
-  });
 };
 
 // 🟢 OBTENER PERFIL
@@ -76,7 +92,7 @@ export const obtenerPerfil = async (req, res) => {
 // 🟢 ACTUALIZAR PERFIL (nombre / email)
 export const actualizarPerfil = async (req, res) => {
   try {
-    const { nombre, email } = req.body;
+    const { nombre, email, telefono } = req.body;
 
     const usuario = await User.findById(req.user._id);
 
@@ -86,6 +102,7 @@ export const actualizarPerfil = async (req, res) => {
 
     usuario.nombre = nombre || usuario.nombre;
     usuario.email = email || usuario.email;
+    usuario.telefono = telefono || usuario.telefono;
 
     await usuario.save();
 
@@ -105,12 +122,96 @@ export const actualizarPerfil = async (req, res) => {
   }
 };
 
+// 🟢 VERIFICAR EMAIL
+export const verificarEmail = async (req, res) => {
+  try {
+    const { codigo } = req.body;
+    const usuario = await User.findById(req.user._id);
+    if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    if (usuario.emailVerificado) return res.status(400).json({ mensaje: "Email ya verificado" });
+    if (usuario.codigoVerificacion !== codigo) return res.status(400).json({ mensaje: "Código incorrecto" });
+    if (new Date() > usuario.codigoExpira) return res.status(400).json({ mensaje: "Código expirado" });
+
+    usuario.emailVerificado = true;
+    usuario.codigoVerificacion = null;
+    usuario.codigoExpira = null;
+    await usuario.save();
+    res.json({ mensaje: "Email verificado correctamente" });
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al verificar email" });
+  }
+};
+
 // 🟢 ACTUALIZAR PLAN
+export const cambiarPassword = async (req, res) => {
+  try {
+    const { passwordActual, passwordNueva } = req.body;
+    const usuario = await User.findById(req.user._id);
+
+    const correcto = await bcrypt.compare(passwordActual, usuario.password);
+    if (!correcto) return res.status(400).json({ mensaje: "Contraseña actual incorrecta" });
+
+    if (passwordNueva.length < 6) return res.status(400).json({
+      mensaje: "La contraseña debe tener al menos 6 caracteres"
+    });
+
+    const salt = await bcrypt.genSalt(10);
+    usuario.password = await bcrypt.hash(passwordNueva, salt);
+    await usuario.save();
+
+    res.json({ mensaje: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al cambiar contraseña" });
+  }
+};
+
+export const solicitarResetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const usuario = await User.findOne({ email: email.toLowerCase() });
+    if (!usuario) return res.status(404).json({ mensaje: "No existe cuenta con ese email" });
+
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    usuario.codigoVerificacion = codigo;
+    usuario.codigoExpira = new Date(Date.now() + 15 * 60 * 1000);
+    await usuario.save();
+
+    await enviarEmailVerificacion(usuario.email, usuario.nombre, codigo);
+    res.json({ mensaje: "Código enviado al email" });
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al enviar código" });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, codigo, passwordNueva } = req.body;
+    const usuario = await User.findOne({ email: email.toLowerCase() });
+    if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    if (usuario.codigoVerificacion !== codigo) return res.status(400).json({ mensaje: "Código incorrecto" });
+    if (new Date() > usuario.codigoExpira) return res.status(400).json({ mensaje: "Código expirado" });
+    if (passwordNueva.length < 6) return res.status(400).json({ mensaje: "La contraseña debe tener al menos 6 caracteres" });
+
+    await User.findByIdAndUpdate(
+      usuario._id,
+      {
+        password: await bcrypt.hash(passwordNueva, await bcrypt.genSalt(10)),
+        codigoVerificacion: null,
+        codigoExpira: null
+      }
+    );
+
+    res.json({ mensaje: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al resetear contraseña" });
+  }
+};
+
 export const actualizarPlan = async (req, res) => {
   try {
     const { plan } = req.body;
 
-    const planesValidos = ["gratis", "basico", "productor", "bronce", "plata", "oro", "pro", "élite pro", "empresa"];
+    const planesValidos = ["observador", "productor", "pro", "empresa"];
     if (!planesValidos.includes(plan)) {
       return res.status(400).json({ mensaje: "Plan inválido" });
     }

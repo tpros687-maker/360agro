@@ -2,7 +2,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import Tienda from "../models/TiendaModel.js";
+import Tienda from "../models/tiendaModel.js";
 
 // ============= MULTER STORAGE =============
 const storage = multer.diskStorage({

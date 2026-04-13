@@ -9,7 +9,7 @@ export default function Perfil() {
   const [lotes, setLotes] = useState([]);
   const [mensajes, setMensajes] = useState([]);
   const [editando, setEditando] = useState(false);
-  const [form, setForm] = useState({ nombre: "", email: "" });
+  const [form, setForm] = useState({ nombre: "", email: "", telefono: "" });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -19,7 +19,7 @@ export default function Perfil() {
         const { data: userData } = await API.get("/users/perfil");
 
         setUsuario(userData);
-        setForm({ nombre: userData.nombre, email: userData.email });
+        setForm({ nombre: userData.nombre, email: userData.email, telefono: userData.telefono || "" });
 
         // Lotes y mensajes (el interceptor inyecta el token)
         const { data: lotesData } = await API.get("/lots/mis-lotes");
@@ -43,7 +43,7 @@ export default function Perfil() {
 
   const handleGuardar = async () => {
     try {
-      await API.put("/users/perfil", { nombre: form.nombre, email: form.email });
+      await API.put("/users/perfil", { nombre: form.nombre, email: form.email, telefono: form.telefono });
       setEditando(false);
       toast.success("PERFIL ACTUALIZADO");
     } catch (error) {
@@ -54,7 +54,7 @@ export default function Perfil() {
 
   if (loading) {
     return (
-      <div className="bg-agro-midnight min-h-screen pt-32 px-6">
+      <div className="bg-background min-h-screen pt-32 px-6">
         <div className="container mx-auto max-w-4xl">
           <ProfileSkeleton />
         </div>
@@ -65,24 +65,24 @@ export default function Perfil() {
   if (!usuario) return null;
 
   return (
-    <div className="bg-agro-midnight min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-agro-teal/5 blur-[200px] pointer-events-none opacity-30 -mr-40 -mt-40"></div>
+    <div className="bg-background min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[200px] pointer-events-none opacity-30 -mr-40 -mt-40"></div>
 
       <div className="container mx-auto max-w-4xl relative z-10 reveal-delayed">
 
-        <header className="mb-16 reveal border-b border-white/5 pb-12">
-          <span className="text-agro-teal font-black text-[10px] uppercase tracking-[0.5em] mb-4 block">Identidad de Usuario</span>
+        <header className="mb-8 reveal border-b border-outline-variant/70 pb-8">
+          <span className="text-primary font-black text-[10px] uppercase tracking-[0.5em] mb-4 block">Identidad de Usuario</span>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <h1 className="text-5xl md:text-7xl font-black text-white italic tracking-tighter leading-none">
-              PERFIL <br /><span className="text-agro-teal not-italic font-black">PRIVATE</span>
+            <h1 className="text-3xl md:text-5xl font-black text-on-surface italic tracking-tighter leading-none">
+              PERFIL <br /><span className="text-primary not-italic font-black">PRIVATE</span>
             </h1>
-            <div className="flex items-center gap-6 bg-agro-charcoal/50 p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
-              <div className="w-16 h-16 bg-agro-teal/10 rounded-xl flex items-center justify-center text-3xl shadow-inner">
-                👤
+            <div className="flex items-center gap-6 bg-surface-container-high p-4 rounded-2xl border border-outline-variant/70 backdrop-blur-sm">
+              <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center shadow-inner text-primary">
+                <span className="material-symbols-outlined text-3xl">person</span>
               </div>
               <div>
-                <p className="text-white font-black text-xl italic tracking-tighter uppercase leading-none mb-1">{usuario.nombre}</p>
-                <p className="text-agro-cream/20 text-[9px] font-black uppercase tracking-widest">{usuario.email}</p>
+                <p className="text-on-surface font-black text-xl italic tracking-tighter uppercase leading-none mb-1">{usuario.nombre}</p>
+                <p className="text-on-surface-variant/40 text-[9px] font-black uppercase tracking-widest">{usuario.email}</p>
               </div>
             </div>
           </div>
@@ -92,33 +92,46 @@ export default function Perfil() {
 
           {/* GESTIÓN DE CREDENCIALES (8 COLS) */}
           <section className="lg:col-span-8 space-y-12">
-            <div className="card-midnight p-10 bg-agro-charcoal">
+            <div className="bg-surface-container-high border border-outline-variant/70 rounded-[2rem] p-8">
               <div className="flex items-center gap-6 mb-10">
-                <h2 className="text-xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap text-agro-teal">Parámetros de Cuenta</h2>
-                <div className="h-[1px] bg-white/5 flex-1"></div>
+                <h2 className="text-xl font-black text-on-surface italic tracking-tighter uppercase whitespace-nowrap text-primary">Parámetros de Cuenta</h2>
+                <div className="h-[1px] bg-outline-variant/20 flex-1"></div>
               </div>
 
               <div className="space-y-8">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Nombre Completo</label>
+                  <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Nombre Completo</label>
                   <input
                     type="text"
                     value={form.nombre}
                     disabled={!editando}
                     onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                    className={`w-full bg-agro-midnight border px-6 py-4 rounded-xl outline-none transition-all duration-500 font-bold text-white shadow-inner ${editando ? "border-agro-teal/50" : "border-white/5 opacity-50 cursor-not-allowed"
+                    className={`w-full bg-surface-container-lowest border px-6 py-4 rounded-xl outline-none transition-all duration-500 font-bold text-on-surface shadow-inner ${editando ? "border-primary/50" : "border-outline-variant/50 opacity-50 cursor-not-allowed"
                       }`}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-agro-cream/20 uppercase tracking-[0.3em] ml-2">Dirección de Enlace (Email)</label>
+                  <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Dirección de Enlace (Email)</label>
                   <input
                     type="email"
                     value={form.email}
                     disabled={!editando}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className={`w-full bg-agro-midnight border px-6 py-4 rounded-xl outline-none transition-all duration-500 font-bold text-white shadow-inner ${editando ? "border-agro-teal/50" : "border-white/5 opacity-50 cursor-not-allowed"
+                    className={`w-full bg-surface-container-lowest border px-6 py-4 rounded-xl outline-none transition-all duration-500 font-bold text-on-surface shadow-inner ${editando ? "border-primary/50" : "border-outline-variant/50 opacity-50 cursor-not-allowed"
+                      }`}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">WhatsApp / Teléfono</label>
+                  <input
+                    type="tel"
+                    value={form.telefono}
+                    disabled={!editando}
+                    onChange={(e) => setForm({ ...form, telefono: e.target.value })}
+                    placeholder="+598 99 000 000"
+                    className={`w-full bg-surface-container-lowest border px-6 py-4 rounded-xl outline-none transition-all duration-500 font-bold text-on-surface shadow-inner ${editando ? "border-primary/50" : "border-outline-variant/50 opacity-50 cursor-not-allowed"
                       }`}
                   />
                 </div>
@@ -127,16 +140,16 @@ export default function Perfil() {
                   {editando ? (
                     <button
                       onClick={handleGuardar}
-                      className="btn-emerald w-full py-5 text-[10px]"
+                      className="machined-gradient text-on-tertiary-fixed w-full py-5 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2"
                     >
-                      💾 CONSOLIDAR CAMBIOS
+                      <span className="material-symbols-outlined text-sm">save</span> CONSOLIDAR CAMBIOS
                     </button>
                   ) : (
                     <button
                       onClick={() => setEditando(true)}
-                      className="w-full py-5 bg-white/5 text-white font-black rounded-xl border border-white/5 hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]"
+                      className="w-full py-5 bg-background text-on-surface font-black rounded-full border border-outline-variant/70 hover:bg-surface-container-lowest transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
                     >
-                      ✏️ RECONFIGURAR PERFIL
+                      <span className="material-symbols-outlined text-sm">edit</span> RECONFIGURAR PERFIL
                     </button>
                   )}
                 </div>
@@ -144,22 +157,22 @@ export default function Perfil() {
             </div>
 
             {/* STATUS DE MEMBRESÍA */}
-            <div className="card-midnight p-10 bg-gradient-to-br from-agro-charcoal to-agro-midnight border-agro-teal/10">
+            <div className="bg-surface-container-high border border-outline-variant/70 rounded-[2rem] p-8">
               <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 bg-agro-teal shadow-teal-glow rounded-3xl flex items-center justify-center text-4xl transform -rotate-12 group-hover:rotate-0 transition duration-700">
-                    {usuario.plan === "pro" ? "⭐" : usuario.plan === "empresa" ? "🏢" : "🆓"}
+                  <div className="w-20 h-20 bg-primary text-white rounded-3xl flex items-center justify-center text-4xl shadow-xl">
+                    {usuario.plan === "pro" ? <span className="material-symbols-outlined">star</span> : usuario.plan === "empresa" ? <span className="material-symbols-outlined text-2xl">business</span> : "🆓"}
                   </div>
                   <div>
-                    <p className="text-agro-cream/20 text-[10px] font-black uppercase tracking-widest mb-1">Membresía Activa</p>
-                    <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase">{usuario.plan || "Gratis"}</h3>
+                    <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-widest mb-1">Membresía Activa</p>
+                    <h3 className="text-3xl font-black text-on-surface italic tracking-tighter uppercase">{usuario.plan || "Gratis"}</h3>
                   </div>
                 </div>
                 <Link
                   to="/planes"
-                  className="px-8 py-4 bg-agro-midnight text-agro-teal font-black rounded-xl border border-agro-teal/20 hover:bg-agro-teal hover:text-white transition-all duration-500 uppercase tracking-widest text-[9px] shadow-inner"
+                  className="px-8 py-4 bg-background text-primary font-black rounded-full border border-primary/20 hover:bg-primary hover:text-white transition-all duration-500 uppercase tracking-widest text-[9px]"
                 >
-                  Optimizar Plan ➔
+                  Optimizar Plan <span className="material-symbols-outlined text-sm">arrow_forward</span>
                 </Link>
               </div>
             </div>
@@ -167,37 +180,43 @@ export default function Perfil() {
 
           {/* MÉTRICAS DE ACTIVIDAD (4 COLS) */}
           <section className="lg:col-span-4 space-y-12">
-            <div className="card-midnight p-10 bg-agro-midnight border-white/5 shadow-inner">
-              <h3 className="text-lg font-black text-white italic tracking-tighter uppercase mb-10">Métricas de Red</h3>
+            <div className="bg-surface-container-high border border-outline-variant/70 rounded-[2rem] p-8 shadow-inner">
+              <h3 className="text-lg font-black text-on-surface italic tracking-tighter uppercase mb-10 text-primary">Métricas de Red</h3>
 
-              <div className="space-y-10">
-                <div className="flex items-center gap-6 group">
-                  <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl group-hover:bg-agro-teal group-hover:text-white transition-all duration-500 shadow-inner">🐄</div>
+              <div className="space-y-6">
+                <div className="bg-surface-container-lowest border border-outline-variant/50 rounded-2xl p-4 flex items-center gap-6 group">
+                  <div className="w-14 h-14 rounded-2xl bg-background border border-outline-variant/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500 text-primary shadow-sm">
+                    <span className="material-symbols-outlined text-2xl">pets</span>
+                  </div>
                   <div>
-                    <p className="text-[9px] font-black text-agro-cream/20 uppercase tracking-widest mb-1">Activos</p>
-                    <p className="text-white font-black italic tracking-tighter text-2xl leading-none">{lotes.length}</p>
+                    <p className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-widest mb-1 italic">Activos</p>
+                    <p className="text-on-surface font-black italic tracking-tighter text-2xl leading-none">{lotes.length}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 group">
-                  <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl group-hover:bg-agro-teal group-hover:text-white transition-all duration-500 shadow-inner">✉️</div>
+                <div className="bg-surface-container-lowest border border-outline-variant/50 rounded-2xl p-4 flex items-center gap-6 group">
+                  <div className="w-14 h-14 rounded-2xl bg-background border border-outline-variant/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500 text-primary shadow-sm">
+                    <span className="material-symbols-outlined text-2xl">mail</span>
+                  </div>
                   <div>
-                    <p className="text-[9px] font-black text-agro-cream/20 uppercase tracking-widest mb-1">Feedback</p>
-                    <p className="text-white font-black italic tracking-tighter text-2xl leading-none">{mensajes.length}</p>
+                    <p className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-widest mb-1 italic">Feedback</p>
+                    <p className="text-on-surface font-black italic tracking-tighter text-2xl leading-none">{mensajes.length}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 group">
-                  <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl group-hover:bg-agro-teal group-hover:text-white transition-all duration-500 shadow-inner">⚡</div>
+                <div className="bg-surface-container-lowest border border-outline-variant/50 rounded-2xl p-4 flex items-center gap-6 group">
+                  <div className="w-14 h-14 rounded-2xl bg-background border border-outline-variant/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500 text-primary shadow-sm">
+                    <span className="material-symbols-outlined text-2xl">bolt</span>
+                  </div>
                   <div>
-                    <p className="text-[9px] font-black text-agro-cream/20 uppercase tracking-widest mb-1">Status</p>
-                    <p className="text-agro-teal font-black italic tracking-tighter text-sm uppercase leading-none">Verificado</p>
+                    <p className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-widest mb-1 italic">Status</p>
+                    <p className="text-primary font-black italic tracking-tighter text-sm uppercase leading-none">Verificado</p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-12 pt-10 border-t border-white/5 text-center px-4">
-                <p className="text-[9px] font-black text-agro-cream/10 uppercase tracking-[0.3em] leading-relaxed">
+              <div className="mt-12 pt-10 border-t border-outline-variant/20 text-center px-4">
+                <p className="text-[9px] font-black text-on-surface-variant/20 uppercase tracking-[0.3em] leading-relaxed italic">
                   "Su identidad digital es su mayor activo en el mercado 360 Agro."
                 </p>
               </div>

@@ -29,7 +29,7 @@ const productoSchema = new mongoose.Schema(
     // NUEVO: Vital para un Agromarket
     unidadMedida: {
       type: String,
-      enum: ["kg", "unidad", "litro", "tonelada", "lote"],
+      enum: ["kg", "unidad", "litro", "tonelada", "lote", "bolsa", "saco", "docena", "metro", "hectolitro"],
       default: "unidad",
       required: true
     },

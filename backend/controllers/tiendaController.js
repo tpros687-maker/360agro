@@ -1,4 +1,4 @@
-import Tienda from "../models/TiendaModel.js";
+import Tienda from "../models/tiendaModel.js";
 import User from "../models/userModel.js";
 
 /* =======================================================

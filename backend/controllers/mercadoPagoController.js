@@ -1,71 +1,106 @@
-import User from "../models/userModel.js";
-import Subscripcion from "../models/subscripcionModel.js";
+import { MercadoPagoConfig, PreApprovalPlan, PreApproval } from 'mercadopago';
+import User from '../models/userModel.js';
+import Subscripcion from '../models/subscripcionModel.js';
+import { PLANES } from '../config/planes.js';
 
-/**
- * 🚀 SIMULADOR DE MERCADO PAGO PARA SUSCRIPCIONES
- * Este controlador emite las señales que en producción vendrían de MP.
- */
+const getClient = () => new MercadoPagoConfig({
+  accessToken: process.env.MP_ACCESS_TOKEN
+});
 
-// 1. Crear la intención de suscripción (Preferencia)
-export const crearSuscripcionSimulada = async (req, res) => {
-    try {
-        const { planKey } = req.body;
-        const usuarioId = req.user._id;
+export const crearSuscripcion = async (req, res) => {
+  try {
+    const { planKey, periodo } = req.body;
+    const plan = PLANES[planKey];
+    if (!plan) return res.status(400).json({ mensaje: "Plan inválido" });
 
-        // Generamos un ID de suscripción ficticio
-        const subId = `SUB-SIM-${Math.floor(Math.random() * 1000000)}`;
+    const montos = {
+      mensual: { monto: plan.precio.mensual, frecuencia: 1, tipo: "months" },
+      trimestral: { monto: plan.precio.trimestral, frecuencia: 3, tipo: "months" },
+      anual: { monto: plan.precio.anual, frecuencia: 12, tipo: "months" }
+    };
 
-        res.status(200).json({
-            mensaje: "Preferencia de pago generada",
-            suscripcionId: subId,
-            monto: planKey === "pro" ? 49 : 19,
-            sandbox_init_point: "#" // En real aquí iría la URL de MP
-        });
-    } catch (error) {
-        res.status(500).json({ mensaje: "Error al generar pago", error: error.message });
-    }
+    const config = montos[periodo] || montos.mensual;
+    const montoUYU = config.monto * 40;
+
+    const preApprovalPlan = new PreApprovalPlan(getClient());
+    const planCreado = await preApprovalPlan.create({
+      body: {
+        reason: `360 Agro - Plan ${plan.nombre} USD ${config.monto}/mes`,
+        auto_recurring: {
+          frequency: config.frecuencia,
+          frequency_type: config.tipo,
+          transaction_amount: montoUYU,
+          currency_id: "UYU"
+        },
+        back_url: process.env.FRONTEND_URL || "http://localhost:5173/planes",
+        status: "active"
+      }
+    });
+
+    await Subscripcion.findOneAndUpdate(
+      { usuario: req.user._id, status: "Pendiente" },
+      {
+        usuario: req.user._id,
+        planSolicitado: planKey,
+        status: "Pendiente"
+      },
+      { upsert: true }
+    );
+
+    res.status(200).json({
+      init_point: planCreado.init_point,
+      planId: planCreado.id
+    });
+  } catch (error) {
+    console.error("Error MP:", error);
+    res.status(500).json({ mensaje: "Error al crear suscripción", error: error.message });
+  }
 };
 
-// 2. Webhook Simulado (La "Campana Digital" que activa el plan)
-export const webhookSimulado = async (req, res) => {
-    try {
-        const { suscripcionId, usuarioId, planKey, status } = req.body;
+export const webhook = async (req, res) => {
+  try {
+    const { type, data } = req.body;
+    if (type !== "subscription_preapproval") return res.sendStatus(200);
 
-        if (status !== "approved") {
-            return res.status(400).json({ mensaje: "Pago no aprobado" });
-        }
+    const preApproval = new PreApproval(getClient());
+    const suscripcion = await preApproval.get({ id: data.id });
 
-        const usuario = await User.findById(usuarioId);
-        if (!usuario) return res.status(404).json({ mensaje: "Usuario no hallado" });
+    const usuario = await User.findOne({
+      suscripcionId: suscripcion.preapproval_plan_id
+    }) || await Subscripcion.findOne({
+      status: "Pendiente"
+    }).populate("usuario").then(s => s?.usuario);
 
-        // CALCULAR FECHA DE PRÓXIMO COBRO (Hoy + 30 días)
-        const fecha = new Date();
-        fecha.setDate(fecha.getDate() + 30);
+    if (!usuario) return res.sendStatus(200);
 
-        // ACTIVACIÓN AUTOMÁTICA
-        usuario.plan = planKey;
-        usuario.suscripcionId = suscripcionId;
-        usuario.proximaFechaCobro = fecha;
-        usuario.estadoSuscripcion = "activa";
+    if (suscripcion.status === "authorized") {
+      usuario.plan = suscripcion.reason.includes("productor") ? "productor"
+        : suscripcion.reason.includes("Pro") ? "pro"
+        : suscripcion.reason.includes("Empresa") ? "empresa" : "observador";
+      usuario.suscripcionId = data.id;
+      usuario.estadoSuscripcion = "activa";
+      usuario.proximaFechaCobro = new Date(suscripcion.next_payment_date);
+      await usuario.save();
 
-        await usuario.save();
-
-        // También registramos/actualizamos en el modelo de subscripciones para historial
-        await Subscripcion.findOneAndUpdate(
-            { usuario: usuarioId, planSolicitado: planKey, status: "Pendiente" },
-            { status: "Aprobado", fechaAprobacion: Date.now() },
-            { upsert: true }
-        );
-
-        console.log(`✅ [AUTOMATION] Plan ${planKey.toUpperCase()} activado para ${usuario.nombre}`);
-
-        res.status(200).json({
-            mensaje: "¡Suscripción Activada!",
-            plan: usuario.plan,
-            proximoCobro: usuario.proximaFechaCobro
-        });
-    } catch (error) {
-        console.error("❌ Error en Webhook:", error);
-        res.status(500).json({ mensaje: "Error en la activación automática" });
+      await Subscripcion.findOneAndUpdate(
+        { usuario: usuario._id, status: "Pendiente" },
+        { status: "Aprobado", fechaAprobacion: Date.now() }
+      );
     }
+
+    if (suscripcion.status === "cancelled") {
+      usuario.plan = "observador";
+      usuario.estadoSuscripcion = "cancelada";
+      await usuario.save();
+    }
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Error webhook MP:", error);
+    res.sendStatus(500);
+  }
 };
+
+// Alias para compatibilidad si algo aún referencia los nombres viejos
+export const crearSuscripcionSimulada = crearSuscripcion;
+export const webhookSimulado = webhook;

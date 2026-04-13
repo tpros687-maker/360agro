@@ -26,6 +26,13 @@ const messageSchema = new mongoose.Schema(
       required: false,
     },
 
+    // Referencia a Servicios (Proveedores)
+    servicio: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Servicio",
+      default: null,
+    },
+
     emisor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
