@@ -48,6 +48,10 @@ import gisRoutes from "./routes/gisRoutes.js";
 const app = express();
 const server = http.createServer(app);
 
+// Necesario para que express-rate-limit funcione correctamente detrás
+// del proxy de Railway (lee X-Forwarded-For para obtener la IP real).
+app.set("trust proxy", 1);
+
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

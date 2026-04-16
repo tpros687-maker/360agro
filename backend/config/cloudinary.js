@@ -1,4 +1,9 @@
+import dotenv from "dotenv";
 import { v2 as cloudinary } from "cloudinary";
+
+// Garantiza que las vars de entorno estén cargadas aunque este módulo
+// se importe antes de que server.js llame a dotenv.config().
+dotenv.config();
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
