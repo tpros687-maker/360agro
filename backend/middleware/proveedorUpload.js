@@ -1,28 +1,17 @@
 // backend/middleware/proveedorUpload.js
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { cloudinary } from "../config/cloudinary.js";
 
 // =============================================
-// 📁 Asegurar carpeta uploads/proveedores
+// 📦 Configuración de storage en Cloudinary
 // =============================================
-const proveedoresPath = path.join("uploads", "proveedores");
-
-if (!fs.existsSync(proveedoresPath)) {
-  fs.mkdirSync(proveedoresPath, { recursive: true });
-}
-
-// =============================================
-// 📦 Configuración de storage
-// =============================================
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, proveedoresPath);
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, unique + ext);
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "agro/proveedores",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    transformation: [{ quality: "auto" }],
   },
 });
 

@@ -1,7 +1,6 @@
 import Producto from "../models/productoModel.js";
 import Proveedor from "../models/proveedorModel.js";
-import fs from "fs";
-import path from "path";
+import { eliminarDeCloudinary } from "../config/cloudinary.js";
 
 // =======================================================
 // HELPERS
@@ -12,14 +11,8 @@ const buscarProveedor = async (userId) => {
   return await Proveedor.findOne({ usuario: userId });
 };
 
-const borrarArchivoFisico = (rutaRelativa) => {
-  if (!rutaRelativa) return;
-  const cleanPath = rutaRelativa.startsWith('/uploads/') ? rutaRelativa.replace('/uploads/', '') : rutaRelativa;
-  const localPath = path.join(process.cwd(), "uploads", cleanPath);
-
-  if (fs.existsSync(localPath)) {
-    fs.unlinkSync(localPath);
-  }
+const borrarArchivoFisico = async (url) => {
+  await eliminarDeCloudinary(url);
 };
 
 // =======================================================
@@ -166,7 +159,7 @@ export const eliminarProducto = async (req, res) => {
     const proveedor = await buscarProveedor(req.user._id);
     const producto = await Producto.findOne({ _id: req.params.id, proveedor: proveedor._id });
     if (!producto) return res.status(404).json({ mensaje: "Producto no encontrado" });
-    producto.fotos.forEach(ruta => borrarArchivoFisico(ruta));
+    await Promise.all(producto.fotos.map(ruta => borrarArchivoFisico(ruta)));
     await producto.deleteOne();
     res.status(200).json({ mensaje: "Producto eliminado" });
   } catch (error) { res.status(500).json({ mensaje: error.message }); }
@@ -178,7 +171,7 @@ export const subirFotosProducto = async (req, res) => {
     const proveedor = await buscarProveedor(req.user._id);
     const producto = await Producto.findOne({ _id: req.params.id, proveedor: proveedor._id });
     if (!producto) return res.status(404).json({ mensaje: "Producto no encontrado" });
-    const nuevas = req.files.map(file => `/uploads/productos/${file.filename}`);
+    const nuevas = req.files.map(file => file.path);
     producto.fotos.push(...nuevas);
     if (!producto.fotoPrincipal) producto.fotoPrincipal = nuevas[0];
     await producto.save();
@@ -192,7 +185,7 @@ export const eliminarFotoProducto = async (req, res) => {
     const proveedor = await buscarProveedor(req.user._id);
     const producto = await Producto.findOne({ _id: req.params.id, proveedor: proveedor._id });
     if (!producto) return res.status(404).json({ mensaje: "Producto no encontrado" });
-    borrarArchivoFisico(ruta);
+    await borrarArchivoFisico(ruta);
     producto.fotos = producto.fotos.filter(f => f !== ruta);
     if (producto.fotoPrincipal === ruta) producto.fotoPrincipal = producto.fotos[0] || null;
     await producto.save();

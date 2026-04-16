@@ -1,6 +1,5 @@
 import Proveedor from "../models/proveedorModel.js";
-import path from "path";
-import fs from "fs";
+import { eliminarDeCloudinary } from "../config/cloudinary.js";
 
 // =============================================
 //  SUBIR FOTOS DE SERVICIO
@@ -18,11 +17,7 @@ export const subirFotosServicio = async (req, res) => {
       return res.status(404).json({ mensaje: "Debes crear un servicio antes" });
     }
 
-    // Siempre guardar con el formato correcto:
-    //  /uploads/servicios/archivo.jpg
-    const nuevasRutas = req.files.map((file) => {
-      return `/uploads/servicios/${file.filename}`;
-    });
+    const nuevasRutas = req.files.map((file) => file.path);
 
     servicio.fotos.push(...nuevasRutas);
     await proveedor.save();
@@ -66,20 +61,8 @@ export const eliminarFotoServicio = async (req, res) => {
     // 1️⃣ Eliminar de la lista del servicio
     servicio.fotos = servicio.fotos.filter((f) => f !== ruta);
 
-    // 2️⃣ Generar path real en disco
-    //    ruta = "/uploads/servicios/abc.jpg"
-    const relativePath = ruta.replace("/uploads/", ""); // → servicios/abc.jpg
-    const absolutePath = path.join("uploads", relativePath);
-
-    console.log("🗂 Archivo local:", absolutePath);
-
-    // 3️⃣ Eliminar físicamente el archivo
-    if (fs.existsSync(absolutePath)) {
-      fs.unlinkSync(absolutePath);
-      console.log("🗑 Foto eliminada del disco");
-    } else {
-      console.log("⚠ Foto NO encontrada en disco");
-    }
+    // 2️⃣ Eliminar de Cloudinary
+    await eliminarDeCloudinary(ruta);
 
     await proveedor.save();
 

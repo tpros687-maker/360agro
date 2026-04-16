@@ -10,7 +10,7 @@ import { puedePublicarLote } from "../config/planes.js";
 export const subirFotosTemporales = async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) return res.status(400).json({ mensaje: "No hay fotos" });
-    const rutas = req.files.map((file) => `/uploads/lotes/${file.filename}`);
+    const rutas = req.files.map((file) => file.path);
     let temp = await TempUpload.findOneAndUpdate(
       { usuario: req.user._id },
       { $push: { fotos: { $each: rutas } } },
@@ -26,7 +26,7 @@ export const subirFotosTemporales = async (req, res) => {
 export const subirVideoTemporal = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ mensaje: "No hay video" });
-    const rutaVideo = `/uploads/lotes/${req.file.filename}`;
+    const rutaVideo = req.file.path;
     let temp = await TempUpload.findOneAndUpdate(
       { usuario: req.user._id },
       { video: rutaVideo },

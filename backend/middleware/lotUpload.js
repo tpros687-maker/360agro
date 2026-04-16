@@ -1,22 +1,14 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { cloudinary } from "../config/cloudinary.js";
 
-// === asegurar carpeta uploads/lotes ===
-const lotesPath = path.join("uploads", "lotes");
-if (!fs.existsSync(lotesPath)) {
-    fs.mkdirSync(lotesPath, { recursive: true });
-}
-
-// === configuración disco ===
-const storage = multer.diskStorage({
-    destination(req, file, cb) {
-        cb(null, lotesPath);
-    },
-    filename(req, file, cb) {
-        const ext = path.extname(file.originalname).toLowerCase();
-        const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-        cb(null, unique + ext);
+// === configuración Cloudinary (resource_type auto para soportar imágenes, video y PDF) ===
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: "agro/lotes",
+        resource_type: "auto",
+        allowed_formats: ["jpg", "jpeg", "png", "webp", "mp4", "pdf"],
     },
 });
 

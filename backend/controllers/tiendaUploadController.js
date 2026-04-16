@@ -1,18 +1,16 @@
 // backend/controllers/tiendaUploadController.js
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import Tienda from "../models/tiendaModel.js";
+import { cloudinary, eliminarDeCloudinary } from "../config/cloudinary.js";
 
-// ============= MULTER STORAGE =============
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/tiendas");
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const prefix = file.fieldname === "logo" ? "logo" : "foto";
-    cb(null, `${prefix}_${req.user._id}_${Date.now()}${ext}`);
+// ============= MULTER STORAGE (Cloudinary) =============
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "agro/tiendas",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    transformation: [{ quality: "auto" }],
   },
 });
 
@@ -30,11 +28,10 @@ export const subirLogo = async (req, res) => {
 
     // Borrar logo anterior si existe
     if (tienda.logo) {
-      const oldPath = `.${tienda.logo}`;
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      await eliminarDeCloudinary(tienda.logo);
     }
 
-    tienda.logo = `/uploads/tiendas/${req.file.filename}`;
+    tienda.logo = req.file.path;
     await tienda.save();
 
     res.json({ mensaje: "Logo actualizado", logo: tienda.logo });
@@ -52,8 +49,7 @@ export const eliminarLogo = async (req, res) => {
     if (!tienda) return res.status(404).json({ mensaje: "No tienes tienda" });
 
     if (tienda.logo) {
-      const oldPath = `.${tienda.logo}`;
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      await eliminarDeCloudinary(tienda.logo);
     }
 
     tienda.logo = null;
@@ -76,9 +72,7 @@ export const subirFotos = async (req, res) => {
     const tienda = await Tienda.findOne({ usuario: req.user._id });
     if (!tienda) return res.status(404).json({ mensaje: "No tienes tienda" });
 
-    const nuevasRutas = req.files.map(
-      (f) => `/uploads/tiendas/${f.filename}`
-    );
+    const nuevasRutas = req.files.map((f) => f.path);
 
     tienda.fotos.push(...nuevasRutas);
     await tienda.save();
@@ -104,9 +98,8 @@ export const eliminarFoto = async (req, res) => {
     if (!tienda.fotos.includes(ruta))
       return res.status(400).json({ mensaje: "Foto no encontrada" });
 
-    // Eliminar archivo físico
-    const pathFile = `.${ruta}`;
-    if (fs.existsSync(pathFile)) fs.unlinkSync(pathFile);
+    // Eliminar de Cloudinary
+    await eliminarDeCloudinary(ruta);
 
     // Eliminar de Mongo
     tienda.fotos = tienda.fotos.filter((f) => f !== ruta);
