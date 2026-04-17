@@ -18,8 +18,8 @@ export const subirFotosTemporales = async (req, res) => {
     );
     res.status(200).json({ fotos: temp.fotos });
   } catch (error) {
-    console.error("Error en subirFotosTemporales:", error);
-    res.status(500).json({ mensaje: "Error en imágenes" });
+    console.error("Error en subirFotosTemporales:", error?.message || error, error?.stack);
+    res.status(500).json({ message: error?.message || "Error interno" });
   }
 };
 
@@ -34,8 +34,8 @@ export const subirVideoTemporal = async (req, res) => {
     );
     res.status(200).json({ video: temp.video });
   } catch (error) {
-    console.error("Error en subirVideoTemporal:", error);
-    res.status(500).json({ mensaje: "Error en video" });
+    console.error("Error en subirVideoTemporal:", error?.message || error, error?.stack);
+    res.status(500).json({ message: error?.message || "Error interno" });
   }
 };
 
@@ -108,8 +108,8 @@ export const crearLote = async (req, res) => {
 
     res.status(201).json(nuevoLote);
   } catch (error) {
-    console.error("DETALLE ERROR 500 CREAR LOTE:", error.message, error.stack);
-    res.status(500).json({ mensaje: "Error al crear lote", detalle: error.message });
+    console.error("DETALLE ERROR 500 CREAR LOTE:", error?.message || error, error?.stack);
+    res.status(500).json({ message: error?.message || "Error interno" });
   }
 };
 
@@ -146,8 +146,8 @@ export const obtenerLotes = async (req, res) => {
 
     res.status(200).json(lotes);
   } catch (error) {
-    console.error("Error obtenerLotes:", error);
-    res.status(500).json({ mensaje: "Error al obtener mercado" });
+    console.error("Error obtenerLotes:", error?.message || error, error?.stack);
+    res.status(500).json({ message: error?.message || "Error interno" });
   }
 };
 
@@ -162,8 +162,8 @@ export const obtenerLotePorId = async (req, res) => {
     if (!lote) return res.status(404).json({ mensaje: "Lote no encontrado" });
     res.status(200).json(lote);
   } catch (error) {
-    console.error("Error obtenerLotePorId:", error);
-    res.status(500).json({ mensaje: "Error al obtener detalle" });
+    console.error("Error obtenerLotePorId:", error?.message || error, error?.stack);
+    res.status(500).json({ message: error?.message || "Error interno" });
   }
 };
 
@@ -181,8 +181,8 @@ export const editarLote = async (req, res) => {
     );
     res.status(200).json(loteActualizado);
   } catch (error) {
-    console.error("Error editarLote:", error);
-    res.status(500).json({ mensaje: "Error al editar" });
+    console.error("Error editarLote:", error?.message || error, error?.stack);
+    res.status(500).json({ message: error?.message || "Error interno" });
   }
 };
 
@@ -197,8 +197,8 @@ export const registrarInteraccionLote = async (req, res) => {
     await Lote.findByIdAndUpdate(id, { $inc: { [campo]: 1 } });
     res.status(200).json({ mensaje: "Métrica registrada" });
   } catch (error) {
-    console.error("Error métricas:", error);
-    res.status(500).json({ mensaje: "Error en métricas" });
+    console.error("Error métricas:", error?.message || error, error?.stack);
+    res.status(500).json({ message: error?.message || "Error interno" });
   }
 };
 
@@ -207,8 +207,8 @@ export const obtenerMisLotes = async (req, res) => {
     const lotes = await Lote.find({ usuario: req.user._id }).sort("-createdAt");
     res.status(200).json(lotes);
   } catch (error) {
-    console.error("Error obtenerMisLotes:", error);
-    res.status(500).json({ mensaje: "Error al obtener tus activos" });
+    console.error("Error obtenerMisLotes:", error?.message || error, error?.stack);
+    res.status(500).json({ message: error?.message || "Error interno" });
   }
 };
 
@@ -229,7 +229,7 @@ export const eliminarLote = async (req, res) => {
     await lote.deleteOne();
     res.status(200).json({ mensaje: "Eliminado" });
   } catch (error) {
-    console.error("Error eliminarLote:", error);
-    res.status(500).json({ mensaje: "Error al eliminar" });
+    console.error("Error eliminarLote:", error?.message || error, error?.stack);
+    res.status(500).json({ message: error?.message || "Error interno" });
   }
 };
