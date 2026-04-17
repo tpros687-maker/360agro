@@ -108,7 +108,7 @@ export const crearLote = async (req, res) => {
 
     res.status(201).json(nuevoLote);
   } catch (error) {
-    console.error("DETALLE ERROR 500 CREAR LOTE:", error);
+    console.error("DETALLE ERROR 500 CREAR LOTE:", error.message, error.stack);
     res.status(500).json({ mensaje: "Error al crear lote", detalle: error.message });
   }
 };
