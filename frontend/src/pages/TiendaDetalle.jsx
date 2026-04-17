@@ -111,7 +111,7 @@ export default function TiendaDetalle() {
           <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
           <div className="w-44 h-44 bg-surface-container-lowest rounded-[2.5rem] border border-outline-variant/10 flex items-center justify-center p-6 shadow-inner relative z-10 overflow-hidden">
-            <img src={`${BASE_URL}${tienda.logo}`} className="w-full h-full object-contain brightness-110 group-hover:scale-110 transition duration-700" alt={tienda.nombre} />
+            <img src={tienda.logo ? (/^https?:\/\//.test(tienda.logo.trim()) ? tienda.logo.trim() : `${BASE_URL}${tienda.logo}`) : "/placeholder.png"} className="w-full h-full object-contain brightness-110 group-hover:scale-110 transition duration-700" alt={tienda.nombre} />
           </div>
 
           <div className="flex-1 text-center md:text-left relative z-10">
@@ -184,7 +184,7 @@ export default function TiendaDetalle() {
 
                   <div className="h-56 overflow-hidden relative bg-surface-container-lowest">
                     <img
-                      src={`${BASE_URL}${prod.fotoPrincipal}`}
+                      src={prod.fotoPrincipal ? (/^https?:\/\//.test(prod.fotoPrincipal.trim()) ? prod.fotoPrincipal.trim() : `${BASE_URL}${prod.fotoPrincipal}`) : "/placeholder.png"}
                       className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-[2s] group-hover:scale-105"
                       alt={prod.nombre}
                     />

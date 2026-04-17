@@ -105,13 +105,13 @@ export const crearProveedor = async (req, res) => {
       tipoProveedor,
     };
 
-    // 📸 PROCESAMIENTO DE ARCHIVOS (Logo y Fotos)
+    // 📸 PROCESAMIENTO DE ARCHIVOS (Logo y Fotos) — f.path = URL Cloudinary
     if (req.files) {
       if (req.files.logo && req.files.logo[0]) {
-        datos.logo = `/uploads/proveedores/${req.files.logo[0].filename}`;
+        datos.logo = req.files.logo[0].path;
       }
       if (req.files.fotos) {
-        datos.fotos = req.files.fotos.map(f => `/uploads/proveedores/${f.filename}`);
+        datos.fotos = req.files.fotos.map(f => f.path);
       }
     }
 

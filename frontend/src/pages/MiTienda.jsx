@@ -113,7 +113,7 @@ export default function MiTienda() {
           <div className="flex flex-col lg:flex-row items-center gap-12 relative z-10">
             <div className="w-40 h-40 bg-surface-container rounded-[2.5rem] border border-outline-variant/60 flex items-center justify-center p-6 group-hover:border-primary/30 transition-all duration-700 shadow-inner">
               <img
-                src={tienda.logo ? `${BASE_URL}${tienda.logo}` : "/placeholder.png"}
+                src={tienda.logo ? (/^https?:\/\//.test(tienda.logo.trim()) ? tienda.logo.trim() : `${BASE_URL}${tienda.logo}`) : "/placeholder.png"}
                 className="w-full h-full object-contain brightness-110 group-hover:scale-105 transition duration-700"
                 alt="Logo"
               />
@@ -180,7 +180,7 @@ export default function MiTienda() {
                 <div key={p._id} className="bg-surface-container-high border border-outline-variant/60 rounded-[2rem] flex flex-col h-full hover:border-primary/30 transition-all duration-500 shadow-xl overflow-hidden group">
                   <div className="h-56 overflow-hidden relative">
                     <img
-                      src={p.fotoPrincipal ? `${BASE_URL}${p.fotoPrincipal}` : (p.fotos?.[0] ? `${BASE_URL}${p.fotos[0]}` : "/placeholder.png")}
+                      src={(() => { const f = p.fotoPrincipal || p.fotos?.[0]; return f ? (/^https?:\/\//.test(f.trim()) ? f.trim() : `${BASE_URL}${f}`) : "/placeholder.png"; })()}
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-[1.5s]"
                       alt={p.titulo}
                     />
