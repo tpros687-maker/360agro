@@ -143,7 +143,7 @@ export default function Lotes() {
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img
-                    src={lote.fotos?.[0] ? `${BASE_URL}${lote.fotos[0]}` : "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071"}
+                    src={lote.fotos?.[0] ? (lote.fotos[0].startsWith('http') ? lote.fotos[0] : `${BASE_URL}${lote.fotos[0]}`) : "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071"}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                     alt={lote.titulo}
                   />

@@ -108,11 +108,11 @@ export default function LoteDetalle() {
               {lote.video && (
                 <div className="mb-4 rounded-3xl overflow-hidden border border-primary/20 bg-black aspect-video group relative">
                   <video
-                    src={`${BASE_URL}${lote.video}`}
+                    src={lote.video?.startsWith('http') ? lote.video : `${BASE_URL}${lote.video}`}
                     controls
                     playsInline
                     className="w-full h-full object-contain"
-                    poster={lote.fotos?.[0] ? `${BASE_URL}${lote.fotos[0]}` : ""}
+                    poster={lote.fotos?.[0] ? (lote.fotos[0].startsWith('http') ? lote.fotos[0] : `${BASE_URL}${lote.fotos[0]}`) : ""}
                   />
                   <div className="absolute top-4 left-4 bg-primary/20 backdrop-blur-md px-4 py-2 rounded-full border border-primary/30">
                     <span className="text-[9px] font-bold text-primary uppercase tracking-widest italic flex items-center gap-2">
@@ -124,7 +124,7 @@ export default function LoteDetalle() {
 
               {/* FOTO PRINCIPAL */}
               <div className="relative h-[550px] overflow-hidden rounded-3xl bg-surface-container-lowest border border-outline-variant/5">
-                <img src={fotoPrincipal ? `${BASE_URL}${fotoPrincipal}` : "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071"} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105" alt="Activo" />
+                <img src={fotoPrincipal ? (fotoPrincipal.startsWith('http') ? fotoPrincipal : `${BASE_URL}${fotoPrincipal}`) : "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071"} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105" alt="Activo" />
                 <div className="absolute inset-0 bg-gradient-to-t from-surface-container-high/40 via-transparent to-transparent"></div>
               </div>
 
@@ -136,7 +136,7 @@ export default function LoteDetalle() {
                     onClick={() => setFotoPrincipal(f)}
                     className={`w-20 h-20 rounded-2xl overflow-hidden border-2 shrink-0 transition-all ${fotoPrincipal === f ? "border-primary scale-105 shadow-lg shadow-primary/20" : "border-transparent opacity-40 hover:opacity-100"}`}
                   >
-                    <img src={`${BASE_URL}${f}`} className="w-full h-full object-cover" />
+                    <img src={f.startsWith('http') ? f : `${BASE_URL}${f}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
