@@ -43,6 +43,8 @@ export const subirVideoTemporal = async (req, res) => {
 
 export const crearLote = async (req, res) => {
   try {
+    console.log('BODY:', JSON.stringify(req.body))
+    console.log('FILES:', JSON.stringify(req.files?.map(f => ({ fieldname: f.fieldname, path: f.path, filename: f.filename }))))
     const usuario = await User.findById(req.user._id);
     if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
 
@@ -108,9 +110,11 @@ export const crearLote = async (req, res) => {
 
     res.status(201).json(nuevoLote);
   } catch (error) {
-    console.error('ERROR LOTE:', error instanceof Error ? error.message : JSON.stringify(error))
-    console.error('STACK:', error?.stack)
-    res.status(500).json({ message: error instanceof Error ? error.message : JSON.stringify(error) })
+    console.error('CATCH ERROR TYPE:', typeof error)
+    console.error('CATCH ERROR STRING:', String(error))
+    console.error('CATCH ERROR KEYS:', Object.keys(error || {}))
+    console.error('CATCH ERROR MESSAGE:', error?.message)
+    res.status(500).json({ message: String(error) })
   }
 };
 
