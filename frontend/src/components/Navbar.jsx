@@ -65,7 +65,7 @@ export default function Navbar() {
       if (!usuario) return;
       try {
         const { data } = await api.get("/proveedores/me");
-        if (data && !data.noExiste) setTieneTienda(true);
+        if (data && !data.noExiste && data.tipoProveedor !== "servicio") setTieneTienda(true);
       } catch (err) {
         setTieneTienda(false);
       }

@@ -28,7 +28,7 @@ export default function CrearTienda() {
     try {
       const res = await tiendaApi.obtenerMiTienda();
       // 🛡️ FIX: Solo marcar como existente si el backend NO devuelve noExiste:true
-      if (res.data && !res.data.noExiste) {
+      if (res.data && !res.data.noExiste && res.data.tipoProveedor !== "servicio") {
         setYaExiste(true);
       }
     } catch (_) { }

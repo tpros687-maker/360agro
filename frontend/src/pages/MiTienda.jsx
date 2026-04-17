@@ -20,9 +20,12 @@ export default function MiTienda() {
       setLoading(true);
       // 🔥 Sincronización robusta: Si falla productos, aún mostramos la tienda
       const resTienda = await tiendaApi.obtenerMiTienda();
-      setTienda(resTienda.data);
+      const dataTienda = resTienda.data;
+      // Si el proveedor encontrado es de tipo servicio, tratar como si no hubiera tienda
+      const esServicio = dataTienda?.tipoProveedor === "servicio";
+      setTienda(esServicio ? { noExiste: true } : dataTienda);
 
-      if (resTienda.data && !resTienda.data.noExiste) {
+      if (dataTienda && !dataTienda.noExiste && !esServicio) {
         try {
           const resProds = await productoApi.obtenerMisProductos();
           console.log("Productos cargados:", resProds.data);
