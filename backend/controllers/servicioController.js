@@ -155,7 +155,7 @@ export const crearServicio = async (req, res) => {
     }
 
     // Procesar fotos enviadas por Multer (upload.any())
-    const fotos = req.files?.map(f => `/uploads/servicios/${f.filename}`) || [];
+    const fotos = req.files?.map(f => f.path) || [];
 
     const nuevoServicio = {
       nombre: body.nombre,
