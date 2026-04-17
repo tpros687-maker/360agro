@@ -4,7 +4,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import productoApi from "../api/productoApi";
 import { toast } from "react-hot-toast";
 
-import { BASE_URL } from "../api/axiosConfig";
+import { BASE_URL, imgUrl } from "../api/axiosConfig";
 
 export default function EditarProducto() {
   const { id } = useParams();
@@ -220,7 +220,7 @@ export default function EditarProducto() {
                   <div key={i} className={`relative group/img rounded-2xl overflow-hidden border transition-all duration-700 h-32 shadow-2xl ${i === 0 ? "border-primary shadow-xl scale-105 z-10" : "border-outline-variant/30 grayscale-[30%]"
                     }`}>
                     <img
-                      src={`${BASE_URL}${ruta}`}
+                      src={imgUrl(ruta)}
                       className="w-full h-full object-cover group-hover:grayscale-0 transition duration-500"
                       alt="Product Asset"
                     />

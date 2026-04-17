@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import api, { BASE_URL } from "../api/axiosConfig";
+import api, { BASE_URL, imgUrl } from "../api/axiosConfig";
 import {
   Store,
   MapPin,
@@ -125,7 +125,7 @@ export default function Tiendas() {
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img
-                    src={t.logo ? `${BASE_URL}${t.logo}` : "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974"}
+                    src={imgUrl(t.logo, "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974")}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                     alt={t.nombre}
                   />

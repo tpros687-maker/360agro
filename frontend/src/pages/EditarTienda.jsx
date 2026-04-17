@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import tiendaApi from "../api/tiendaApi";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { BASE_URL } from "../api/axiosConfig";
+import { BASE_URL, imgUrl } from "../api/axiosConfig";
 
 const SECTORES_AGRO = [
   "Veterinaria y Fármacos",
@@ -203,7 +203,7 @@ export default function EditarTienda() {
               <div className="flex flex-col md:flex-row items-center gap-8">
                 {logoActual && (
                   <div className="relative group">
-                    <img src={`${BASE_URL}${logoActual}`} className="w-32 h-32 rounded-3xl object-contain bg-surface-container-lowest border border-outline-variant/30 p-4" alt="Logo" />
+                    <img src={imgUrl(logoActual)} className="w-32 h-32 rounded-3xl object-contain bg-surface-container-lowest border border-outline-variant/30 p-4" alt="Logo" />
                     <button type="button" onClick={eliminarLogoActual} className="absolute inset-0 bg-red-600/80 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity text-[9px] font-black text-white uppercase tracking-widest">Remover</button>
                   </div>
                 )}
@@ -222,7 +222,7 @@ export default function EditarTienda() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {fotosActuales.map((f, i) => (
                   <div key={i} className="relative group h-24 rounded-xl overflow-hidden border border-outline-variant/30">
-                    <img src={`${BASE_URL}${f}`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt="Gallery Asset" />
+                    <img src={imgUrl(f)} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt="Gallery Asset" />
                     <button type="button" onClick={() => eliminarFotoActual(f)} className="absolute inset-0 bg-red-900/60 opacity-0 group-hover:opacity-100 transition-all text-[8px] font-black text-white uppercase">Eliminar</button>
                   </div>
                 ))}

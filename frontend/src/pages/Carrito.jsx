@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { CartContext } from "../context/CartContext";
 import { Link } from "react-router-dom";
-import { BASE_URL } from "../api/axiosConfig";
+import { BASE_URL, imgUrl } from "../api/axiosConfig";
 import ModalConfirmar from "../components/ModalConfirmar";
 
 export default function Carrito() {
@@ -95,7 +95,7 @@ export default function Carrito() {
                     <div key={item._id} className="bg-surface-container-lowest border border-outline-variant/50 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-8 group">
                       <div className="w-24 h-24 rounded-2xl bg-background overflow-hidden border border-outline-variant/70 shrink-0 shadow-lg">
                         <img
-                          src={item.fotoPrincipal ? `${BASE_URL}${item.fotoPrincipal}` : (item.fotos?.[0] ? `${BASE_URL}${item.fotos[0]}` : "/placeholder.png")}
+                          src={imgUrl(item.fotoPrincipal || item.fotos?.[0], "/placeholder.png")}
                           className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
                         />
                       </div>

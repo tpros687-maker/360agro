@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../api/axiosConfig";
-import { BASE_URL } from "../api/axiosConfig";
+import { BASE_URL, imgUrl } from "../api/axiosConfig";
 import { toast } from "react-hot-toast";
 import { CartContext } from "../context/CartContext";
 
@@ -77,7 +77,7 @@ export default function TiendaPublica() {
             <div className="relative group shrink-0">
               <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl transition-all"></div>
               <img
-                src={tienda.logo ? `${BASE_URL}${tienda.logo}` : "/placeholder.png"}
+                src={imgUrl(tienda.logo, "/placeholder.png")}
                 className="relative w-48 h-48 object-cover rounded-full border-4 border-background shadow-2xl z-10 grayscale group-hover:grayscale-0 transition-all duration-700"
                 alt={tienda.nombre}
               />
@@ -141,7 +141,7 @@ export default function TiendaPublica() {
                 {/* IMAGEN */}
                 <div className="relative h-48 overflow-hidden">
                   <img
-                    src={p.fotoPrincipal ? `${BASE_URL}${p.fotoPrincipal}` : (p.fotos?.[0] ? `${BASE_URL}${p.fotos[0]}` : "/placeholder.png")}
+                    src={imgUrl(p.fotoPrincipal || p.fotos?.[0], "/placeholder.png")}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
                     alt={p.titulo}
                   />
@@ -206,7 +206,7 @@ export default function TiendaPublica() {
                 <div key={s._id} className="bg-surface-container-lowest border border-outline-variant/70 p-8 rounded-2xl group hover:shadow-xl transition-all flex flex-col md:flex-row gap-8">
                   <div className="w-full md:w-40 h-40 rounded-2xl overflow-hidden shrink-0 bg-background">
                     <img
-                      src={s.fotos && s.fotos[0] ? `${BASE_URL}${s.fotos[0]}` : "/placeholder.png"}
+                      src={imgUrl(s.fotos?.[0], "/placeholder.png")}
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
                     />
                   </div>

@@ -46,3 +46,10 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+// Resuelve una URL de imagen sin importar si es Cloudinary o ruta local
+export const imgUrl = (url, fallback = "/placeholder.png") => {
+  if (!url) return fallback;
+  const u = url.trim();
+  return /^https?:\/\//.test(u) ? u : `${BASE_URL}${u}`;
+};

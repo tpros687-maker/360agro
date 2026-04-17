@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import API from "../api/userApi";
-import { BASE_URL } from "../api/axiosConfig";
+import { BASE_URL, imgUrl } from "../api/axiosConfig";
 import { CheckCircle, Star } from "lucide-react";
 
 const CATEGORIAS = ["Todos", "Terneros", "Novillos", "Vaquillonas", "Vacas", "Invernada", "Maquinaria", "Campos"];
@@ -92,7 +92,7 @@ export default function Explorar() {
                 >
                   <div className="relative h-64 overflow-hidden">
                     <img
-                      src={item.fotos?.[0] ? `${BASE_URL}${item.fotos[0]}` : "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071"}
+                      src={imgUrl(item.fotos?.[0], "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071")}
                       className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000 group-hover:scale-110"
                       alt={item.titulo}
                     />

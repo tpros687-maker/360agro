@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
-import api, { BASE_URL } from "../api/axiosConfig";
+import api, { BASE_URL, imgUrl } from "../api/axiosConfig";
 import { CartContext } from "../context/CartContext";
 import { toast } from "react-hot-toast";
 import { CheckCircle, Star } from "lucide-react";
@@ -73,7 +73,7 @@ export default function ProductoDetalle() {
             <div className="bg-surface-container-high border border-outline-variant/70 p-6 rounded-[3.5rem] shadow-2xl relative group">
               <div className="relative h-[35rem] overflow-hidden rounded-[2.5rem] shadow-inner bg-surface-container-lowest">
                 <img
-                  src={fotoPrincipal ? `${BASE_URL}${fotoPrincipal}` : "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800"}
+                  src={imgUrl(fotoPrincipal, "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800")}
                   className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-[2s]"
                   alt={producto.titulo}
                 />
@@ -99,7 +99,7 @@ export default function ProductoDetalle() {
                           : 'border-outline-variant/60 opacity-60 hover:opacity-100'
                       }`}
                     >
-                      <img src={`${BASE_URL}${f}`} className="w-full h-full object-cover" alt={`Vista ${i}`} />
+                      <img src={imgUrl(f)} className="w-full h-full object-cover" alt={`Vista ${i}`} />
                     </div>
                   ));
                 })()}

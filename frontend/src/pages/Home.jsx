@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axiosConfig";
 import API from "../api/lotApi";
 import { AuthContext } from "../context/AuthContext";
-import { BASE_URL } from "../api/axiosConfig";
+import { BASE_URL, imgUrl } from "../api/axiosConfig";
 import RadarNacional from "../components/RadarNacional";
 import agro_backdrop from "../assets/agro_elite_blue_bg.png";
 import {
@@ -142,7 +142,7 @@ export default function Home() {
                   <Link key={lote._id} to={`/lote/${lote._id}`} className="group bg-surface-container-high rounded-[3rem] overflow-hidden shadow-xl hover:shadow-primary/5 hover:scale-[1.02] transition-all duration-500 border border-outline-variant/60 flex flex-col">
                     <div className="h-60 overflow-hidden relative bg-surface-container-lowest">
                       <img
-                        src={lote.fotos?.[0] ? `${BASE_URL}${lote.fotos[0]}` : "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80"}
+                        src={imgUrl(lote.fotos?.[0], "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80")}
                         className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
                         alt={lote.titulo}
                       />

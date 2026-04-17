@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { CardSkeleton } from "../components/Skeleton";
 import API from "../api/axiosConfig";
-import { BASE_URL } from "../api/axiosConfig";
+import { BASE_URL, imgUrl } from "../api/axiosConfig";
 import { toast } from "react-hot-toast";
 import ModalConfirmar from "../components/ModalConfirmar"; // 1. Importación clave
 
@@ -190,7 +190,7 @@ export default function MisLotes() {
                 {/* Imagen */}
                 <div className="h-64 overflow-hidden relative">
                   <img
-                    src={lote.fotos?.[0] ? `${BASE_URL}${lote.fotos[0]}` : "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071"}
+                    src={imgUrl(lote.fotos?.[0], "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071")}
                     alt={lote.titulo}
                     className="w-full h-full object-cover group-hover:scale-110 transition duration-[2s]"
                   />
