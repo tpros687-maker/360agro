@@ -129,7 +129,7 @@ export default function Servicios() {
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img
-                    src={s.fotos && s.fotos.length > 0 ? `${BASE_URL}${s.fotos[0]}` : "https://images.unsplash.com/photo-1594776208131-abf317d3d196?q=80&w=2070"}
+                    src={s.fotos && s.fotos.length > 0 ? (s.fotos[0].startsWith('http') ? s.fotos[0] : `${BASE_URL}${s.fotos[0]}`) : "https://images.unsplash.com/photo-1594776208131-abf317d3d196?q=80&w=2070"}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                     alt={s.nombre}
                   />
