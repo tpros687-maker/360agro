@@ -214,9 +214,9 @@ export default function ServicioDetalle() {
             {/* CARD DE PROVEEDOR */}
             <div className="bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/70 text-center shadow-xl">
               <p className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-[0.4em] mb-4">Empresa Responsable</p>
-              <Link to={`/tienda/${servicio.proveedorSlug}`} className="text-lg font-black text-on-surface uppercase italic hover:text-primary transition-colors flex items-center justify-center gap-2">
-                {servicio.proveedorNombre || "Ver Perfil de Empresa"} <span className="material-symbols-outlined text-sm">arrow_forward</span>
-              </Link>
+              <p className="text-lg font-black text-on-surface uppercase italic">
+                {servicio.proveedorNombre || "Proveedor"}
+              </p>
             </div>
           </div>
         </div>

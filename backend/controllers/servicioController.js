@@ -1,12 +1,6 @@
-import Proveedor from "../models/proveedorModel.js";
-import User from "../models/userModel.js";
+import Servicio from "../models/servicioModel.js";
 import Lote from "../models/lotModel.js";
-import fs from "fs";
-import path from "path";
 
-/**
- * 🔥 Límites de publicaciones por plan (Sincronizados)
- */
 const limitePorPlan = {
   observador: 0,
   productor: 3,
@@ -15,105 +9,61 @@ const limitePorPlan = {
 };
 
 /* =======================================================
-    📌 OBTENER TODOS LOS SERVICIOS (CATÁLOGO GLOBAL)
-    Estrategia: Flattening de todos los proveedores
+    OBTENER TODOS LOS SERVICIOS (CATÁLOGO GLOBAL)
 ======================================================= */
 export const obtenerServicios = async (req, res) => {
   try {
     const { q, search } = req.query;
     const queryTerm = (q || search || "").trim();
+    let query = { activo: true };
 
-    // Traemos todos los proveedores que tengan al menos un servicio registrado
-    const proveedores = await Proveedor.find({
-      servicios: { $exists: true, $not: { $size: 0 } }
-    });
-
-    // 🔥 FLATTENING: Extraemos y unificamos los servicios en un array plano
-    let todosLosServicios = [];
-
-    proveedores.forEach((p) => {
-      if (p.servicios && Array.isArray(p.servicios)) {
-        p.servicios.forEach((s) => {
-          const servicioData = s.toObject();
-          todosLosServicios.push({
-            ...servicioData,
-            proveedorId: p._id,
-            proveedorNombre: p.nombre,
-            proveedorSlug: p.slug,
-            proveedorEsVerificado: p.esVerificado,
-            proveedorRating: p.rating,
-            // Priorizamos la zona del servicio, sino la del proveedor
-            zona: servicioData.zona || p.zona || "Uruguay"
-          });
-        });
-      }
-    });
-
-    // Filtro por búsqueda si existe
     if (queryTerm) {
       const regex = new RegExp(queryTerm, "i");
-      todosLosServicios = todosLosServicios.filter(s =>
-        regex.test(s.nombre) ||
-        regex.test(s.tipoServicio) ||
-        regex.test(s.descripcion) ||
-        regex.test(s.zona)
-      );
+      query.$or = [
+        { nombre: regex },
+        { tipoServicio: regex },
+        { descripcion: regex },
+        { zona: regex },
+      ];
     }
 
-    res.status(200).json(todosLosServicios);
+    const servicios = await Servicio.find(query)
+      .populate("usuario", "nombre _id")
+      .sort("-createdAt");
+
+    res.status(200).json(servicios);
   } catch (error) {
     res.status(500).json({ mensaje: error.message });
   }
 };
 
 /* =======================================================
-    📌 OBTENER MIS SERVICIOS (PANEL DE CONTROL)
+    OBTENER MIS SERVICIOS (PANEL DE CONTROL)
 ======================================================= */
 export const obtenerMiServicio = async (req, res) => {
   try {
-    if (!req.user || !req.user._id) return res.status(401).json({ mensaje: "No autorizado" });
-
-    // Intentamos buscar el proveedor sin lean por si acaso
-    const proveedor = await Proveedor.findOne({ usuario: req.user._id });
-
-    if (!proveedor) {
-      return res.status(200).json([]);
-    }
-
-    res.status(200).json(proveedor.servicios || []);
+    if (!req.user?._id) return res.status(401).json({ mensaje: "No autorizado" });
+    const servicios = await Servicio.find({ usuario: req.user._id }).sort("-createdAt");
+    res.status(200).json(servicios);
   } catch (error) {
-    console.error("DEBUG - Fallo en obtenerMiServicio:", error);
-    res.status(200).json([]); // Devolvemos vacío para no romper el panel
+    res.status(200).json([]);
   }
 };
 
 /* =======================================================
-    📌 OBTENER SERVICIO POR ID (DETALLE)
+    OBTENER SERVICIO POR ID (DETALLE)
 ======================================================= */
 export const obtenerServicio = async (req, res) => {
   try {
-    const { id } = req.params;
-    const proveedor = await Proveedor.findOne({ "servicios._id": id })
-      .populate("usuario", "_id nombre");
-    if (!proveedor) return res.status(404).json({ mensaje: "Servicio no encontrado" });
+    const servicio = await Servicio.findById(req.params.id).populate("usuario", "nombre _id");
+    if (!servicio) return res.status(404).json({ mensaje: "Servicio no encontrado" });
 
-    const servicio = proveedor.servicios.id(id);
-
-    // Sumar visita silenciosa
-    servicio.estadisticas.visitas = (servicio.estadisticas.visitas || 0) + 1;
-    await proveedor.save();
+    await Servicio.updateOne({ _id: servicio._id }, { $inc: { "estadisticas.visitas": 1 } });
 
     res.status(200).json({
       ...servicio.toObject(),
-      proveedorNombre: proveedor.nombre,
-      proveedorSlug: proveedor.slug,
-      proveedorWhatsapp: proveedor.whatsapp,
-      proveedorTelefono: proveedor.telefono,
-      proveedorEsVerificado: proveedor.esVerificado,
-      proveedorRating: proveedor.rating,
-      zona: servicio.zona || proveedor.zona,
-      proveedorUsuarioId: proveedor.usuario._id,
-      proveedorUsuarioNombre: proveedor.usuario.nombre
+      proveedorNombre: servicio.usuario?.nombre,
+      proveedorUsuarioId: servicio.usuario?._id,
     });
   } catch (error) {
     res.status(500).json({ mensaje: error.message });
@@ -121,95 +71,77 @@ export const obtenerServicio = async (req, res) => {
 };
 
 /* =======================================================
-    📌 CREAR SERVICIO (PROTOCOL "MATRIOSHKA")
+    CREAR SERVICIO
 ======================================================= */
 export const crearServicio = async (req, res) => {
   try {
     const body = req.body;
-    let proveedor = await Proveedor.findOne({ usuario: req.user._id, tipoProveedor: "servicio" });
-
-    // Si el usuario no tiene perfil de proveedor, lo creamos con datos mínimos
-    if (!proveedor) {
-      proveedor = await Proveedor.create({
-        usuario: req.user._id,
-        nombre: body.nombre,
-        rubro: body.tipoServicio || "Servicios Profesionales",
-        tipoProveedor: "servicio",
-        descripcion: body.descripcion || "Proveedor de servicios",
-        zona: body.zona || "Uruguay",
-        email: req.user.email,
-        servicios: []
-      });
-    }
-
-    // Validación de límites según plan
-    const lotesActivos = await Lote.countDocuments({ usuario: req.user._id });
-    const serviciosActivos = proveedor.servicios?.length || 0;
     const planUser = (req.user.plan || "observador").toLowerCase();
-    const limite = limitePorPlan[planUser] || 0;
+    const limite = limitePorPlan[planUser] ?? 0;
 
-    if (lotesActivos + serviciosActivos >= limite) {
+    if (limite === 0) {
       return res.status(403).json({
-        mensaje: `Límite de publicaciones para el plan ${planUser.toUpperCase()} alcanzado. Actualiza tu plan para seguir publicando.`
+        mensaje: "Tu plan actual no permite publicar servicios. Actualiza tu suscripción.",
       });
     }
 
-    // Procesar fotos enviadas por Multer (upload.any())
-    const fotos = req.files?.map(f => f.path) || [];
+    if (limite !== Infinity) {
+      const [lotesActivos, serviciosActivos] = await Promise.all([
+        Lote.countDocuments({ usuario: req.user._id }),
+        Servicio.countDocuments({ usuario: req.user._id }),
+      ]);
+      if (lotesActivos + serviciosActivos >= limite) {
+        return res.status(403).json({
+          mensaje: `Límite de publicaciones para el plan ${planUser.toUpperCase()} alcanzado. Actualiza tu plan.`,
+        });
+      }
+    }
 
-    const nuevoServicio = {
+    const fotos = req.files?.map((f) => f.path) || [];
+
+    const servicio = await Servicio.create({
+      usuario: req.user._id,
       nombre: body.nombre,
       tipoServicio: body.tipoServicio,
       descripcion: body.descripcion,
+      zona: body.zona,
+      departamento: body.departamento,
+      localidad: body.localidad,
       telefono: body.telefono,
       whatsapp: body.whatsapp,
       email: body.email,
-      zona: body.zona,
-      fotos: fotos,
-      estadisticas: { visitas: 0, whatsapp: 0, telefono: 0, email: 0 }
-    };
+      website: body.website,
+      fotos,
+    });
 
-    const proveedorActualizado = await Proveedor.findByIdAndUpdate(
-      proveedor._id,
-      { $push: { servicios: nuevoServicio } },
-      { new: true, runValidators: true }
-    );
-
-    // Devolver el último servicio creado
-    res.status(201).json(proveedorActualizado.servicios[proveedorActualizado.servicios.length - 1]);
+    res.status(201).json(servicio);
   } catch (error) {
     res.status(500).json({ mensaje: error.message });
   }
 };
 
 /* =======================================================
-    📌 EDITAR SERVICIO
+    EDITAR SERVICIO
 ======================================================= */
 export const editarServicio = async (req, res) => {
   try {
-    const proveedor = await Proveedor.findOne({ usuario: req.user._id });
-    if (!proveedor) return res.status(404).json({ mensaje: "Perfil de proveedor no encontrado" });
-
-    const servicio = proveedor.servicios.id(req.params.id);
+    const servicio = await Servicio.findOne({ _id: req.params.id, usuario: req.user._id });
     if (!servicio) return res.status(404).json({ mensaje: "Servicio no encontrado" });
 
-    // Actualizamos campos de texto
-    const { nombre, tipoServicio, descripcion, zona, telefono, whatsapp, email } = req.body;
-    if (nombre) servicio.nombre = nombre;
-    if (tipoServicio) servicio.tipoServicio = tipoServicio;
-    if (descripcion) servicio.descripcion = descripcion;
-    if (zona) servicio.zona = zona;
-    if (telefono) servicio.telefono = telefono;
-    if (whatsapp) servicio.whatsapp = whatsapp;
-    if (email) servicio.email = email;
+    const campos = [
+      "nombre", "tipoServicio", "descripcion", "zona",
+      "departamento", "localidad", "telefono", "whatsapp", "email", "website",
+    ];
+    campos.forEach((campo) => {
+      if (req.body[campo] !== undefined) servicio[campo] = req.body[campo];
+    });
 
-    // Agregar nuevas fotos si existen
     if (req.files && req.files.length > 0) {
-      const nuevasFotos = req.files.map(f => `/uploads/servicios/${f.filename}`);
+      const nuevasFotos = req.files.map((f) => f.path);
       servicio.fotos = [...servicio.fotos, ...nuevasFotos];
     }
 
-    await proveedor.save();
+    await servicio.save();
     res.status(200).json(servicio);
   } catch (error) {
     res.status(500).json({ mensaje: error.message });
@@ -217,28 +149,13 @@ export const editarServicio = async (req, res) => {
 };
 
 /* =======================================================
-    📌 ELIMINAR SERVICIO
+    ELIMINAR SERVICIO
 ======================================================= */
 export const eliminarServicio = async (req, res) => {
   try {
-    const proveedor = await Proveedor.findOne({ usuario: req.user._id });
-    if (!proveedor) return res.status(404).json({ mensaje: "No autorizado" });
-
-    const servicio = proveedor.servicios.id(req.params.id);
-    if (!servicio) return res.status(404).json({ mensaje: "No encontrado" });
-
-    // Borrado físico de fotos
-    servicio.fotos?.forEach(foto => {
-      const fileName = path.basename(foto);
-      const ruta = path.join(process.cwd(), "uploads", "servicios", fileName);
-      if (fs.existsSync(ruta)) {
-        try { fs.unlinkSync(ruta); } catch (e) { console.error("Error al borrar foto:", e); }
-      }
-    });
-
-    proveedor.servicios.pull(req.params.id);
-    await proveedor.save();
-
+    const servicio = await Servicio.findOne({ _id: req.params.id, usuario: req.user._id });
+    if (!servicio) return res.status(404).json({ mensaje: "No autorizado" });
+    await servicio.deleteOne();
     res.status(200).json({ mensaje: "Servicio eliminado exitosamente" });
   } catch (error) {
     res.status(500).json({ mensaje: error.message });
@@ -246,45 +163,30 @@ export const eliminarServicio = async (req, res) => {
 };
 
 /* =======================================================
-    📌 REGISTRAR MÉTRICAS DINÁMICAS (PUT)
+    REGISTRAR MÉTRICAS
 ======================================================= */
 export const registrarClick = async (req, res) => {
   try {
-    const { id, tipo } = req.params; // tipo: 'whatsapp', 'telefono', 'email'
-    const proveedor = await Proveedor.findOne({ "servicios._id": id });
-    if (!proveedor) return res.status(404).json({ mensaje: "Servicio no rastreable" });
-
-    const servicio = proveedor.servicios.id(id);
-    if (servicio && servicio.estadisticas[tipo] !== undefined) {
-      servicio.estadisticas[tipo] += 1;
-      await proveedor.save();
-      return res.status(200).json({ mensaje: `Métrica ${tipo} actualizada` });
-    }
-
-    res.status(400).json({ mensaje: "Tipo de métrica inválido" });
+    const { id, tipo } = req.params;
+    await Servicio.updateOne({ _id: id }, { $inc: { [`estadisticas.${tipo}`]: 1 } });
+    res.status(200).json({ mensaje: `Métrica ${tipo} actualizada` });
   } catch (error) {
     res.status(500).json({ mensaje: error.message });
   }
 };
 
 /* =======================================================
-    📌 CARGA EXTRA DE FOTOS (Mantenimiento)
+    CARGA EXTRA DE FOTOS
 ======================================================= */
 export const subirFotosServicio = async (req, res) => {
   try {
-    const id = req.params.id || req.body.servicioId;
+    const servicio = await Servicio.findOne({ _id: req.params.id, usuario: req.user._id });
+    if (!servicio) return res.status(404).json({ mensaje: "Servicio no localizado" });
 
-    // Buscamos el proveedor que contiene este servicio
-    const proveedor = await Proveedor.findOne({ "servicios._id": id });
-    if (!proveedor) return res.status(404).json({ mensaje: "Servicio no localizado en el sistema" });
-
-    const servicio = proveedor.servicios.id(id);
-    if (!servicio) return res.status(404).json({ mensaje: "Error al indexar el servicio dentro del proveedor" });
-
-    const nuevasFotos = req.files?.map(f => `/uploads/servicios/${f.filename}`) || [];
+    const nuevasFotos = req.files?.map((f) => f.path) || [];
     servicio.fotos.push(...nuevasFotos);
+    await servicio.save();
 
-    await proveedor.save();
     res.status(200).json({ mensaje: "Galería actualizada", fotos: servicio.fotos });
   } catch (error) {
     res.status(500).json({ mensaje: error.message });

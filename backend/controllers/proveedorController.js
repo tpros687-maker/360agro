@@ -21,11 +21,7 @@ export const obtenerMiProveedor = async (req, res) => {
     const filtro = { usuario: req.user._id };
     if (tipo) filtro.tipoProveedor = tipo;
 
-    console.log("DEBUG obtenerMiProveedor - tipo:", tipo, "filtro:", JSON.stringify(filtro));
-
     const proveedor = await Proveedor.findOne(filtro).populate("misProductos");
-
-    console.log("DEBUG obtenerMiProveedor - resultado:", proveedor ? `${proveedor.nombre} (${proveedor.tipoProveedor})` : "null");
 
     if (!proveedor) {
       return res.status(200).json({ mensaje: "No tienes un perfil configurado", noExiste: true });
@@ -45,17 +41,7 @@ export const obtenerProveedores = async (req, res) => {
   try {
     const { tipo, rubro, zona, search } = req.query;
     let query = {};
-    if (tipo === "tienda") {
-      // 🛡️ SEGURIDAD: Mostramos tiendas explícitas o perfiles con rubros comerciales
-      query.$or = [
-        { tipoProveedor: "tienda" },
-        { tipoProveedor: { $exists: false } },
-        { rubro: { $ne: "Servicios Profesionales" } }
-      ];
-    } else if (tipo === "servicio") {
-      // Para servicios, preferimos basarnos en la existencia de los mismos
-      query.servicios = { $exists: true, $not: { $size: 0 } };
-    } else if (tipo) {
+    if (tipo) {
       query.tipoProveedor = tipo;
     }
     if (rubro) query.rubro = rubro;
@@ -110,7 +96,6 @@ export const crearProveedor = async (req, res) => {
     const existe = await Proveedor.findOne({ usuario: req.user._id, tipoProveedor });
 
     if (existe) {
-      console.log(`♻️ Proveedor (${tipoProveedor}) ya existente para: ${req.user._id}`);
       return res.status(200).json(existe);
     }
 

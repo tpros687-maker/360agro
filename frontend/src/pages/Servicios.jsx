@@ -157,7 +157,7 @@ export default function Servicios() {
                     </div>
                     <div className="bg-surface-container-low rounded-xl p-2.5">
                       <p className="text-[8px] text-on-surface-variant uppercase tracking-widest mb-0.5">Proveedor</p>
-                      <p className="text-[11px] font-black text-on-surface truncate">{s.proveedorNombre || "—"}</p>
+                      <p className="text-[11px] font-black text-on-surface truncate">{s.usuario?.nombre || "—"}</p>
                     </div>
                   </div>
 

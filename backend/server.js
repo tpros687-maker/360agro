@@ -21,6 +21,7 @@ import "./models/lotModel.js";
 import "./models/productoModel.js";
 import "./models/messageModel.js";
 import "./models/tiendaModel.js";
+import "./models/servicioModel.js";
 import "./models/costRecordModel.js";
 import "./models/expenseModel.js";
 
@@ -146,7 +147,6 @@ app.use("/api/tiendas/upload", tiendaUploadRoutes);
 app.use("/api/tiendas", tiendaRoutes);
 app.use("/api/servicios-profesionales/upload", servicioUploadRoutes);
 app.use("/api/servicios-profesionales", servicioRoutes);
-app.use("/api/servicios", servicioRoutes);
 app.use("/api/productos", productoRoutes);
 app.use("/api/pedidos", pedidoRoutes);
 app.use("/api/ai", aiRoutes);
