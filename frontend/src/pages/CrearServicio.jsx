@@ -3,6 +3,28 @@ import servicioApi from "../api/servicioApi";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
+const LOCALIDADES_POR_DEPTO = {
+  "Artigas": ["Artigas", "Tomás Gomensoro", "Baltasar Brum", "Bella Unión"],
+  "Canelones": ["Canelones", "Las Piedras", "La Paz", "Pando", "Santa Lucía", "Atlántida", "Ciudad de la Costa", "Sauce"],
+  "Cerro Largo": ["Melo", "Río Branco", "Fraile Muerto", "Aceguá"],
+  "Colonia": ["Colonia del Sacramento", "Carmelo", "Nueva Helvecia", "Juan Lacaze", "Rosario", "Nueva Palmira"],
+  "Durazno": ["Durazno", "Sarandí del Yí", "Carlos Reyles", "La Paloma"],
+  "Flores": ["Trinidad", "Ismael Cortinas", "Andresito"],
+  "Florida": ["Florida", "Sarandí Grande", "Casupá", "25 de Mayo"],
+  "Lavalleja": ["Minas", "Solís de Mataojo", "José Pedro Varela", "Pirarajá"],
+  "Maldonado": ["Maldonado", "Punta del Este", "San Carlos", "Piriápolis", "Aiguá"],
+  "Montevideo": ["Montevideo"],
+  "Paysandú": ["Paysandú", "Guichón", "Quebracho", "Tambores"],
+  "Río Negro": ["Fray Bentos", "Young", "Nuevo Berlín", "San Javier", "Algorta"],
+  "Rivera": ["Rivera", "Tranqueras", "Vichadero", "Minas de Corrales"],
+  "Rocha": ["Rocha", "Chuy", "Lascano", "La Paloma", "Castillos"],
+  "Salto": ["Salto", "Belén", "Constitución", "Termas del Daymán"],
+  "San José": ["San José de Mayo", "Libertad", "Ciudad del Plata", "Rodríguez"],
+  "Soriano": ["Mercedes", "Dolores", "Cardona", "Palmitas", "Villa Soriano"],
+  "Tacuarembó": ["Tacuarembó", "Paso de los Toros", "San Gregorio de Polanco", "Curtina"],
+  "Treinta y Tres": ["Treinta y Tres", "Vergara", "Santa Clara de Olimar"]
+};
+
 export default function CrearServicio() {
   const navigate = useNavigate();
   const [yaExiste, setYaExiste] = useState(false);
@@ -13,7 +35,8 @@ export default function CrearServicio() {
     nombre: "",
     tipoServicio: "",
     descripcion: "",
-    zona: "",
+    departamento: "",
+    localidad: "",
     telefono: "",
     whatsapp: "",
     email: "",
@@ -21,11 +44,18 @@ export default function CrearServicio() {
   });
 
   const [fotos, setFotos] = useState([]);
+  const [localidadesDisponibles, setLocalidadesDisponibles] = useState([]);
 
-  // Eliminamos el bloqueo de 'yaExiste' para permitir multirrubro y múltiples servicios
   useEffect(() => {
     setVerificando(false);
   }, []);
+
+  useEffect(() => {
+    if (form.departamento) {
+      setLocalidadesDisponibles(LOCALIDADES_POR_DEPTO[form.departamento] || []);
+      setForm(prev => ({ ...prev, localidad: "" }));
+    }
+  }, [form.departamento]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -49,9 +79,15 @@ export default function CrearServicio() {
       const data = new FormData();
 
       // Agregamos campos de texto
+      const zona = form.localidad
+        ? `${form.localidad}, ${form.departamento}`
+        : form.departamento;
       Object.keys(form).forEach((key) => {
-        data.append(key, form[key]);
+        if (key !== "departamento" && key !== "localidad") data.append(key, form[key]);
       });
+      data.append("zona", zona);
+      data.append("departamento", form.departamento);
+      data.append("localidad", form.localidad);
 
       // Agregamos las fotos
       fotos.forEach((f) => {
@@ -140,9 +176,25 @@ export default function CrearServicio() {
               <textarea name="descripcion" value={form.descripcion} onChange={handleChange} rows="4" required placeholder="Detalle su flota de maquinaria, certificaciones y experiencia en el sector..." className="bg-surface-container-lowest p-6 rounded-2xl text-on-surface border border-outline-variant/50 outline-none focus:border-primary/50 transition-all resize-none font-medium leading-relaxed"></textarea>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest ml-1">Zona de Operación</label>
-              <input type="text" name="zona" value={form.zona} onChange={handleChange} placeholder="Ej: Soriano, Río Negro y Paysandú" required className="bg-surface-container-lowest p-5 rounded-2xl text-on-surface border border-outline-variant/50 outline-none focus:border-primary/50 transition-all font-bold" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest ml-1">Departamento</label>
+                <select name="departamento" value={form.departamento} onChange={handleChange} required className="bg-surface-container-lowest p-5 rounded-2xl text-on-surface border border-outline-variant/50 outline-none focus:border-primary/50 transition-all font-bold">
+                  <option value="">Seleccionar departamento...</option>
+                  {Object.keys(LOCALIDADES_POR_DEPTO).map(d => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest ml-1">Localidad</label>
+                <select name="localidad" value={form.localidad} onChange={handleChange} disabled={!form.departamento} className="bg-surface-container-lowest p-5 rounded-2xl text-on-surface border border-outline-variant/50 outline-none focus:border-primary/50 transition-all font-bold disabled:opacity-40">
+                  <option value="">Seleccionar localidad...</option>
+                  {localidadesDisponibles.map(loc => (
+                    <option key={loc} value={loc}>{loc}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </section>
 
