@@ -244,7 +244,7 @@ export default function EditarServicio() {
                 {form.fotos.map((f, i) => (
                   <div key={i} className="relative group/img rounded-xl overflow-hidden border border-outline-variant/20 h-24 shadow-2xl">
                     <img
-                      src={f.startsWith('http') ? f : `${BASE_URL}${f}`}
+                      src={/^https?:\/\//.test(f?.trim()) ? f.trim() : `${BASE_URL}${f}`}
                       className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition duration-500"
                     />
                     <button

@@ -109,7 +109,7 @@ export default function ServicioDetalle() {
           <div className="lg:col-span-5 relative group">
             <div className="bg-surface-container-high border border-outline-variant/70 p-6 rounded-[3.5rem] shadow-2xl relative overflow-hidden transform group-hover:scale-[1.01] transition-all duration-700">
               <img
-                src={servicio.fotos && servicio.fotos.length > 0 ? (servicio.fotos[0].startsWith('http') ? servicio.fotos[0] : `${BASE_URL}${servicio.fotos[0]}`) : "/placeholder-servicio.png"}
+                src={servicio.fotos && servicio.fotos.length > 0 ? (/^https?:\/\//.test(servicio.fotos[0]?.trim()) ? servicio.fotos[0].trim() : `${BASE_URL}${servicio.fotos[0]}`) : "/placeholder-servicio.png"}
                 className="w-full h-[450px] object-cover rounded-[2.5rem] grayscale-[50%] group-hover:grayscale-0 transition duration-[2s]"
                 alt={servicio.nombre}
               />
@@ -143,7 +143,7 @@ export default function ServicioDetalle() {
                   {servicio.fotos.slice(1).map((foto, i) => (
                     <img
                       key={i}
-                      src={foto.startsWith('http') ? foto : `${BASE_URL}${foto}`}
+                      src={/^https?:\/\//.test(foto?.trim()) ? foto.trim() : `${BASE_URL}${foto}`}
                       className="w-full h-72 object-cover rounded-[2.5rem] border border-outline-variant/70 shadow-2xl grayscale hover:grayscale-0 transition duration-700 cursor-pointer"
                       alt={`Evidencia ${i + 1}`}
                     />

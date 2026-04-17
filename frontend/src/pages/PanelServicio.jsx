@@ -211,7 +211,7 @@ export default function PanelServicio() {
           {servicio.fotos?.map((foto, i) => (
             <img
               key={i}
-              src={foto.startsWith('http') ? foto : `${BASE_URL}${foto}`}
+              src={/^https?:\/\//.test(foto?.trim()) ? foto.trim() : `${BASE_URL}${foto}`}
               className="w-full h-32 object-cover rounded-xl border shadow-sm"
             />
           ))}
