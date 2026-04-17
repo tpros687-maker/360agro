@@ -7,10 +7,11 @@ dotenv.config();
 
 console.log('CLOUD_NAME RAW:', JSON.stringify(process.env.CLOUDINARY_CLOUD_NAME))
 console.log('API_KEY RAW:', JSON.stringify(process.env.CLOUDINARY_API_KEY))
+const clean = (val) => val?.trim().replace(/^[^a-zA-Z0-9]+/, '');
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME?.trim(),
-  api_key: process.env.CLOUDINARY_API_KEY?.trim(),
-  api_secret: process.env.CLOUDINARY_API_SECRET?.trim(),
+  cloud_name: clean(process.env.CLOUDINARY_CLOUD_NAME),
+  api_key: clean(process.env.CLOUDINARY_API_KEY),
+  api_secret: clean(process.env.CLOUDINARY_API_SECRET),
 });
 
 export { cloudinary };
