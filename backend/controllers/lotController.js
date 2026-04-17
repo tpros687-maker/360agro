@@ -65,12 +65,12 @@ export const crearLote = async (req, res) => {
     if (fotos.length === 0 && req.files) {
       fotos = req.files
         .filter(f => f.fieldname === "fotos")
-        .map(f => `/uploads/lotes/${f.filename}`);
+        .map(f => f.path);
     }
 
     if (!video && req.files) {
       const vFile = req.files.find(f => f.fieldname === "video");
-      if (vFile) video = `/uploads/lotes/${vFile.filename}`;
+      if (vFile) video = vFile.path;
     }
 
     // --- NUEVO: DOCUMENTACIÓN OFICIAL ---
@@ -78,10 +78,10 @@ export const crearLote = async (req, res) => {
     let certificadoSanitario = null;
     if (req.files) {
       const propFile = req.files.find(f => f.fieldname === "documentoPropiedad");
-      if (propFile) documentoPropiedad = `/uploads/lotes/${propFile.filename}`;
+      if (propFile) documentoPropiedad = propFile.path;
 
       const sanFile = req.files.find(f => f.fieldname === "certificadoSanitario");
-      if (sanFile) certificadoSanitario = `/uploads/lotes/${sanFile.filename}`;
+      if (sanFile) certificadoSanitario = sanFile.path;
     }
 
     // CREACIÓN DEL LOTE
