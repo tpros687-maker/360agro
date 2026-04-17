@@ -5,6 +5,8 @@ import { v2 as cloudinary } from "cloudinary";
 // se importe antes de que server.js llame a dotenv.config().
 dotenv.config();
 
+console.log('CLOUD_NAME RAW:', JSON.stringify(process.env.CLOUDINARY_CLOUD_NAME))
+console.log('API_KEY RAW:', JSON.stringify(process.env.CLOUDINARY_API_KEY))
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
