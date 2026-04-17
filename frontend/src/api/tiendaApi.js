@@ -26,7 +26,7 @@ const tiendaApi = {
   obtenerTiendaPorId: (id) => API.get(`/proveedores/id/${id}`),
 
   // 🟢 Obtener mi tienda (privado)
-  obtenerMiTienda: () => API.get("/proveedores/me"),
+  obtenerMiTienda: () => API.get("/proveedores/me?tipo=tienda"),
 
   // 🟢 Crear tienda
   crearTienda: (data) => API.post("/proveedores", data),

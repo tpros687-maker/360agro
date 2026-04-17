@@ -51,7 +51,6 @@ const proveedorSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true,
     },
 
     nombre: {
@@ -142,5 +141,6 @@ proveedorSchema.pre("save", function (next) {
     ÍNDICES (Para el Buscador Universal)
 =============================================== */
 proveedorSchema.index({ nombre: "text", rubro: "text", zona: "text" });
+proveedorSchema.index({ usuario: 1, tipoProveedor: 1 }, { unique: true });
 
 export default mongoose.model("Proveedor", proveedorSchema);

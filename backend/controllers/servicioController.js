@@ -126,7 +126,7 @@ export const obtenerServicio = async (req, res) => {
 export const crearServicio = async (req, res) => {
   try {
     const body = req.body;
-    let proveedor = await Proveedor.findOne({ usuario: req.user._id });
+    let proveedor = await Proveedor.findOne({ usuario: req.user._id, tipoProveedor: "servicio" });
 
     // Si el usuario no tiene perfil de proveedor, lo creamos con datos mínimos
     if (!proveedor) {

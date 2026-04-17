@@ -17,22 +17,14 @@ const borrarArchivoFisico = (ruta) => {
 // ==========================
 export const obtenerMiProveedor = async (req, res) => {
   try {
-    const proveedor = await Proveedor.findOne({ usuario: req.user._id }).populate("misProductos");
+    const { tipo } = req.query;
+    const filtro = { usuario: req.user._id };
+    if (tipo) filtro.tipoProveedor = tipo;
+
+    const proveedor = await Proveedor.findOne(filtro).populate("misProductos");
 
     if (!proveedor) {
       return res.status(200).json({ mensaje: "No tienes un perfil configurado", noExiste: true });
-    }
-
-    console.log(`✅ Proveedor encontrado: ${proveedor.nombre} (Tipo: ${proveedor.tipoProveedor})`);
-
-    // 🔥 AUTO-FIX: Si el perfil migrado no tiene tipoProveedor, lo asignamos
-    if (!proveedor.tipoProveedor) {
-      if (proveedor.servicios && proveedor.servicios.length > 0) {
-        proveedor.tipoProveedor = "servicio";
-      } else {
-        proveedor.tipoProveedor = "tienda";
-      }
-      await proveedor.save();
     }
 
     res.json(proveedor);
@@ -110,20 +102,18 @@ export const crearProveedor = async (req, res) => {
       });
     }
 
-    const existe = await Proveedor.findOne({ usuario: req.user._id });
+    const tipoProveedor = req.body.tipoProveedor || "tienda";
+    const existe = await Proveedor.findOne({ usuario: req.user._id, tipoProveedor });
 
-    // 🔥 IDEMPOTENCIA: Si ya existe, en lugar de 400, devolvemos el existente (200)
-    // Esto rompe el bucle en el frontend si por alguna razón la verificación previa falló
     if (existe) {
-      console.log(`♻️ Proveedor ya existente, devolviendo registro para: ${req.user._id}`);
+      console.log(`♻️ Proveedor (${tipoProveedor}) ya existente para: ${req.user._id}`);
       return res.status(200).json(existe);
     }
 
-    // Asegurar valores por defecto si vienen vacíos
     const datos = {
       ...req.body,
       usuario: req.user._id,
-      tipoProveedor: req.body.tipoProveedor || "tienda"
+      tipoProveedor,
     };
 
     // 📸 PROCESAMIENTO DE ARCHIVOS (Logo y Fotos)
