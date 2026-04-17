@@ -108,8 +108,9 @@ export const crearLote = async (req, res) => {
 
     res.status(201).json(nuevoLote);
   } catch (error) {
-    console.error("DETALLE ERROR 500 CREAR LOTE:", error?.message || error, error?.stack);
-    res.status(500).json({ message: error?.message || "Error interno" });
+    console.error('ERROR LOTE:', error instanceof Error ? error.message : JSON.stringify(error))
+    console.error('STACK:', error?.stack)
+    res.status(500).json({ message: error instanceof Error ? error.message : JSON.stringify(error) })
   }
 };
 
