@@ -21,7 +21,11 @@ export const obtenerMiProveedor = async (req, res) => {
     const filtro = { usuario: req.user._id };
     if (tipo) filtro.tipoProveedor = tipo;
 
+    console.log("DEBUG obtenerMiProveedor - tipo:", tipo, "filtro:", JSON.stringify(filtro));
+
     const proveedor = await Proveedor.findOne(filtro).populate("misProductos");
+
+    console.log("DEBUG obtenerMiProveedor - resultado:", proveedor ? `${proveedor.nombre} (${proveedor.tipoProveedor})` : "null");
 
     if (!proveedor) {
       return res.status(200).json({ mensaje: "No tienes un perfil configurado", noExiste: true });
