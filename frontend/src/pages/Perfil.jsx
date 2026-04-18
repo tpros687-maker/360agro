@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/userApi";
+import subscripcionApi from "../api/subscripcionApi";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { ProfileSkeleton } from "../components/Skeleton";
@@ -9,6 +10,8 @@ export default function Perfil() {
   const [lotes, setLotes] = useState([]);
   const [mensajes, setMensajes] = useState([]);
   const [editando, setEditando] = useState(false);
+  const [modalCancelar, setModalCancelar] = useState(false);
+  const [cancelando, setCancelando] = useState(false);
   const [form, setForm] = useState({ nombre: "", email: "", telefono: "" });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -41,6 +44,23 @@ export default function Perfil() {
     fetchData();
   }, [navigate]);
 
+  const handleCancelarSuscripcion = async () => {
+    setCancelando(true);
+    try {
+      const { data } = await subscripcionApi.cancelar();
+      setUsuario((prev) => ({ ...prev, estadoSuscripcion: "cancelada" }));
+      const fecha = data.proximaFechaCobro
+        ? new Date(data.proximaFechaCobro).toLocaleDateString("es-UY")
+        : null;
+      toast.success(fecha ? `Plan activo hasta el ${fecha}` : "Suscripción cancelada");
+      setModalCancelar(false);
+    } catch (error) {
+      toast.error(error.response?.data?.mensaje || "Error al cancelar suscripción");
+    } finally {
+      setCancelando(false);
+    }
+  };
+
   const handleGuardar = async () => {
     try {
       await API.put("/users/perfil", { nombre: form.nombre, email: form.email, telefono: form.telefono });
@@ -66,6 +86,39 @@ export default function Perfil() {
 
   return (
     <div className="bg-background min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
+
+      {/* Modal confirmación cancelar suscripción */}
+      {modalCancelar && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="bg-surface-container-high border border-outline-variant/20 rounded-[2rem] p-8 w-full max-w-md shadow-2xl">
+            <h3 className="text-2xl font-black text-on-surface italic uppercase tracking-tighter mb-3">Cancelar Suscripción</h3>
+            <p className="text-on-surface-variant/60 text-sm mb-2 leading-relaxed">
+              ¿Estás seguro? Tu plan actual permanecerá activo hasta el fin del período ya pagado.
+            </p>
+            {usuario.proximaFechaCobro && (
+              <p className="text-primary font-black text-sm uppercase tracking-wider mb-6">
+                Activo hasta: {new Date(usuario.proximaFechaCobro).toLocaleDateString("es-UY")}
+              </p>
+            )}
+            <p className="text-on-surface-variant/40 text-xs mb-8 italic">Después pasarás automáticamente al plan Observador.</p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setModalCancelar(false)}
+                className="flex-1 py-4 bg-surface-container text-on-surface-variant/60 hover:bg-surface-container-high rounded-xl font-black text-[10px] uppercase tracking-widest transition-all"
+              >
+                Mantener plan
+              </button>
+              <button
+                onClick={handleCancelarSuscripcion}
+                disabled={cancelando}
+                className="flex-1 py-4 bg-red-900/20 text-red-400 hover:bg-red-500 hover:text-white border border-red-900/30 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all disabled:opacity-50"
+              >
+                {cancelando ? "Cancelando..." : "Confirmar cancelación"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[200px] pointer-events-none opacity-30 -mr-40 -mt-40"></div>
 
       <div className="container mx-auto max-w-4xl relative z-10 reveal-delayed">
@@ -168,12 +221,22 @@ export default function Perfil() {
                     <h3 className="text-3xl font-black text-on-surface italic tracking-tighter uppercase">{usuario.plan || "Gratis"}</h3>
                   </div>
                 </div>
-                <Link
-                  to="/planes"
-                  className="px-8 py-4 bg-background text-primary font-black rounded-full border border-primary/20 hover:bg-primary hover:text-white transition-all duration-500 uppercase tracking-widest text-[9px]"
-                >
-                  Optimizar Plan <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </Link>
+                <div className="flex flex-col gap-3">
+                  <Link
+                    to="/planes"
+                    className="px-8 py-4 bg-background text-primary font-black rounded-full border border-primary/20 hover:bg-primary hover:text-white transition-all duration-500 uppercase tracking-widest text-[9px] text-center"
+                  >
+                    Optimizar Plan <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </Link>
+                  {usuario.estadoSuscripcion === "activa" && (
+                    <button
+                      onClick={() => setModalCancelar(true)}
+                      className="px-8 py-3 text-red-400/60 hover:text-red-400 font-black rounded-full border border-red-900/20 hover:border-red-900/40 transition-all text-[9px] uppercase tracking-widest"
+                    >
+                      Cancelar suscripción
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </section>

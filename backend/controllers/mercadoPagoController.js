@@ -175,6 +175,34 @@ export const webhook = async (req, res) => {
   }
 };
 
+export const cancelarSuscripcion = async (req, res) => {
+  try {
+    const usuario = await User.findById(req.user._id);
+    if (!usuario?.suscripcionId) {
+      return res.status(400).json({ mensaje: "No tenés una suscripción activa" });
+    }
+
+    const preApproval = new PreApproval(getClient());
+    await preApproval.update({
+      id: usuario.suscripcionId,
+      body: { status: "cancelled" }
+    });
+
+    // Marcar como cancelada pero NO bajar el plan — el webhook lo hará al vencer el período
+    usuario.estadoSuscripcion = "cancelada";
+    await usuario.save();
+
+    console.log(`🚫 Suscripción cancelada por usuario: ${usuario.email}`);
+    res.json({
+      mensaje: "Suscripción cancelada. Tu plan permanece activo hasta el fin del período pagado.",
+      proximaFechaCobro: usuario.proximaFechaCobro
+    });
+  } catch (error) {
+    console.error("Error cancelando suscripción:", error);
+    res.status(500).json({ mensaje: "Error al cancelar suscripción", error: error.message });
+  }
+};
+
 // Alias para compatibilidad si algo aún referencia los nombres viejos
 export const crearSuscripcionSimulada = crearSuscripcion;
 export const webhookSimulado = webhook;
