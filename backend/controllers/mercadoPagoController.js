@@ -90,8 +90,17 @@ export const webhook = async (req, res) => {
 
     // 2. Manejar evento de pago único
     if (type === "payment") {
-      const paymentClient = new Payment(getClient());
-      const pago = await paymentClient.get({ id: data.id });
+      let pago;
+      try {
+        const paymentClient = new Payment(getClient());
+        pago = await paymentClient.get({ id: data.id });
+      } catch (err) {
+        const status = err?.status || err?.cause?.[0]?.code;
+        if (status === 404 || String(err?.message).includes("not found")) {
+          return res.sendStatus(200);
+        }
+        throw err; // cualquier otro error sube al catch principal
+      }
 
       if (pago.status !== "approved") return res.sendStatus(200);
 
