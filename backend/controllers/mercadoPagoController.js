@@ -129,7 +129,8 @@ export const webhook = async (req, res) => {
       suscripcion = await preApproval.get({ id: data.id });
     } catch (err) {
       const status = err?.status || err?.cause?.[0]?.code;
-      if (status === 404 || String(err?.message).includes("not found")) {
+      const msg = String(err?.message).toLowerCase();
+      if ([400, 404].includes(status) || msg.includes("not found") || msg.includes("bad request")) {
         return res.sendStatus(200);
       }
       throw err;
