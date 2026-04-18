@@ -124,7 +124,16 @@ export const webhook = async (req, res) => {
     if (type !== "subscription_preapproval") return res.sendStatus(200);
 
     const preApproval = new PreApproval(getClient());
-    const suscripcion = await preApproval.get({ id: data.id });
+    let suscripcion;
+    try {
+      suscripcion = await preApproval.get({ id: data.id });
+    } catch (err) {
+      const status = err?.status || err?.cause?.[0]?.code;
+      if (status === 404 || String(err?.message).includes("not found")) {
+        return res.sendStatus(200);
+      }
+      throw err;
+    }
 
     // 4. Buscar usuario por email del pagador, con fallback por suscripcionId
     const usuario = await User.findOne({ email: suscripcion.payer_email })
