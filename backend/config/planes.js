@@ -13,7 +13,7 @@ export const PLANES = {
   },
   productor: {
     nombre: "Productor",
-    precio: { mensual: 9, trimestral: 23, anual: 81 },
+    precio: { mensual: 4, trimestral: 10, anual: 36 },
     limites: {
       lotes: 3,
       servicios: 3,
@@ -25,7 +25,7 @@ export const PLANES = {
   },
   pro: {
     nombre: "Pro",
-    precio: { mensual: 24, trimestral: 61, anual: 216 },
+    precio: { mensual: 9, trimestral: 23, anual: 81 },
     limites: {
       lotes: Infinity,
       servicios: Infinity,
@@ -37,7 +37,7 @@ export const PLANES = {
   },
   empresa: {
     nombre: "Empresa",
-    precio: { mensual: 49, trimestral: 125, anual: 441 },
+    precio: { mensual: 19, trimestral: 49, anual: 169 },
     limites: {
       lotes: Infinity,
       servicios: Infinity,
