@@ -228,7 +228,7 @@ export default function Perfil() {
                   >
                     Optimizar Plan <span className="material-symbols-outlined text-sm">arrow_forward</span>
                   </Link>
-                  {usuario.estadoSuscripcion === "activa" && (
+                  {usuario.plan !== "observador" && usuario.estadoSuscripcion !== "cancelada" && (
                     <button
                       onClick={() => setModalCancelar(true)}
                       className="px-8 py-3 text-red-400/60 hover:text-red-400 font-black rounded-full border border-red-900/20 hover:border-red-900/40 transition-all text-[9px] uppercase tracking-widest"
