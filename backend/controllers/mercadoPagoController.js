@@ -1,4 +1,5 @@
-import { MercadoPagoConfig, PreApprovalPlan, PreApproval } from 'mercadopago';
+import crypto from "crypto";
+import { MercadoPagoConfig, PreApprovalPlan, PreApproval, Payment } from 'mercadopago';
 import User from '../models/userModel.js';
 import Subscripcion from '../models/subscripcionModel.js';
 import { PLANES } from '../config/planes.js';
@@ -6,6 +7,26 @@ import { PLANES } from '../config/planes.js';
 const getClient = () => new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN
 });
+
+// Valida la firma x-signature enviada por MercadoPago en cada webhook
+const validarFirmaMP = (req) => {
+  const secret = process.env.MP_WEBHOOK_SECRET;
+  if (!secret) return true; // sin secret configurado: omitir en dev
+  const xSignature = req.headers["x-signature"];
+  const xRequestId = req.headers["x-request-id"];
+  const dataId = req.query["data.id"];
+  if (!xSignature || !dataId) return false;
+  let ts, v1;
+  xSignature.split(",").forEach(part => {
+    const [k, val] = part.split("=");
+    if (k === "ts") ts = val;
+    if (k === "v1") v1 = val;
+  });
+  if (!ts || !v1) return false;
+  const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+  const expected = crypto.createHmac("sha256", secret).update(manifest).digest("hex");
+  return v1 === expected;
+};
 
 export const crearSuscripcion = async (req, res) => {
   try {
@@ -59,39 +80,73 @@ export const crearSuscripcion = async (req, res) => {
 
 export const webhook = async (req, res) => {
   try {
+    // 1. Validar firma de MercadoPago
+    if (!validarFirmaMP(req)) {
+      console.warn("⚠️ Webhook MP rechazado: firma inválida");
+      return res.sendStatus(401);
+    }
+
     const { type, data } = req.body;
+
+    // 2. Manejar evento de pago único
+    if (type === "payment") {
+      const paymentClient = new Payment(getClient());
+      const pago = await paymentClient.get({ id: data.id });
+
+      if (pago.status !== "approved") return res.sendStatus(200);
+
+      const usuario = await User.findOne({ email: pago.payer.email });
+      if (!usuario) return res.sendStatus(200);
+
+      const sub = await Subscripcion.findOne({ usuario: usuario._id, status: "Pendiente" });
+      if (!sub) return res.sendStatus(200);
+
+      usuario.plan = sub.planSolicitado;
+      usuario.estadoSuscripcion = "activa";
+      usuario.suscripcionId = String(data.id);
+      await usuario.save();
+      await sub.updateOne({ status: "Aprobado", fechaAprobacion: Date.now() });
+
+      console.log(`✅ Pago aprobado: ${usuario.email} → plan ${usuario.plan}`);
+      return res.sendStatus(200);
+    }
+
+    // 3. Solo procesar eventos de suscripción
     if (type !== "subscription_preapproval") return res.sendStatus(200);
 
     const preApproval = new PreApproval(getClient());
     const suscripcion = await preApproval.get({ id: data.id });
 
-    const usuario = await User.findOne({
-      suscripcionId: suscripcion.preapproval_plan_id
-    }) || await Subscripcion.findOne({
-      status: "Pendiente"
-    }).populate("usuario").then(s => s?.usuario);
+    // 4. Buscar usuario por email del pagador, con fallback por suscripcionId
+    const usuario = await User.findOne({ email: suscripcion.payer_email })
+      || await User.findOne({ suscripcionId: data.id });
 
-    if (!usuario) return res.sendStatus(200);
+    if (!usuario) {
+      console.warn(`⚠️ Webhook MP: usuario no encontrado para ${suscripcion.payer_email}`);
+      return res.sendStatus(200);
+    }
 
+    // 5. Activar suscripción
     if (suscripcion.status === "authorized") {
-      usuario.plan = suscripcion.reason.includes("productor") ? "productor"
-        : suscripcion.reason.includes("Pro") ? "pro"
-        : suscripcion.reason.includes("Empresa") ? "empresa" : "observador";
+      const sub = await Subscripcion.findOne({ usuario: usuario._id, status: "Pendiente" });
+      const planKey = sub?.planSolicitado || "observador";
+
+      usuario.plan = planKey;
       usuario.suscripcionId = data.id;
       usuario.estadoSuscripcion = "activa";
       usuario.proximaFechaCobro = new Date(suscripcion.next_payment_date);
       await usuario.save();
 
-      await Subscripcion.findOneAndUpdate(
-        { usuario: usuario._id, status: "Pendiente" },
-        { status: "Aprobado", fechaAprobacion: Date.now() }
-      );
+      if (sub) await sub.updateOne({ status: "Aprobado", fechaAprobacion: Date.now() });
+      console.log(`✅ Suscripción autorizada: ${usuario.email} → plan ${planKey}`);
     }
 
+    // 6. Cancelar suscripción
     if (suscripcion.status === "cancelled") {
       usuario.plan = "observador";
       usuario.estadoSuscripcion = "cancelada";
       await usuario.save();
+      console.log(`❌ Suscripción cancelada: ${usuario.email}`);
     }
 
     res.sendStatus(200);
