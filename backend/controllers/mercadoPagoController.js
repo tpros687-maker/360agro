@@ -178,23 +178,34 @@ export const webhook = async (req, res) => {
 export const cancelarSuscripcion = async (req, res) => {
   try {
     const usuario = await User.findById(req.user._id);
-    if (!usuario?.suscripcionId) {
+    if (!usuario || usuario.plan === "observador") {
       return res.status(400).json({ mensaje: "No tenés una suscripción activa" });
     }
 
-    const preApproval = new PreApproval(getClient());
-    await preApproval.update({
-      id: usuario.suscripcionId,
-      body: { status: "cancelled" }
-    });
+    if (usuario.suscripcionId) {
+      const preApproval = new PreApproval(getClient());
+      await preApproval.update({
+        id: usuario.suscripcionId,
+        body: { status: "cancelled" }
+      });
 
-    // Marcar como cancelada pero NO bajar el plan — el webhook lo hará al vencer el período
+      usuario.estadoSuscripcion = "cancelada";
+      await usuario.save();
+
+      console.log(`🚫 Suscripción cancelada por usuario (MP): ${usuario.email}`);
+      return res.json({
+        mensaje: "Suscripción cancelada. Tu plan permanece activo hasta el fin del período pagado.",
+        proximaFechaCobro: usuario.proximaFechaCobro
+      });
+    }
+
+    // Sin suscripcionId de MP: solo actualizar DB
     usuario.estadoSuscripcion = "cancelada";
     await usuario.save();
 
-    console.log(`🚫 Suscripción cancelada por usuario: ${usuario.email}`);
+    console.log(`🚫 Suscripción cancelada por usuario (manual): ${usuario.email}`);
     res.json({
-      mensaje: "Suscripción cancelada. Tu plan permanece activo hasta el fin del período pagado.",
+      mensaje: "Suscripción cancelada.",
       proximaFechaCobro: usuario.proximaFechaCobro
     });
   } catch (error) {
