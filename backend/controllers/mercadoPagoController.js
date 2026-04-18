@@ -113,6 +113,7 @@ export const webhook = async (req, res) => {
       usuario.plan = sub.planSolicitado;
       usuario.estadoSuscripcion = "activa";
       usuario.suscripcionId = String(data.id);
+      usuario.fechaInicioPlan = new Date();
       await usuario.save();
       await sub.updateOne({ status: "Aprobado", fechaAprobacion: Date.now() });
 
@@ -153,6 +154,7 @@ export const webhook = async (req, res) => {
       usuario.plan = planKey;
       usuario.suscripcionId = data.id;
       usuario.estadoSuscripcion = "activa";
+      usuario.fechaInicioPlan = new Date();
       usuario.proximaFechaCobro = new Date(suscripcion.next_payment_date);
       await usuario.save();
 

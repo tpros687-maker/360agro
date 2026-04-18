@@ -219,6 +219,15 @@ export default function Perfil() {
                   <div>
                     <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-widest mb-1">Membresía Activa</p>
                     <h3 className="text-3xl font-black text-on-surface italic tracking-tighter uppercase">{usuario.plan || "Gratis"}</h3>
+                    {usuario.fechaInicioPlan && usuario.proximaFechaCobro ? (
+                      <p className="text-xs text-on-surface-variant/50 mt-1">
+                        Activo del {new Date(usuario.fechaInicioPlan).toLocaleDateString("es-UY")} al {new Date(usuario.proximaFechaCobro).toLocaleDateString("es-UY")}
+                      </p>
+                    ) : usuario.proximaFechaCobro ? (
+                      <p className="text-xs text-on-surface-variant/50 mt-1">
+                        Activo hasta el {new Date(usuario.proximaFechaCobro).toLocaleDateString("es-UY")}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">
