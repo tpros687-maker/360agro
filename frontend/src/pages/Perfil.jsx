@@ -248,6 +248,47 @@ export default function Perfil() {
                 </div>
               </div>
             </div>
+
+            {/* FACTURACIÓN */}
+            {usuario.plan !== "observador" && (
+              <div className="bg-surface-container-high border border-outline-variant/70 rounded-[2rem] p-8">
+                <div className="flex items-center gap-3 mb-8">
+                  <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-widest">Facturación</p>
+                  {usuario.estadoSuscripcion === "activa" && (
+                    <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 text-[9px] font-black uppercase tracking-widest">Activa</span>
+                  )}
+                  {usuario.estadoSuscripcion === "cancelada" && (
+                    <span className="px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 text-[9px] font-black uppercase tracking-widest">Cancelada</span>
+                  )}
+                  {usuario.estadoSuscripcion === "pendiente" && (
+                    <span className="px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 text-[9px] font-black uppercase tracking-widest">Pendiente</span>
+                  )}
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <span className="material-symbols-outlined text-on-surface-variant/40 text-xl">{usuario.suscripcionId ? "credit_card" : "admin_panel_settings"}</span>
+                    <div>
+                      <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Medio de pago</p>
+                      <p className="font-black text-on-surface">{usuario.suscripcionId ? "MercadoPago" : "Asignado por administrador"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="material-symbols-outlined text-on-surface-variant/40 text-xl">calendar_today</span>
+                    <div>
+                      <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Inicio del plan</p>
+                      <p className="font-black text-on-surface">{usuario.fechaInicioPlan ? new Date(usuario.fechaInicioPlan).toLocaleDateString("es-UY") : "—"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="material-symbols-outlined text-on-surface-variant/40 text-xl">event</span>
+                    <div>
+                      <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Vigencia</p>
+                      <p className="font-black text-on-surface">{usuario.proximaFechaCobro ? new Date(usuario.proximaFechaCobro).toLocaleDateString("es-UY") : "Sin fecha definida"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* MÉTRICAS DE ACTIVIDAD (4 COLS) */}
