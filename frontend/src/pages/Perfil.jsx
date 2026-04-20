@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { ProfileSkeleton } from "../components/Skeleton";
 
+const ESTADOS_CANCELAR_VISIBLES = ["activa", "pendiente", null, undefined];
+
 export default function Perfil() {
   const [usuario, setUsuario] = useState(null);
   const [lotes, setLotes] = useState([]);
@@ -84,6 +86,10 @@ export default function Perfil() {
 
   if (!usuario) return null;
 
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString("es-UY") : null;
+  const fechaInicioFmt = fmtDate(usuario.fechaInicioPlan);
+  const proximaFechaFmt = fmtDate(usuario.proximaFechaCobro);
+
   return (
     <div className="bg-background min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
 
@@ -97,7 +103,7 @@ export default function Perfil() {
             </p>
             {usuario.proximaFechaCobro && (
               <p className="text-primary font-black text-sm uppercase tracking-wider mb-6">
-                Activo hasta: {new Date(usuario.proximaFechaCobro).toLocaleDateString("es-UY")}
+                Activo hasta: {proximaFechaFmt}
               </p>
             )}
             <p className="text-on-surface-variant/40 text-xs mb-8 italic">Después pasarás automáticamente al plan Observador.</p>
@@ -219,13 +225,13 @@ export default function Perfil() {
                   <div>
                     <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-widest mb-1">Membresía Activa</p>
                     <h3 className="text-3xl font-black text-on-surface italic tracking-tighter uppercase">{usuario.plan || "Gratis"}</h3>
-                    {usuario.fechaInicioPlan && usuario.proximaFechaCobro ? (
+                    {fechaInicioFmt && proximaFechaFmt ? (
                       <p className="text-xs text-on-surface-variant/50 mt-1">
-                        Activo del {new Date(usuario.fechaInicioPlan).toLocaleDateString("es-UY")} al {new Date(usuario.proximaFechaCobro).toLocaleDateString("es-UY")}
+                        Activo del {fechaInicioFmt} al {proximaFechaFmt}
                       </p>
-                    ) : usuario.proximaFechaCobro ? (
+                    ) : proximaFechaFmt ? (
                       <p className="text-xs text-on-surface-variant/50 mt-1">
-                        Activo hasta el {new Date(usuario.proximaFechaCobro).toLocaleDateString("es-UY")}
+                        Activo hasta el {proximaFechaFmt}
                       </p>
                     ) : null}
                   </div>
@@ -237,7 +243,7 @@ export default function Perfil() {
                   >
                     Optimizar Plan <span className="material-symbols-outlined text-sm">arrow_forward</span>
                   </Link>
-                  {["activa", "pendiente", null, undefined].includes(usuario.estadoSuscripcion) && usuario.plan !== "observador" && (
+                  {ESTADOS_CANCELAR_VISIBLES.includes(usuario.estadoSuscripcion) && usuario.plan !== "observador" && (
                     <button
                       onClick={() => setModalCancelar(true)}
                       className="px-8 py-3 text-red-400/60 hover:text-red-400 font-black rounded-full border border-red-900/20 hover:border-red-900/40 transition-all text-[9px] uppercase tracking-widest"
@@ -276,14 +282,14 @@ export default function Perfil() {
                     <span className="material-symbols-outlined text-on-surface-variant/40 text-xl">calendar_today</span>
                     <div>
                       <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Inicio del plan</p>
-                      <p className="font-black text-on-surface">{usuario.fechaInicioPlan ? new Date(usuario.fechaInicioPlan).toLocaleDateString("es-UY") : "—"}</p>
+                      <p className="font-black text-on-surface">{fechaInicioFmt ?? "—"}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="material-symbols-outlined text-on-surface-variant/40 text-xl">event</span>
                     <div>
                       <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Vigencia</p>
-                      <p className="font-black text-on-surface">{usuario.proximaFechaCobro ? new Date(usuario.proximaFechaCobro).toLocaleDateString("es-UY") : "Sin fecha definida"}</p>
+                      <p className="font-black text-on-surface">{proximaFechaFmt ?? "Sin fecha definida"}</p>
                     </div>
                   </div>
                 </div>
