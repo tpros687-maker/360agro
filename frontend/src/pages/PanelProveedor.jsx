@@ -319,11 +319,12 @@ function StatCard({ title, value, icon, sub1, val1, sub2, val2, link, context })
 
 // --- SUB-COMPONENTE FILA DE ITEM ---
 function ItemRow({ item, tipo, onEliminar, editLink, onVendido }) {
-  const fotos = item.fotos || (item.fotoPrincipal ? [item.fotoPrincipal] : []);
+  const imgSrc = item.fotoPrincipal || item.fotos?.[0] || null;
+  if (import.meta.env.DEV) console.log("[ItemRow]", item.titulo || item.nombre, "→ imgSrc:", imgSrc);
   return (
     <div className="bg-white shadow-sm rounded-xl p-4 border border-outline-variant/20 flex items-center gap-4 group hover:border-primary/30 hover:shadow-md transition-all">
       <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-surface-container-low">
-        <img src={imgUrl(fotos[0], "/placeholder.png")} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
+        <img src={imgUrl(imgSrc, "/placeholder.png")} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
       </div>
       <div className="flex-1 min-w-0">
         <h4 className="text-on-surface font-black uppercase text-sm tracking-tight truncate">{item.titulo || item.nombre}</h4>
