@@ -21,6 +21,10 @@ const proteger = async (req, res, next) => {
         return res.status(401).json({ mensaje: "Usuario no encontrado, acceso denegado" });
       }
 
+      if (decoded.tokenVersion !== req.user.tokenVersion) {
+        return res.status(401).json({ mensaje: "Sesión inválida, iniciá sesión de nuevo" });
+      }
+
       // 5. Normalizar el plan (con verificación de existencia para evitar errores)
       if (req.user.plan) {
         req.user.plan = req.user.plan.toLowerCase();

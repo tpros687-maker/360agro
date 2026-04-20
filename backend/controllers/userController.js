@@ -30,7 +30,7 @@ export const registrarUsuario = async (req, res) => {
       tipoUsuario: usuario.tipoUsuario,
       foto: usuario.foto || null,
       telefono: usuario.telefono || null,
-      token: generarToken(usuario._id),
+      token: generarToken(usuario._id, usuario.tokenVersion),
     });
 
   } catch (error) {
@@ -75,7 +75,7 @@ export const loginUsuario = async (req, res) => {
       foto: usuario.foto || null,
       telefono: usuario.telefono || null,
       emailVerificado: usuario.emailVerificado || false,
-      token: generarToken(usuario._id),
+      token: generarToken(usuario._id, usuario.tokenVersion),
     });
   } catch (error) {
     res.status(500).json({ mensaje: "Error al iniciar sesión" });
@@ -104,7 +104,7 @@ export const verify2FA = async (req, res) => {
       foto: usuario.foto || null,
       telefono: usuario.telefono || null,
       emailVerificado: usuario.emailVerificado || false,
-      token: generarToken(usuario._id),
+      token: generarToken(usuario._id, usuario.tokenVersion),
     });
   } catch (error) {
     res.status(500).json({ mensaje: "Error al verificar código 2FA" });
@@ -117,6 +117,7 @@ export const toggle2FA = async (req, res) => {
     const usuario = await User.findById(req.user._id);
     if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
     usuario.twoFactorEnabled = !usuario.twoFactorEnabled;
+    usuario.tokenVersion += 1;
     await usuario.save();
     res.json({
       twoFactorEnabled: usuario.twoFactorEnabled,
@@ -211,6 +212,7 @@ export const cambiarPassword = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     usuario.password = await bcrypt.hash(passwordNueva, salt);
+    usuario.tokenVersion += 1;
     await usuario.save();
 
     res.json({ mensaje: "Contraseña actualizada correctamente" });
