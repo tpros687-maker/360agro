@@ -300,7 +300,7 @@ export const generarSSOToken = async (req, res) => {
     const ssoToken = jwt.sign(
       { email: req.user.email, nombre: req.user.nombre },
       secret,
-      { expiresIn: "5m" }
+      { expiresIn: "10m" }
     );
 
     res.json({ ssoToken });
