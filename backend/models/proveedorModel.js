@@ -126,14 +126,19 @@ proveedorSchema.virtual('misProductos', {
 /* ===============================================
     GENERAR SLUG AUTOMÁTICO
 =============================================== */
-proveedorSchema.pre("save", function (next) {
-  if (this.isModified("nombre")) {
-    this.slug = slugify(this.nombre, {
-      lower: true,
-      strict: true,
-      trim: true,
-    });
+proveedorSchema.pre("save", async function (next) {
+  if (!this.isModified("nombre")) return next();
+
+  const base = slugify(this.nombre, { lower: true, strict: true, trim: true });
+  let slug = base;
+  let count = 1;
+
+  while (await this.constructor.findOne({ slug, _id: { $ne: this._id } })) {
+    count++;
+    slug = `${base}-${count}`;
   }
+
+  this.slug = slug;
   next();
 });
 
