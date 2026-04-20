@@ -58,14 +58,15 @@ export const loginUsuario = async (req, res) => {
       return res.status(400).json({ mensaje: "Contraseña incorrecta" });
     }
 
-    if (usuario.twoFactorEnabled) {
-      const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-      usuario.codigoVerificacion = codigo;
-      usuario.codigoExpira = new Date(Date.now() + 15 * 60 * 1000);
-      await usuario.save();
-      await enviarEmailVerificacion(usuario.email, usuario.nombre, codigo);
-      return res.json({ requires2FA: true });
-    }
+    // TODO: re-enable 2FA before production
+    // if (usuario.twoFactorEnabled) {
+    //   const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    //   usuario.codigoVerificacion = codigo;
+    //   usuario.codigoExpira = new Date(Date.now() + 15 * 60 * 1000);
+    //   await usuario.save();
+    //   await enviarEmailVerificacion(usuario.email, usuario.nombre, codigo);
+    //   return res.json({ requires2FA: true });
+    // }
 
     res.json({
       _id: usuario._id,
