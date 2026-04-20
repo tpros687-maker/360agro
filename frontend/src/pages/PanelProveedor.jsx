@@ -197,7 +197,7 @@ export default function PanelVendedor() {
               <div className="flex justify-between items-center border-b border-outline-variant/20 pb-4 mb-4">
                 <div className="flex items-center gap-6">
                   <div className="w-16 h-16 bg-agro-midnight rounded-2xl overflow-hidden border border-white/10">
-                    <img src={imgUrl(tienda.logo, "/placeholder.png")} className="w-full h-full object-contain" />
+                    <img src={imgUrl(tienda.logo, "/placeholder.png")} className="w-full h-full object-contain" loading="eager" />
                   </div>
                   <div>
                     <h2 className="text-2xl font-black text-on-surface italic uppercase tracking-tighter">
@@ -325,7 +325,7 @@ function ItemRow({ item, tipo, onEliminar, editLink, onVendido }) {
   return (
     <div className="bg-white shadow-sm rounded-xl p-4 border border-outline-variant/20 flex items-center gap-4 group hover:border-primary/30 hover:shadow-md transition-all">
       <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-surface-container-low">
-        <img src={imgUrl(imgSrc, "/placeholder.png")} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
+        <img src={imgUrl(imgSrc, "/placeholder.png")} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" loading="lazy" />
       </div>
       <div className="flex-1 min-w-0">
         <h4 className="text-on-surface font-black uppercase text-sm tracking-tight truncate">{item.titulo || item.nombre}</h4>

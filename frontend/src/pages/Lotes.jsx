@@ -152,6 +152,7 @@ export default function Lotes() {
                     src={lote.fotos?.[0] ? (lote.fotos[0].startsWith('http') ? lote.fotos[0] : `${BASE_URL}${lote.fotos[0]}`) : "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071"}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                     alt={lote.titulo}
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                   <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full">

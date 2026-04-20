@@ -119,6 +119,7 @@ export default function ServicioDetalle() {
                 src={servicio.fotos && servicio.fotos.length > 0 ? (/^https?:\/\//.test(servicio.fotos[0]?.trim()) ? servicio.fotos[0].trim() : `${BASE_URL}${servicio.fotos[0]}`) : "/placeholder-servicio.png"}
                 className="w-full h-[450px] object-cover rounded-[2.5rem] grayscale-[50%] group-hover:grayscale-0 transition duration-[2s]"
                 alt={servicio.nombre}
+                loading="eager"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-surface-container-high/90 via-transparent to-transparent"></div>
             </div>
@@ -153,6 +154,7 @@ export default function ServicioDetalle() {
                       src={/^https?:\/\//.test(foto?.trim()) ? foto.trim() : `${BASE_URL}${foto}`}
                       className="w-full h-72 object-cover rounded-[2.5rem] border border-outline-variant/70 shadow-2xl grayscale hover:grayscale-0 transition duration-700 cursor-pointer"
                       alt={`Evidencia ${i + 1}`}
+                      loading="lazy"
                     />
                   ))}
                 </div>

@@ -138,6 +138,7 @@ export default function Servicios() {
                     src={s.fotos && s.fotos.length > 0 ? (/^https?:\/\//.test(s.fotos[0]?.trim()) ? s.fotos[0].trim() : `${BASE_URL}${s.fotos[0]}`) : "https://images.unsplash.com/photo-1594776208131-abf317d3d196?q=80&w=2070"}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                     alt={s.nombre}
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                   <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full">

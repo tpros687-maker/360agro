@@ -134,6 +134,7 @@ export default function Tiendas() {
                     src={imgUrl(t.logo, "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974")}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                     alt={t.nombre}
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                   <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full">

@@ -87,6 +87,7 @@ export default function TiendaPublica() {
                 src={imgUrl(tienda.logo, "/placeholder.png")}
                 className="relative w-48 h-48 object-cover rounded-full border-4 border-background shadow-2xl z-10 grayscale group-hover:grayscale-0 transition-all duration-700"
                 alt={tienda.nombre}
+                loading="eager"
               />
             </div>
 
@@ -151,6 +152,7 @@ export default function TiendaPublica() {
                     src={imgUrl(p.fotoPrincipal || p.fotos?.[0], "/placeholder.png")}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
                     alt={p.titulo}
+                    loading="lazy"
                   />
                   <button
                     onClick={(e) => handleAgregarRapido(e, p)}
@@ -215,6 +217,7 @@ export default function TiendaPublica() {
                     <img
                       src={imgUrl(s.fotos?.[0], "/placeholder.png")}
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                      loading="lazy"
                     />
                   </div>
                   <div className="flex-1">

@@ -131,7 +131,7 @@ export default function LoteDetalle() {
 
               {/* FOTO PRINCIPAL */}
               <div className="relative h-[550px] overflow-hidden rounded-3xl bg-surface-container-lowest border border-outline-variant/5">
-                <img src={fotoPrincipal ? (fotoPrincipal.startsWith('http') ? fotoPrincipal : `${BASE_URL}${fotoPrincipal}`) : "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071"} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105" alt="Activo" />
+                <img src={fotoPrincipal ? (fotoPrincipal.startsWith('http') ? fotoPrincipal : `${BASE_URL}${fotoPrincipal}`) : "https://images.unsplash.com/photo-1545153996-e13f63438330?q=80&w=2071"} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105" alt="Activo" loading="eager" />
                 <div className="absolute inset-0 bg-gradient-to-t from-surface-container-high/40 via-transparent to-transparent"></div>
               </div>
 
@@ -143,7 +143,7 @@ export default function LoteDetalle() {
                     onClick={() => setFotoPrincipal(f)}
                     className={`w-20 h-20 rounded-2xl overflow-hidden border-2 shrink-0 transition-all ${fotoPrincipal === f ? "border-primary scale-105 shadow-lg shadow-primary/20" : "border-transparent opacity-40 hover:opacity-100"}`}
                   >
-                    <img src={f.startsWith('http') ? f : `${BASE_URL}${f}`} className="w-full h-full object-cover" />
+                    <img src={f.startsWith('http') ? f : `${BASE_URL}${f}`} className="w-full h-full object-cover" loading="lazy" />
                   </button>
                 ))}
               </div>
