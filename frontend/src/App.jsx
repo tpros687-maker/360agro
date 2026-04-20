@@ -57,6 +57,10 @@ import ProductoDetalle from "./pages/ProductoDetalle";
 // PANEL DE VENDEDOR
 import PanelProveedor from "./pages/PanelProveedor";
 
+// ERRORES
+import NotFound from "./pages/NotFound";
+import ErrorBoundary from "./components/ErrorBoundary";
+
 // PROTECCIÓN
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdmin from "./components/ProtectedAdmin";
@@ -103,6 +107,7 @@ export default function App() {
       <Navbar />
 
       <main className="flex-1 pt-0">
+        <ErrorBoundary>
         <Routes>
           {/* --- RUTAS PÚBLICAS --- */}
           <Route path="/" element={<Home />} />
@@ -156,9 +161,10 @@ export default function App() {
 
           </Route>
 
-          {/* Redirección por defecto */}
-          <Route path="*" element={<Navigate to="/" />} />
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
+        </ErrorBoundary>
       </main>
 
       <AgroIA />
