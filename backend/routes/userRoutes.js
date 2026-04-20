@@ -10,7 +10,8 @@ import {
   solicitarResetPassword,
   resetPassword,
   verify2FA,
-  toggle2FA
+  toggle2FA,
+  generarSSOToken
 } from "../controllers/userController.js";
 import proteger from "../middleware/authMiddleware.js";
 
@@ -42,5 +43,8 @@ router.post("/reset-password", resetPassword);
 // 2FA
 router.post("/verify-2fa", verify2FA);
 router.post("/toggle-2fa", proteger, toggle2FA);
+
+// SSO hacia 360 Finance
+router.post("/sso-token", proteger, generarSSOToken);
 
 export default router;

@@ -4,6 +4,8 @@ import logo from "../assets/logo-360agro.png";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import api from "../api/axiosConfig";
+import { ssoTo360Finance } from "../api/userApi";
+import { toast } from "react-hot-toast";
 import BuscadorUniversal from "./BuscadorUniversal";
 import ModalConfirmar from "./ModalConfirmar";
 import {
@@ -172,13 +174,20 @@ export default function Navbar() {
                       <DropdownLink to="/mensajes" icon="mail" label="Mensajes" />
                       <DropdownLink to="/planes" icon="diamond" label="Planes" />
                       {usuario?.plan === "empresa" && (
-                        <a href="http://localhost:5173/dashboard" target="_blank" 
-                          className="flex items-center gap-3 px-5 py-2.5 text-[11px] 
-                          font-bold text-outline hover:text-primary hover:bg-background 
-                          transition-all uppercase tracking-wider">
+                        <button
+                          onClick={async () => {
+                            try {
+                              const { data } = await ssoTo360Finance();
+                              window.open(`https://360finance.vercel.app/sso?token=${data.ssoToken}`, "_blank");
+                            } catch {
+                              toast.error("Error al acceder a 360 Finance");
+                            }
+                          }}
+                          className="flex items-center gap-3 px-5 py-2.5 text-[11px] font-bold text-outline hover:text-primary hover:bg-background transition-all uppercase tracking-wider w-full text-left"
+                        >
                           <span className="material-symbols-outlined text-sm">monitoring</span>
                           360 Finance
-                        </a>
+                        </button>
                       )}
                       {usuario?.tipoUsuario === 'admin' && (
                         <DropdownLink to="/admin/dashboard" icon="terminal" label="Mission Control" />

@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import generarToken from "../utils/generarToken.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { enviarEmailVerificacion } from "../utils/emailService.js";
 
 // 🟢 REGISTRAR USUARIO
@@ -288,5 +289,22 @@ export const actualizarPlan = async (req, res) => {
       mensaje: "Error al actualizar el plan",
       error: error.message,
     });
+  }
+};
+
+export const generarSSOToken = async (req, res) => {
+  try {
+    const secret = process.env.SSO_SECRET;
+    if (!secret) return res.status(500).json({ mensaje: "SSO no configurado" });
+
+    const ssoToken = jwt.sign(
+      { email: req.user.email, nombre: req.user.nombre },
+      secret,
+      { expiresIn: "5m" }
+    );
+
+    res.json({ ssoToken });
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error generando token SSO" });
   }
 };

@@ -9,6 +9,7 @@ import { getGisAssets } from "../api/gisApi";
 import { getExpenses } from "../api/expenseApi";
 import { toast } from "react-hot-toast";
 import ModalConfirmar from "../components/ModalConfirmar";
+import { ssoTo360Finance } from "../api/userApi";
 
 export default function PanelVendedor() {
   const { usuario } = useContext(AuthContext);
@@ -277,13 +278,22 @@ export default function PanelVendedor() {
             <QuickLink to="/editar-tienda" icon={<span className="material-symbols-outlined text-2xl text-primary">business</span>} label="Perfil Negocio" />
             <QuickLink to="/mensajes" icon={<span className="material-symbols-outlined text-2xl text-primary">mail</span>} label="Bandeja" />
             {usuario?.plan === "empresa" && (
-              <QuickLink
-                to="http://localhost:5173/dashboard"
-                icon={<span className="material-symbols-outlined text-2xl text-primary">monitoring</span>}
-                label="360 Finance"
-                color="bg-primary/20 border border-primary/30 text-primary"
-                external={true}
-              />
+              <button
+                onClick={async () => {
+                  try {
+                    const { data } = await ssoTo360Finance();
+                    window.open(`https://360finance.vercel.app/sso?token=${data.ssoToken}`, "_blank");
+                  } catch {
+                    toast.error("Error al acceder a 360 Finance");
+                  }
+                }}
+                className="bg-white border border-outline-variant/40 shadow-sm hover:border-primary hover:shadow-md text-on-surface p-5 rounded-2xl flex flex-col items-center justify-center text-center hover:scale-105 transition-all group h-28"
+              >
+                <span className="mb-2 group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined text-2xl text-primary">monitoring</span>
+                </span>
+                <span className="text-sm font-bold uppercase tracking-widest leading-tight text-center">360 Finance</span>
+              </button>
             )}
           </div>
         </section>
