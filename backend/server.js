@@ -67,7 +67,7 @@ app.use(cors({
 
 const limiterGeneral = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 1000, // TODO: bajar a 100 antes de producción
   message: { mensaje: "Demasiadas solicitudes, intentá en 15 minutos" }
 });
 app.use("/api", limiterGeneral);
