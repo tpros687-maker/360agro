@@ -17,3 +17,6 @@ API.interceptors.request.use((config) => {
 });
 
 export default API;
+
+export const verify2FA = (email, codigo) => API.post("/users/verify-2fa", { email, codigo });
+export const toggle2FA = () => API.post("/users/toggle-2fa");

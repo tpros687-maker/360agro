@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import API from "../api/userApi";
+import API, { toggle2FA } from "../api/userApi";
 import subscripcionApi from "../api/subscripcionApi";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -71,6 +71,16 @@ export default function Perfil() {
     } catch (error) {
       console.error("❌ Error al actualizar perfil:", error);
       toast.error("ERROR EN LA CONSOLIDACIÓN DE CREDENCIALES");
+    }
+  };
+
+  const handleToggle2FA = async () => {
+    try {
+      const { data } = await toggle2FA();
+      setUsuario((prev) => ({ ...prev, twoFactorEnabled: data.twoFactorEnabled }));
+      toast.success(data.twoFactorEnabled ? "2FA activado" : "2FA desactivado");
+    } catch {
+      toast.error("Error al cambiar configuración 2FA");
     }
   };
 
@@ -193,6 +203,19 @@ export default function Perfil() {
                     className={`w-full bg-surface-container-lowest border px-6 py-4 rounded-xl outline-none transition-all duration-500 font-bold text-on-surface shadow-inner ${editando ? "border-primary/50" : "border-outline-variant/50 opacity-50 cursor-not-allowed"
                       }`}
                   />
+                </div>
+
+                <div className="flex items-center justify-between py-4 border-t border-outline-variant/20">
+                  <div>
+                    <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Verificación en dos pasos (2FA)</p>
+                    <p className="text-[10px] text-on-surface-variant/30 ml-2 mt-0.5">Recibís un código por email al iniciar sesión</p>
+                  </div>
+                  <button
+                    onClick={handleToggle2FA}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${usuario.twoFactorEnabled ? "bg-primary" : "bg-outline-variant/40"}`}
+                  >
+                    <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${usuario.twoFactorEnabled ? "translate-x-7" : "translate-x-1"}`} />
+                  </button>
                 </div>
 
                 <div className="pt-6">

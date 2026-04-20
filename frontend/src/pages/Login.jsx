@@ -4,11 +4,14 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Mail, Lock, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
 import api from "../api/axiosConfig";
+import { verify2FA } from "../api/userApi";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login } = useContext(AuthContext);
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [codigo2FA, setCodigo2FA] = useState("");
+  const { actualizarUsuario } = useContext(AuthContext);
   const navigate = useNavigate();
   const [mostrarReset, setMostrarReset] = useState(false);
   const [resetStep, setResetStep] = useState(1);
@@ -48,11 +51,42 @@ export default function Login() {
     e.preventDefault();
     const tId = toast.loading("Sincronizando credenciales...");
     try {
-      await login(email.toLowerCase(), password);
+      const { data } = await api.post("/users/login", { email: email.toLowerCase(), password });
+      if (data.requires2FA) {
+        setRequires2FA(true);
+        toast.dismiss(tId);
+        return;
+      }
+      localStorage.setItem("token", data.token);
+      const userFull = { _id: data._id, nombre: data.nombre, email: data.email,
+        plan: data.plan?.toLowerCase() || "gratis", tipoUsuario: data.tipoUsuario,
+        foto: data.foto || null, telefono: data.telefono || null,
+        emailVerificado: data.emailVerificado || false };
+      localStorage.setItem("user", JSON.stringify(userFull));
+      actualizarUsuario(userFull);
       toast.success("ACCESO AUTORIZADO", { id: tId });
       navigate("/panel-vendedor");
     } catch (error) {
       toast.error(error.response?.data?.mensaje || "Error de autenticación", { id: tId });
+    }
+  };
+
+  const handleVerify2FA = async (e) => {
+    e.preventDefault();
+    const tId = toast.loading("Verificando código...");
+    try {
+      const { data } = await verify2FA(email.toLowerCase(), codigo2FA);
+      localStorage.setItem("token", data.token);
+      const userFull = { _id: data._id, nombre: data.nombre, email: data.email,
+        plan: data.plan?.toLowerCase() || "gratis", tipoUsuario: data.tipoUsuario,
+        foto: data.foto || null, telefono: data.telefono || null,
+        emailVerificado: data.emailVerificado || false };
+      localStorage.setItem("user", JSON.stringify(userFull));
+      actualizarUsuario(userFull);
+      toast.success("ACCESO AUTORIZADO", { id: tId });
+      navigate("/panel-vendedor");
+    } catch (error) {
+      toast.error(error.response?.data?.mensaje || "Código incorrecto", { id: tId });
     }
   };
 
@@ -77,6 +111,37 @@ export default function Login() {
           </p>
         </header>
 
+        {requires2FA ? (
+          <form onSubmit={handleVerify2FA} className="bg-surface-container-high border border-outline-variant/60 p-10 md:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1.5 machined-gradient opacity-50"></div>
+            <div className="text-center mb-10">
+              <span className="material-symbols-outlined text-5xl text-primary mb-4 block">shield_lock</span>
+              <p className="text-on-surface font-black uppercase tracking-widest text-sm">Verificación en dos pasos</p>
+              <p className="text-on-surface-variant/40 text-[10px] font-bold uppercase tracking-widest mt-2">Ingresá el código enviado a tu email</p>
+            </div>
+            <div className="flex flex-col gap-4 mb-10">
+              <label className="text-[10px] text-primary font-bold uppercase tracking-[0.4em] ml-6 italic opacity-80">Código de verificación</label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-6 top-1/2 -translate-y-1/2 text-primary/40 text-xl">pin</span>
+                <input
+                  type="text"
+                  className="w-full bg-surface-container-lowest p-6 pl-14 rounded-2xl text-on-surface outline-none border border-outline-variant/50 focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all font-bold text-base shadow-inner placeholder:text-on-surface-variant/10 tracking-[0.5em] text-center"
+                  placeholder="000000"
+                  required
+                  maxLength={6}
+                  value={codigo2FA}
+                  onChange={(e) => setCodigo2FA(e.target.value)}
+                />
+              </div>
+            </div>
+            <button type="submit" className="machined-gradient w-full py-6 rounded-full font-black text-on-tertiary-fixed hover:scale-[1.03] transition-all uppercase tracking-[0.5em] text-[11px] active:scale-95 italic flex items-center justify-center gap-4 shadow-[0_0_20px_rgba(63,111,118,0.3)]">
+              VERIFICAR <span className="material-symbols-outlined text-lg">arrow_forward</span>
+            </button>
+            <button type="button" onClick={() => { setRequires2FA(false); setCodigo2FA(""); }} className="mt-4 text-[10px] text-on-surface-variant/40 hover:text-primary transition-colors uppercase tracking-widest font-bold block text-center w-full">
+              Volver al login
+            </button>
+          </form>
+        ) : (
         <form onSubmit={handleSubmit} className="bg-surface-container-high border border-outline-variant/60 p-10 md:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-full h-1.5 machined-gradient opacity-50"></div>
 
@@ -114,6 +179,7 @@ export default function Login() {
             </button>
           </div>
         </form>
+        )}
 
         <button
           onClick={() => setMostrarReset(true)}
