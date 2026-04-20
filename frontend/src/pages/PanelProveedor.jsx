@@ -207,6 +207,7 @@ export default function PanelVendedor() {
                   </div>
                 </div>
                 <div className="flex gap-4">
+                  <Link to="/crear-producto" className="px-6 py-3 bg-white/5 text-primary border border-primary/30 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-on-tertiary-fixed transition-all flex items-center gap-2"><span className="material-symbols-outlined text-sm">inventory_2</span>Cargar Producto</Link>
                   <Link to={`/editar-tienda/${tienda._id}`} className="px-6 py-3 bg-white/5 text-primary border border-primary/30 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-on-tertiary-fixed transition-all">Configurar Perfil</Link>
                   <button onClick={() => prepararEliminar("tienda", tienda._id, tienda.nombre)} className="p-3 bg-red-900/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"><span className="material-symbols-outlined text-sm">delete</span></button>
                 </div>
