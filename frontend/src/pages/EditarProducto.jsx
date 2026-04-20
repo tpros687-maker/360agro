@@ -14,7 +14,7 @@ export default function EditarProducto() {
     titulo: "",
     precio: "",
     categoria: "",
-    stock: "disponible",
+    stock: 1,
     peso: "",
     descripcion: "",
   });
@@ -48,7 +48,7 @@ export default function EditarProducto() {
   }, []);
 
   const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({ ...form, [e.target.name]: (e.target.name === "stock" || e.target.name === "precio") ? Number(e.target.value) : e.target.value });
 
   const handleFotosNuevas = (e) => {
     const nuevas = Array.from(e.target.files);
@@ -169,16 +169,16 @@ export default function EditarProducto() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Disponibilidad de Stock</label>
-                <select
+                <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.3em] ml-2">Stock disponible</label>
+                <input
+                  type="number"
+                  min="0"
                   name="stock"
                   value={form.stock}
                   onChange={handleChange}
-                  className="w-full bg-surface-container-lowest border border-outline-variant/50 focus:border-primary/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-[10px] text-on-surface uppercase tracking-widest cursor-pointer appearance-none shadow-inner"
-                >
-                  <option value="disponible">En Almacén</option>
-                  <option value="agotado">Sin Existencias</option>
-                </select>
+                  className="w-full bg-surface-container-lowest border border-outline-variant/50 focus:border-primary/50 px-6 py-4 rounded-xl outline-none transition-all duration-500 font-black text-lg text-primary"
+                  required
+                />
               </div>
 
               <div className="space-y-2">

@@ -185,8 +185,8 @@ export default function MiTienda() {
                       alt={p.titulo}
                     />
                     <div className="absolute bottom-4 left-6">
-                      <span className={`text-[8px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border backdrop-blur-md ${p.stock === "disponible" ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-red-500/10 text-red-500 border-red-500/20"}`}>
-                        {p.stock === "disponible" ? "● En Stock" : "○ Agotado"}
+                      <span className={`text-[8px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border backdrop-blur-md ${p.stock > 0 ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-red-500/10 text-red-500 border-red-500/20"}`}>
+                        {p.stock > 0 ? `● En Stock (${p.stock})` : "○ Agotado"}
                       </span>
                     </div>
                   </div>
