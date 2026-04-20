@@ -223,16 +223,16 @@ export default function Perfil() {
                     {usuario.plan === "pro" ? <span className="material-symbols-outlined">star</span> : usuario.plan === "empresa" ? <span className="material-symbols-outlined text-2xl">business</span> : "🆓"}
                   </div>
                   <div>
-                    <p className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-widest mb-1">Membresía Activa</p>
+                    <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${usuario.estadoSuscripcion === "cancelada" ? "text-red-400/70" : "text-on-surface-variant/40"}`}>
+                      {usuario.estadoSuscripcion === "cancelada" ? "Membresía Cancelada" : "Membresía Activa"}
+                    </p>
                     <h3 className="text-3xl font-black text-on-surface italic tracking-tighter uppercase">{usuario.plan || "Gratis"}</h3>
-                    {fechaInicioFmt && proximaFechaFmt ? (
-                      <p className="text-xs text-on-surface-variant/50 mt-1">
-                        Activo del {fechaInicioFmt} al {proximaFechaFmt}
-                      </p>
+                    {usuario.estadoSuscripcion === "cancelada" && proximaFechaFmt ? (
+                      <p className="text-xs text-amber-400/70 mt-1">Activo hasta el {proximaFechaFmt} · No se renovará</p>
+                    ) : fechaInicioFmt && proximaFechaFmt ? (
+                      <p className="text-xs text-on-surface-variant/50 mt-1">Activo del {fechaInicioFmt} al {proximaFechaFmt}</p>
                     ) : proximaFechaFmt ? (
-                      <p className="text-xs text-on-surface-variant/50 mt-1">
-                        Activo hasta el {proximaFechaFmt}
-                      </p>
+                      <p className="text-xs text-on-surface-variant/50 mt-1">Activo hasta el {proximaFechaFmt}</p>
                     ) : null}
                   </div>
                 </div>
@@ -264,7 +264,9 @@ export default function Perfil() {
                     <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 text-[9px] font-black uppercase tracking-widest">Activa</span>
                   )}
                   {usuario.estadoSuscripcion === "cancelada" && (
-                    <span className="px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 text-[9px] font-black uppercase tracking-widest">Cancelada</span>
+                    <span className="px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 text-[9px] font-black uppercase tracking-widest">
+                      Cancelada{proximaFechaFmt ? ` — vence ${proximaFechaFmt}` : ""}
+                    </span>
                   )}
                   {usuario.estadoSuscripcion === "pendiente" && (
                     <span className="px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 text-[9px] font-black uppercase tracking-widest">Pendiente</span>
@@ -288,7 +290,7 @@ export default function Perfil() {
                   <div className="flex items-center gap-4">
                     <span className="material-symbols-outlined text-on-surface-variant/40 text-xl">event</span>
                     <div>
-                      <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Vigencia</p>
+                      <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">{usuario.estadoSuscripcion === "cancelada" ? "Vence el" : "Vigencia"}</p>
                       <p className="font-black text-on-surface">{proximaFechaFmt ?? "Sin fecha definida"}</p>
                     </div>
                   </div>
