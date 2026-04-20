@@ -33,6 +33,7 @@ const userSchema = new mongoose.Schema(
     emailVerificado: { type: Boolean, default: false },
     // ✅ Agro-Trust System
     esVerificado: { type: Boolean, default: false },
+    twoFactorEnabled: { type: Boolean, default: false },
     rating: {
       promedio: { type: Number, default: 0 },
       totalOpiniones: { type: Number, default: 0 }

@@ -57,6 +57,15 @@ export const loginUsuario = async (req, res) => {
       return res.status(400).json({ mensaje: "Contraseña incorrecta" });
     }
 
+    if (usuario.twoFactorEnabled) {
+      const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+      usuario.codigoVerificacion = codigo;
+      usuario.codigoExpira = new Date(Date.now() + 15 * 60 * 1000);
+      await usuario.save();
+      await enviarEmailVerificacion(usuario.email, usuario.nombre, codigo);
+      return res.json({ requires2FA: true });
+    }
+
     res.json({
       _id: usuario._id,
       nombre: usuario.nombre,
@@ -70,6 +79,51 @@ export const loginUsuario = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ mensaje: "Error al iniciar sesión" });
+  }
+};
+
+// 🟢 VERIFICAR CÓDIGO 2FA
+export const verify2FA = async (req, res) => {
+  try {
+    const { email, codigo } = req.body;
+    const usuario = await User.findOne({ email: email.toLowerCase() });
+    if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    if (usuario.codigoVerificacion !== codigo) return res.status(400).json({ mensaje: "Código incorrecto" });
+    if (new Date() > usuario.codigoExpira) return res.status(400).json({ mensaje: "Código expirado" });
+
+    usuario.codigoVerificacion = null;
+    usuario.codigoExpira = null;
+    await usuario.save();
+
+    res.json({
+      _id: usuario._id,
+      nombre: usuario.nombre,
+      email: usuario.email,
+      plan: usuario.plan,
+      tipoUsuario: usuario.tipoUsuario,
+      foto: usuario.foto || null,
+      telefono: usuario.telefono || null,
+      emailVerificado: usuario.emailVerificado || false,
+      token: generarToken(usuario._id),
+    });
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al verificar código 2FA" });
+  }
+};
+
+// 🟢 ACTIVAR / DESACTIVAR 2FA
+export const toggle2FA = async (req, res) => {
+  try {
+    const usuario = await User.findById(req.user._id);
+    if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    usuario.twoFactorEnabled = !usuario.twoFactorEnabled;
+    await usuario.save();
+    res.json({
+      twoFactorEnabled: usuario.twoFactorEnabled,
+      mensaje: usuario.twoFactorEnabled ? "2FA activado" : "2FA desactivado",
+    });
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al cambiar configuración 2FA" });
   }
 };
 

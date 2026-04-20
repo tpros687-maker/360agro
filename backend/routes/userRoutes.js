@@ -8,7 +8,9 @@ import {
   verificarEmail,
   cambiarPassword,
   solicitarResetPassword,
-  resetPassword
+  resetPassword,
+  verify2FA,
+  toggle2FA
 } from "../controllers/userController.js";
 import proteger from "../middleware/authMiddleware.js";
 
@@ -36,5 +38,9 @@ router.put("/cambiar-password", proteger, cambiarPassword);
 // Reset de contraseña (sin autenticación)
 router.post("/solicitar-reset", solicitarResetPassword);
 router.post("/reset-password", resetPassword);
+
+// 2FA
+router.post("/verify-2fa", verify2FA);
+router.post("/toggle-2fa", proteger, toggle2FA);
 
 export default router;
