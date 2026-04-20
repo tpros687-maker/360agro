@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Sparkles
 } from "lucide-react";
+import SEO from "../components/SEO";
 
 export default function Tiendas() {
   const [tiendas, setTiendas] = useState([]);
@@ -54,6 +55,11 @@ export default function Tiendas() {
 
   return (
     <div className="bg-background min-h-screen pt-32 pb-32 px-6 relative overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+      <SEO
+        title="Tiendas Agropecuarias — 360 Agro"
+        description="Descubrí tiendas agropecuarias de Uruguay. Productos del campo, insumos y más en un solo lugar."
+        url="https://360agro.vercel.app/tiendas"
+      />
 
       {/* Background Decor */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] bg-primary/5 blur-[250px] rounded-full pointer-events-none opacity-40"></div>

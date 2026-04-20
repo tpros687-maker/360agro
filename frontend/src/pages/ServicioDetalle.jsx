@@ -6,6 +6,7 @@ import API from "../api/axiosConfig";
 import { toast } from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
 import { trackEvent } from "../utils/analytics";
+import SEO from "../components/SEO";
 
 export default function ServicioDetalle() {
   const { id } = useParams();
@@ -82,6 +83,12 @@ export default function ServicioDetalle() {
 
   return (
     <div className="bg-background min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
+      <SEO
+        title={servicio ? `${servicio.titulo} — 360 Agro` : "Servicio — 360 Agro"}
+        description={servicio?.descripcion?.slice(0, 160) || "Servicio agropecuario en 360 Agro."}
+        image={servicio?.foto}
+        url={`https://360agro.vercel.app/servicio/${servicio?._id}`}
+      />
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-[700px] h-[700px] bg-primary/5 rounded-full blur-[180px] pointer-events-none opacity-40"></div>
 

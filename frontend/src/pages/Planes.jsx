@@ -5,6 +5,7 @@ import { useState, useEffect, useContext } from "react";
 import CheckoutSuscripcion from "../components/CheckoutSuscripcion";
 import subscripcionApi from "../api/subscripcionApi";
 import { CheckCircle2, ShieldCheck, Zap, Globe } from "lucide-react";
+import SEO from "../components/SEO";
 
 export default function Planes() {
   const { usuario, setUsuario } = useContext(AuthContext);
@@ -97,6 +98,11 @@ export default function Planes() {
 
   return (
     <div className="bg-background min-h-screen pt-48 pb-32 px-6 relative overflow-hidden">
+      <SEO
+        title="Planes y Precios — 360 Agro"
+        description="Elegí el plan que se adapta a tu negocio rural. Publicá lotes, creá tu tienda y conectá con el mercado agropecuario."
+        url="https://360agro.vercel.app/planes"
+      />
 
       {/* Background Decor */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] bg-primary/5 blur-[250px] rounded-full pointer-events-none opacity-40"></div>

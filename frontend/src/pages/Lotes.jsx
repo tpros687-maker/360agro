@@ -4,6 +4,7 @@ import lotApi from "../api/lotApi";
 import { BASE_URL } from "../api/axiosConfig";
 import { toast } from "react-hot-toast";
 import { MapPin, TrendingUp, Beef, ArrowRight, Sparkles } from "lucide-react";
+import SEO from "../components/SEO";
 
 const CATEGORIAS_LOTES = ["Todas", "Terneros", "Terneras", "Novillos", "Vaquillonas", "Vacas", "Toros", "Pieza de Cría"];
 
@@ -60,6 +61,11 @@ export default function Lotes() {
 
   return (
     <div className="bg-background min-h-screen pt-32 pb-32 px-6 relative overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+      <SEO
+        title="Lotes Ganaderos — 360 Agro"
+        description="Explorá lotes de hacienda en venta: terneros, novillos, vacas, toros y más. Conectate con productores uruguayos."
+        url="https://360agro.vercel.app/lotes"
+      />
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 blur-[200px] rounded-full -translate-y-1/2"></div>
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/10 blur-[150px] rounded-full translate-y-1/2"></div>

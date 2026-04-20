@@ -5,6 +5,7 @@ import API from "../api/lotApi";
 import { AuthContext } from "../context/AuthContext";
 import { BASE_URL, imgUrl } from "../api/axiosConfig";
 import RadarNacional from "../components/RadarNacional";
+import SEO from "../components/SEO";
 import agro_backdrop from "../assets/agro_elite_blue_bg.png";
 import {
   Globe,
@@ -66,6 +67,11 @@ export default function Home() {
 
   return (
     <div className="bg-background text-on-surface min-h-screen font-sans">
+      <SEO
+        title="360 Agro — Ecosistema Rural Digital de Uruguay"
+        description="Comprá, vendé y conectá en el ecosistema digital del campo uruguayo. Lotes, tiendas, servicios y más."
+        url="https://360agro.vercel.app"
+      />
       
       {/* Hero Section */}
       <section

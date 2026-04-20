@@ -5,6 +5,7 @@ import { BASE_URL } from "../api/axiosConfig"; // Importación centralizada
 import { toast } from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
 import { trackEvent } from "../utils/analytics";
+import SEO from "../components/SEO";
 
 export default function LoteDetalle() {
   const { id } = useParams();
@@ -87,6 +88,12 @@ export default function LoteDetalle() {
 
   return (
     <div className="bg-background min-h-screen pt-32 pb-20 px-6 relative overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+      <SEO
+        title={lote ? `${lote.titulo} — 360 Agro` : "Lote — 360 Agro"}
+        description={lote?.descripcion?.slice(0, 160) || "Detalle de lote ganadero en 360 Agro."}
+        image={lote?.fotoPrincipal}
+        url={`https://360agro.vercel.app/lotes/${lote?._id}`}
+      />
       <div className="container mx-auto relative z-10 max-w-7xl">
 
         {/* Breadcrumbs */}

@@ -11,6 +11,7 @@ import {
   Sparkles,
   Star
 } from "lucide-react";
+import SEO from "../components/SEO";
 
 export default function Servicios() {
   const [servicios, setServicios] = useState([]);
@@ -53,6 +54,11 @@ export default function Servicios() {
 
   return (
     <div className="bg-background min-h-screen pt-32 pb-32 px-6 text-on-surface selection:bg-primary-container selection:text-on-primary-container relative overflow-hidden">
+      <SEO
+        title="Servicios del Campo — 360 Agro"
+        description="Encontrá servicios agropecuarios: veterinaria, transporte, asesoría y más. Profesionales del campo uruguayo."
+        url="https://360agro.vercel.app/servicios"
+      />
 
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 blur-[250px] rounded-full pointer-events-none opacity-40"></div>

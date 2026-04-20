@@ -4,6 +4,7 @@ import api from "../api/axiosConfig";
 import { BASE_URL, imgUrl } from "../api/axiosConfig";
 import { toast } from "react-hot-toast";
 import { CartContext } from "../context/CartContext";
+import SEO from "../components/SEO";
 
 export default function TiendaPublica() {
   const { slug } = useParams();
@@ -65,6 +66,12 @@ export default function TiendaPublica() {
 
   return (
     <div className="bg-background min-h-screen pt-32 pb-24 px-6 relative overflow-hidden">
+      <SEO
+        title={tienda ? `${tienda.nombre} — 360 Agro` : "Tienda — 360 Agro"}
+        description={tienda?.descripcion?.slice(0, 160) || "Tienda agropecuaria en 360 Agro."}
+        image={tienda?.foto}
+        url={`https://360agro.vercel.app/tienda/${tienda?.slug}`}
+      />
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] -mr-40 -mt-40"></div>
 
       <div className="container mx-auto max-w-7xl relative z-10 animate-reveal">
