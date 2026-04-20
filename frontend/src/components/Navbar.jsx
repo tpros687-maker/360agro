@@ -178,7 +178,7 @@ export default function Navbar() {
                           onClick={async () => {
                             try {
                               const { data } = await ssoTo360Finance();
-                              window.open(`https://360finance.vercel.app/sso?token=${data.ssoToken}`, "_blank");
+                              window.open(`${import.meta.env.VITE_FINANCE_URL}/sso?token=${data.ssoToken}`, "_blank");
                             } catch {
                               toast.error("Error al acceder a 360 Finance");
                             }
