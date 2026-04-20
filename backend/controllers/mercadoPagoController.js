@@ -63,6 +63,7 @@ export const crearSuscripcion = async (req, res) => {
       {
         usuario: req.user._id,
         planSolicitado: planKey,
+        periodo: periodo,
         status: "Pendiente"
       },
       { upsert: true }
@@ -114,6 +115,7 @@ export const webhook = async (req, res) => {
       usuario.estadoSuscripcion = "activa";
       usuario.suscripcionId = String(data.id);
       usuario.fechaInicioPlan = new Date();
+      usuario.periodoPlan = sub?.periodo || "mensual";
       await usuario.save();
       await sub.updateOne({ status: "Aprobado", fechaAprobacion: Date.now() });
 
@@ -155,6 +157,7 @@ export const webhook = async (req, res) => {
       usuario.suscripcionId = data.id;
       usuario.estadoSuscripcion = "activa";
       usuario.fechaInicioPlan = new Date();
+      usuario.periodoPlan = sub?.periodo || "mensual";
       usuario.proximaFechaCobro = new Date(suscripcion.next_payment_date);
       await usuario.save();
 

@@ -51,7 +51,16 @@ export const aprobarSubscripcion = async (req, res) => {
     // Actualizar plan del usuario
     const usuario = await User.findById(solicitud.usuario);
     if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
+
+    const meses = { mensual: 1, trimestral: 3, anual: 12 };
+    const proxima = new Date();
+    proxima.setMonth(proxima.getMonth() + (meses[solicitud.periodo] || 1));
+
     usuario.plan = solicitud.planSolicitado;
+    usuario.fechaInicioPlan = new Date();
+    usuario.estadoSuscripcion = "activa";
+    usuario.periodoPlan = solicitud.periodo || "mensual";
+    usuario.proximaFechaCobro = proxima;
     await usuario.save();
 
     res.json({ mensaje: "Subscripción aprobada con éxito", plan: solicitud.planSolicitado });

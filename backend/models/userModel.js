@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
     // 💳 Automatización estilo Netflix
     suscripcionId: { type: String, default: null },
     fechaInicioPlan: { type: Date, default: null },
+    periodoPlan: { type: String, enum: ["mensual", "trimestral", "anual"], default: null },
     proximaFechaCobro: { type: Date, default: null },
     estadoSuscripcion: {
       type: String,

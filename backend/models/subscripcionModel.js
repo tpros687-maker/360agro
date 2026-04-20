@@ -12,6 +12,11 @@ const subscripcionSchema = new mongoose.Schema(
             enum: ["productor", "pro", "empresa"],
             required: true,
         },
+        periodo: {
+            type: String,
+            enum: ["mensual", "trimestral", "anual"],
+            default: "mensual",
+        },
         status: {
             type: String,
             enum: ["Pendiente", "Aprobado", "Rechazado"],
