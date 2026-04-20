@@ -22,6 +22,7 @@ export default function Navbar() {
   const { usuario, logout } = useContext(AuthContext);
   const { carrito } = useContext(CartContext);
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [mobileMenuAbierto, setMobileMenuAbierto] = useState(false);
   const [modalLogoutAbierto, setModalLogoutAbierto] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,11 +31,13 @@ export default function Navbar() {
 
   useEffect(() => {
     setMenuAbierto(false);
+    setMobileMenuAbierto(false);
   }, [location]);
 
   const ejecutarLogout = () => {
     logout();
     setMenuAbierto(false);
+    setMobileMenuAbierto(false);
     setModalLogoutAbierto(false);
     navigate("/login");
   };
@@ -128,9 +131,19 @@ export default function Navbar() {
               </Link>
             </div>
 
+            {/* Hamburger (mobile only) */}
+            <button
+              onClick={() => setMobileMenuAbierto(!mobileMenuAbierto)}
+              className="lg:hidden p-2 hover:bg-background rounded-full transition-colors text-primary"
+            >
+              <span className="material-symbols-outlined">
+                {mobileMenuAbierto ? "close" : "menu"}
+              </span>
+            </button>
+
             {/* Profile */}
             {!usuario ? (
-              <Link to="/login" className="bg-primary text-white px-6 py-2.5 rounded-full font-bold text-xs tracking-widest hover:scale-105 transition-transform uppercase">
+              <Link to="/login" className="hidden lg:inline-flex bg-primary text-white px-6 py-2.5 rounded-full font-bold text-xs tracking-widest hover:scale-105 transition-transform uppercase">
                 Ingresar
               </Link>
             ) : (
@@ -190,6 +203,51 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu Panel */}
+      {mobileMenuAbierto && (
+        <div className="lg:hidden fixed top-20 left-0 w-full z-[99] bg-white border-b border-outline-variant/30 shadow-lg max-h-[calc(100vh-5rem)] overflow-y-auto">
+          <div className="px-6 py-6 space-y-6">
+            <BuscadorUniversal />
+
+            <div className="flex flex-col gap-2">
+              <NavLink to="/lotes" label="Lotes" />
+              <NavLink to="/tiendas" label="Tiendas" />
+              <NavLink to="/servicios" label="Servicios" />
+            </div>
+
+            {usuario ? (
+              <div className="flex flex-col gap-1 border-t border-outline-variant/20 pt-4">
+                <p className="text-[10px] font-black text-primary uppercase tracking-widest px-2 mb-2">{usuario.nombre}</p>
+                <DropdownLink to="/perfil" icon="person" label="Perfil" />
+                <DropdownLink to="/mensajes" icon="mail" label="Mensajes" />
+                <DropdownLink to="/planes" icon="diamond" label="Planes" />
+                {esVendedor && <DropdownLink to="/panel-vendedor" icon="dashboard" label="Panel" />}
+                <DropdownLink to="/publicar" icon="add_circle" label="Publicar" />
+                {usuario?.tipoUsuario === "admin" && (
+                  <DropdownLink to="/admin/dashboard" icon="terminal" label="Mission Control" />
+                )}
+                <button
+                  onClick={() => setModalLogoutAbierto(true)}
+                  className="flex items-center gap-3 px-5 py-2.5 text-[11px] font-bold text-error hover:bg-red-50 rounded-xl transition-colors uppercase tracking-wider"
+                >
+                  <span className="material-symbols-outlined text-sm">logout</span>
+                  Cerrar sesión
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 border-t border-outline-variant/20 pt-4">
+                <Link to="/login" className="bg-primary text-white px-6 py-3 rounded-full font-bold text-xs tracking-widest hover:scale-105 transition-transform uppercase text-center">
+                  Ingresar
+                </Link>
+                <Link to="/register" className="border border-primary text-primary px-6 py-3 rounded-full font-bold text-xs tracking-widest uppercase text-center hover:bg-primary/5 transition-colors">
+                  Registrarse
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }
