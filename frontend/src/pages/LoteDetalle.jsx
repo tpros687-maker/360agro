@@ -61,15 +61,13 @@ export default function LoteDetalle() {
 
     try {
       const token = localStorage.getItem("token");
-      await API.post(
-        "/mensajes/enviar",
-        {
-          loteId: lote._id,
-          mensaje,
-          receptor: lote.usuario._id,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const formData = new FormData();
+      formData.append("loteId", lote._id);
+      formData.append("mensaje", mensaje);
+      formData.append("receptor", lote.usuario._id);
+      await API.post("/mensajes/enviar", formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success("Propuesta enviada al productor");
       setMensaje("");
       setMostrarModal(false);
