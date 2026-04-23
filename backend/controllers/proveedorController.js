@@ -3,6 +3,7 @@ import path from "path";
 import Proveedor from "../models/proveedorModel.js";
 import slugify from "slugify";
 import mongoose from "mongoose";
+import { puedeTenerTienda } from "../config/planes.js";
 
 // Helper para borrar archivos físicos
 const borrarArchivoFisico = (ruta) => {
@@ -84,12 +85,8 @@ export const crearProveedor = async (req, res) => {
   try {
     const usuario = req.user; // Obtenido por el middleware 'proteger'
 
-    // 🛡️ VALIDACIÓN DE PLAN: Solo planes pagados pueden fundar showroom
-    const planesPermitidos = ["productor", "pro", "empresa"];
-    if (!planesPermitidos.includes(usuario.plan?.toLowerCase())) {
-      return res.status(403).json({
-        mensaje: "Tu plan actual no permite la creación de un Showroom Corporativo. Por favor, actualiza tu suscripción."
-      });
+    if (!puedeTenerTienda(req.user.plan)) {
+      return res.status(403).json({ mensaje: "Tu plan no incluye acceso a tienda. Necesitás el plan Pro o Empresa." });
     }
 
     const tipoProveedor = req.body.tipoProveedor || "tienda";
