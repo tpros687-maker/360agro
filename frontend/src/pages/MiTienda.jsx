@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import tiendaApi from "../api/tiendaApi";
 import productoApi from "../api/productoApi";
 import { BASE_URL } from "../api/axiosConfig";
 import { toast } from "react-hot-toast";
-import ModalConfirmar from "../components/ModalConfirmar"; // Inyectamos el guardián
+import ModalConfirmar from "../components/ModalConfirmar";
+import { AuthContext } from "../context/AuthContext";
 
 export default function MiTienda() {
+  const { usuario } = useContext(AuthContext);
+  const planPermiteTienda = ["pro", "empresa"].includes(usuario?.plan?.toLowerCase());
   const [tienda, setTienda] = useState(null);
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,9 +87,16 @@ export default function MiTienda() {
           <p className="text-on-surface-variant/40 max-w-sm mx-auto uppercase text-[10px] font-black tracking-widest leading-loose italic">
             Para comercializar insumos y productos, primero debe configurar su identidad corporativa en la red.
           </p>
-          <Link to="/crear-tienda" className="machined-gradient text-on-tertiary-fixed px-8 py-4 rounded-full font-black uppercase tracking-widest inline-block text-[11px] shadow-xl italic">
-            CONFIGURAR TIENDA <span className="material-symbols-outlined text-sm">arrow_forward</span>
-          </Link>
+          {planPermiteTienda && (
+            <Link to="/crear-tienda" className="machined-gradient text-on-tertiary-fixed px-8 py-4 rounded-full font-black uppercase tracking-widest inline-block text-[11px] shadow-xl italic">
+              CONFIGURAR TIENDA <span className="material-symbols-outlined text-sm">arrow_forward</span>
+            </Link>
+          )}
+          {!planPermiteTienda && (
+            <Link to="/planes" className="bg-surface-container border border-outline-variant/40 text-primary px-8 py-4 rounded-full font-black uppercase tracking-widest inline-block text-[11px] shadow-xl italic">
+              Actualizar plan <span className="material-symbols-outlined text-sm">arrow_forward</span>
+            </Link>
+          )}
         </div>
       </div>
     );

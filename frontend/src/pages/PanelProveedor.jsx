@@ -177,7 +177,7 @@ export default function PanelVendedor() {
         <div className="space-y-8">
 
           {/* ESTADO INICIAL: SIN PERFIL CONFIGURADO */}
-          {!tienda && (
+          {!tienda && ["pro", "empresa"].includes(usuario?.plan?.toLowerCase()) && (
             <section className="bg-primary/10 rounded-[3rem] p-8 border border-primary/30 text-center backdrop-blur-md animate-reveal shadow-blue-accent-lg">
               <div className="max-w-2xl mx-auto">
                 <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center text-5xl mx-auto mb-8 border border-white/10 shadow-inner"><span className="material-symbols-outlined text-2xl text-primary">business</span></div>
