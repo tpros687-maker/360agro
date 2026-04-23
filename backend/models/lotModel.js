@@ -19,7 +19,7 @@ const lotSchema = new mongoose.Schema(
     },
     categoria: {
       type: String,
-      enum: ["Terneros", "Terneras", "Novillos", "Vaquillonas", "Vacas", "Toros", "Pieza de Cría"],
+      enum: ["Terneros", "Terneras", "Novillos", "Vaquillonas", "Vacas", "Toros", "Pieza de Cría", "Invernada", "Maquinaria", "Campos"],
       default: "Novillos",
     },
     raza: { type: String, trim: true },
