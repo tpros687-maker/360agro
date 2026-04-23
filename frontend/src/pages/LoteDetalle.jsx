@@ -55,8 +55,7 @@ export default function LoteDetalle() {
     }
   };
 
-  const enviarMensaje = async (e) => {
-    e.preventDefault();
+  const enviarMensaje = async () => {
     if (!mensaje.trim()) return toast.error("El mensaje no puede estar vacío");
 
     try {
