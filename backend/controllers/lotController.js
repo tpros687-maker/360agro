@@ -114,11 +114,12 @@ export const crearLote = async (req, res) => {
 
     res.status(201).json(nuevoLote);
   } catch (error) {
-    console.error('CATCH ERROR TYPE:', typeof error)
-    console.error('CATCH ERROR STRING:', String(error))
-    console.error('CATCH ERROR KEYS:', Object.keys(error || {}))
-    console.error('CATCH ERROR MESSAGE:', error?.message)
-    res.status(500).json({ message: String(error) })
+    console.error('Error crearLote:', error?.message || error);
+    if (error.name === 'ValidationError') {
+      const campos = Object.values(error.errors).map(e => e.message).join(', ');
+      return res.status(400).json({ detalle: `Error de validación: ${campos}` });
+    }
+    res.status(500).json({ detalle: error?.message || "Error interno del servidor" });
   }
 };
 
