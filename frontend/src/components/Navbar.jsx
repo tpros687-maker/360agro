@@ -17,7 +17,8 @@ import {
   PlusCircle,
   LayoutDashboard,
   Calculator as CalcIcon,
-  Zap
+  Zap,
+  UserCircle,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -154,11 +155,15 @@ export default function Navbar() {
                   onClick={() => setMenuAbierto(!menuAbierto)}
                   className="flex items-center gap-3 p-1 rounded-full border border-outline-variant/30 hover:bg-background transition-colors"
                 >
-                  <img
-                    src={usuario.foto || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80"}
-                    alt={usuario.nombre}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
+                  {usuario.foto ? (
+                    <img
+                      src={usuario.foto}
+                      alt={usuario.nombre}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <UserCircle className="w-8 h-8 text-on-surface-variant" />
+                  )}
                   <span className="material-symbols-outlined text-sm text-primary">expand_more</span>
                 </button>
 
