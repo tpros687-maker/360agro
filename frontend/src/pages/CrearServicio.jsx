@@ -1,7 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import servicioApi from "../api/servicioApi";
+import lotApi from "../api/lotApi";
 import { useNavigate, Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
+
+const LIMITE_TOTAL = { gratis: 0, observador: 0, productor: 6, pro: Infinity, empresa: Infinity };
 
 const LOCALIDADES_POR_DEPTO = {
   "Artigas": ["Artigas", "Tomás Gomensoro", "Baltasar Brum", "Bella Unión"],
@@ -26,10 +30,12 @@ const LOCALIDADES_POR_DEPTO = {
 };
 
 export default function CrearServicio() {
+  const { usuario } = useContext(AuthContext);
   const navigate = useNavigate();
   const [yaExiste, setYaExiste] = useState(false);
   const [loading, setLoading] = useState(false);
   const [verificando, setVerificando] = useState(true);
+  const [limiteAlcanzado, setLimiteAlcanzado] = useState(false);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -47,8 +53,21 @@ export default function CrearServicio() {
   const [localidadesDisponibles, setLocalidadesDisponibles] = useState([]);
 
   useEffect(() => {
-    setVerificando(false);
-  }, []);
+    const verificarLimite = async () => {
+      const plan = usuario?.plan?.toLowerCase() || "gratis";
+      const limite = LIMITE_TOTAL[plan] ?? 0;
+      if (limite === Infinity) { setVerificando(false); return; }
+      try {
+        const [{ data: lotes }, { data: servicios }] = await Promise.all([
+          lotApi.obtenerMisLotes(),
+          servicioApi.obtenerMiServicio(),
+        ]);
+        if ((lotes.length + servicios.length) >= limite) setLimiteAlcanzado(true);
+      } catch {}
+      setVerificando(false);
+    };
+    verificarLimite();
+  }, [usuario]);
 
   useEffect(() => {
     if (form.departamento) {
@@ -112,6 +131,23 @@ export default function CrearServicio() {
       <div className="animate-pulse text-primary font-black uppercase tracking-widest">Validando Credenciales...</div>
     </div>
   );
+
+  if (limiteAlcanzado) {
+    const plan = usuario?.plan?.toLowerCase() || "gratis";
+    const limite = LIMITE_TOTAL[plan] ?? 0;
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center px-6">
+        <div className="bg-surface-container-high p-16 text-center max-w-xl border border-outline-variant/60 rounded-[3rem] shadow-2xl">
+          <div className="mb-10 flex justify-center text-primary"><span className="material-symbols-outlined text-4xl">inventory</span></div>
+          <h2 className="text-4xl font-black text-on-surface italic tracking-tighter uppercase mb-6">Límite alcanzado</h2>
+          <p className="text-on-surface-variant/60 text-sm font-black uppercase tracking-widest mb-10 leading-loose">
+            Tu plan <span className="text-primary">{plan.toUpperCase()}</span> permite hasta {limite} publicaciones. Para publicar más, pasá al plan Pro.
+          </p>
+          <Link to="/planes" className="machined-gradient py-5 px-10 inline-block font-black rounded-full uppercase tracking-widest shadow-xl text-on-tertiary-fixed">Ver planes <span className="material-symbols-outlined text-sm">arrow_forward</span></Link>
+        </div>
+      </div>
+    );
+  }
 
   if (yaExiste) {
     return (
