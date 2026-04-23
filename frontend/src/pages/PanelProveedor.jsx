@@ -193,7 +193,7 @@ export default function PanelVendedor() {
           )}
 
           {/* GESTIÓN DE TIENDA */}
-          {tienda && (
+          {tienda && ["pro", "empresa"].includes(usuario?.plan?.toLowerCase()) && (
             <section className="bg-white shadow-md rounded-2xl p-6 mb-6">
               <div className="flex justify-between items-center border-b border-outline-variant/20 pb-4 mb-4">
                 <div className="flex items-center gap-6">

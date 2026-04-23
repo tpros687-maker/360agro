@@ -52,25 +52,26 @@ export default function Publicar() {
           ))}
         </div>
 
-        {/* SECCIÓN TIENDAS: solo visible para Pro y Empresa */}
-        {["pro", "empresa"].includes(usuario?.plan?.toLowerCase()) && <div className="bg-surface-container-high border border-outline-variant/60 rounded-[2rem] p-12 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-xl group backdrop-blur-md">
-          <div className="max-w-xl text-center md:text-left relative z-10">
-            <p className="text-primary font-black text-[9px] uppercase tracking-[0.4em] mb-4 italic">Comercio de Insumos & Inversiones</p>
-            <h3 className="text-3xl font-black text-on-surface italic uppercase tracking-tighter mb-4 leading-none">
-              GESTIÓN DE <span className="text-primary not-italic font-black">SHOWROOM</span>
-            </h3>
-            <p className="text-[10px] text-on-surface-variant/30 font-bold uppercase tracking-[0.2em] leading-relaxed italic">
-              Para comercializar productos e insumos, debe operar desde una terminal corporativa verificada.
-            </p>
+        {/* SECCIÓN NEGOCIO: solo visible para Pro y Empresa */}
+        {["pro", "empresa"].includes(usuario?.plan?.toLowerCase()) && (
+          <div className="bg-surface-container-high border border-outline-variant/60 rounded-[2rem] p-12 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-xl group backdrop-blur-md">
+            <div className="max-w-xl text-center md:text-left relative z-10">
+              <p className="text-primary font-black text-[9px] uppercase tracking-[0.4em] mb-4 italic">Comercio de Insumos & Inversiones</p>
+              <h3 className="text-3xl font-black text-on-surface italic uppercase tracking-tighter mb-4 leading-none">
+                GESTIONAR <span className="text-primary not-italic font-black">NEGOCIO</span>
+              </h3>
+              <p className="text-[10px] text-on-surface-variant/30 font-bold uppercase tracking-[0.2em] leading-relaxed italic">
+                Para comercializar productos e insumos, debe operar desde una terminal corporativa verificada.
+              </p>
+            </div>
+            <Link
+              to="/mi-tienda"
+              className="relative z-10 bg-primary text-on-tertiary-fixed px-12 py-6 rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] hover:bg-on-surface hover:text-white transition-all shadow-xl whitespace-nowrap active:scale-95 italic"
+            >
+              Administrar mi Negocio <span className="material-symbols-outlined text-sm">arrow_forward</span>
+            </Link>
           </div>
-          
-          <Link 
-            to="/mi-tienda" // El componente MiTienda ya redirige a /crear-tienda si no existe.
-            className="relative z-10 bg-primary text-on-tertiary-fixed px-12 py-6 rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] hover:bg-on-surface hover:text-white transition-all shadow-xl whitespace-nowrap active:scale-95 italic"
-          >
-            Administrar Catálogo <span className="material-symbols-outlined text-sm">arrow_forward</span>
-          </Link>
-        </div>}
+        )}
       </div>
     </div>
   );
