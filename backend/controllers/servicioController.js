@@ -1,6 +1,6 @@
 import Servicio from "../models/servicioModel.js";
 import Lote from "../models/lotModel.js";
-import { puedePublicarServicio } from "../config/planes.js";
+import { puedePublicarTotal } from "../config/planes.js";
 
 /* =======================================================
     OBTENER TODOS LOS SERVICIOS (CATÁLOGO GLOBAL)
@@ -70,9 +70,12 @@ export const obtenerServicio = async (req, res) => {
 export const crearServicio = async (req, res) => {
   try {
     const body = req.body;
-    const serviciosActivos = await Servicio.countDocuments({ usuario: req.user._id });
-    if (!puedePublicarServicio(req.user.plan, serviciosActivos)) {
-      return res.status(403).json({ mensaje: "Límite de servicios alcanzado para tu plan." });
+    const [lotesActivos, serviciosActivos] = await Promise.all([
+      Lote.countDocuments({ usuario: req.user._id }),
+      Servicio.countDocuments({ usuario: req.user._id }),
+    ]);
+    if (!puedePublicarTotal(req.user.plan, lotesActivos, serviciosActivos)) {
+      return res.status(403).json({ mensaje: "Límite de publicaciones alcanzado para tu plan." });
     }
 
     const fotos = req.files?.map((f) => f.path) || [];

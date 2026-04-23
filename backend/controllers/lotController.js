@@ -3,7 +3,8 @@ import User from "../models/userModel.js";
 import TempUpload from "../models/tempUploadModel.js";
 import Proveedor from "../models/proveedorModel.js";
 import Expense from "../models/expenseModel.js";
-import { puedePublicarLote } from "../config/planes.js";
+import { puedePublicarTotal } from "../config/planes.js";
+import Servicio from "../models/servicioModel.js";
 
 /* --- MÉTODOS DE ARCHIVOS --- */
 
@@ -48,9 +49,12 @@ export const crearLote = async (req, res) => {
     const usuario = await User.findById(req.user._id);
     if (!usuario) return res.status(404).json({ mensaje: "Usuario no encontrado" });
 
-    const lotesActivos = await Lote.countDocuments({ usuario: usuario._id });
-    if (!puedePublicarLote(usuario.plan, lotesActivos)) {
-      return res.status(403).json({ mensaje: "Límite de lotes alcanzado para tu plan." });
+    const [lotesActivos, serviciosActivos] = await Promise.all([
+      Lote.countDocuments({ usuario: usuario._id }),
+      Servicio.countDocuments({ usuario: usuario._id }),
+    ]);
+    if (!puedePublicarTotal(usuario.plan, lotesActivos, serviciosActivos)) {
+      return res.status(403).json({ mensaje: "Límite de publicaciones alcanzado para tu plan." });
     }
 
     const planUser = usuario.plan?.toLowerCase() || "observador";
