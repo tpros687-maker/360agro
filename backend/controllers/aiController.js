@@ -33,7 +33,7 @@ export const consultarIA = async (req, res) => {
 
         // --- CONFIGURACIÓN DE MODELO ---
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash-latest",
+            model: "gemini-1.5-flash",
         });
 
         // Preparar y limpiar historial para Gemini (Debe empezar con 'user' y alternar)
