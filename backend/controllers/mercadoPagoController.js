@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { MercadoPagoConfig, PreApprovalPlan, PreApproval, Payment } from 'mercadopago';
+import { MercadoPagoConfig, Preference, PreApproval, Payment } from 'mercadopago';
 import User from '../models/userModel.js';
 import Subscripcion from '../models/subscripcionModel.js';
 import { PLANES } from '../config/planes.js';
@@ -35,44 +35,42 @@ export const crearSuscripcion = async (req, res) => {
     if (!plan) return res.status(400).json({ mensaje: "Plan inválido" });
 
     const montos = {
-      mensual: { monto: plan.precio.mensual, frecuencia: 1, tipo: "months" },
-      trimestral: { monto: plan.precio.trimestral, frecuencia: 3, tipo: "months" },
-      anual: { monto: plan.precio.anual, frecuencia: 12, tipo: "months" }
+      mensual: plan.precio.mensual,
+      trimestral: plan.precio.trimestral,
+      anual: plan.precio.anual
     };
+    const montoUSD = montos[periodo] || montos.mensual;
+    const montoUYU = Math.round(montoUSD * 40);
 
-    const config = montos[periodo] || montos.mensual;
-    const montoUYU = config.monto * 40;
+    const client = getClient();
+    const preference = new Preference(client);
 
-    const preApprovalPlan = new PreApprovalPlan(getClient());
-    const planCreado = await preApprovalPlan.create({
+    const resultado = await preference.create({
       body: {
-        reason: `360 Agro - Plan ${plan.nombre} USD ${config.monto}/mes`,
-        auto_recurring: {
-          frequency: config.frecuencia,
-          frequency_type: config.tipo,
-          transaction_amount: montoUYU,
+        items: [{
+          title: `360 Agro - Plan ${plan.nombre} (${periodo})`,
+          quantity: 1,
+          unit_price: montoUYU,
           currency_id: "UYU"
+        }],
+        payer: { email: req.user.email },
+        back_urls: {
+          success: `${process.env.FRONTEND_URL}/planes?pago=ok`,
+          failure: `${process.env.FRONTEND_URL}/planes?pago=error`,
+          pending: `${process.env.FRONTEND_URL}/planes?pago=pendiente`
         },
-        back_url: process.env.FRONTEND_URL || "http://localhost:5173/planes",
-        status: "active"
+        auto_return: "approved",
+        metadata: { userId: req.user._id.toString(), planKey, periodo }
       }
     });
 
     await Subscripcion.findOneAndUpdate(
       { usuario: req.user._id, status: "Pendiente" },
-      {
-        usuario: req.user._id,
-        planSolicitado: planKey,
-        periodo: periodo,
-        status: "Pendiente"
-      },
+      { usuario: req.user._id, planSolicitado: planKey, periodo, status: "Pendiente" },
       { upsert: true }
     );
 
-    res.status(200).json({
-      init_point: planCreado.init_point,
-      planId: planCreado.id
-    });
+    res.status(200).json({ init_point: resultado.init_point });
   } catch (error) {
     console.error("Error MP:", error);
     res.status(500).json({ mensaje: "Error al crear suscripción", error: error.message });
