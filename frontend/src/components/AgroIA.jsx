@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 import { Bot, Send, X, Zap, Sparkles } from "lucide-react";
 
 export default function AgroIA() {
+  return null; // temporalmente deshabilitado
   const [abierto, setAbierto] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [escribiendo, setEscribiendo] = useState(false);
