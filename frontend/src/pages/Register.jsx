@@ -10,7 +10,7 @@ export default function Register() {
     nombre: "",
     email: "",
     password: "",
-    plan: "observador"
+    plan: "gratis"
   });
   const [loading, setLoading] = useState(false);
   const [exito, setExito] = useState(false);

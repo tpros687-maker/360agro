@@ -15,7 +15,7 @@ export const registrarUsuario = async (req, res) => {
       return res.status(400).json({ mensaje: "El usuario ya existe" });
     }
 
-    const usuario = await User.create({ nombre, email: emailLower, password, plan: plan || "observador" });
+    const usuario = await User.create({ nombre, email: emailLower, password, plan: plan || "gratis" });
 
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
     usuario.codigoVerificacion = codigo;

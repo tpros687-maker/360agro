@@ -14,8 +14,8 @@ const userSchema = new mongoose.Schema(
     // 📌 Plan normalizado SIEMPRE en minúsculas
     plan: {
       type: String,
-      enum: ["observador", "productor", "pro", "empresa"],
-      default: "observador",
+      enum: ["gratis", "observador", "productor", "pro", "empresa"],
+      default: "gratis",
     },
     // 💳 Automatización estilo Netflix
     suscripcionId: { type: String, default: null },
