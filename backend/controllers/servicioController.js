@@ -1,12 +1,6 @@
 import Servicio from "../models/servicioModel.js";
 import Lote from "../models/lotModel.js";
-
-const limitePorPlan = {
-  observador: 0,
-  productor: 3,
-  pro: Infinity,
-  empresa: Infinity,
-};
+import { puedePublicarServicio } from "../config/planes.js";
 
 /* =======================================================
     OBTENER TODOS LOS SERVICIOS (CATÁLOGO GLOBAL)
@@ -76,25 +70,9 @@ export const obtenerServicio = async (req, res) => {
 export const crearServicio = async (req, res) => {
   try {
     const body = req.body;
-    const planUser = (req.user.plan || "observador").toLowerCase();
-    const limite = limitePorPlan[planUser] ?? 0;
-
-    if (limite === 0) {
-      return res.status(403).json({
-        mensaje: "Tu plan actual no permite publicar servicios. Actualiza tu suscripción.",
-      });
-    }
-
-    if (limite !== Infinity) {
-      const [lotesActivos, serviciosActivos] = await Promise.all([
-        Lote.countDocuments({ usuario: req.user._id }),
-        Servicio.countDocuments({ usuario: req.user._id }),
-      ]);
-      if (lotesActivos + serviciosActivos >= limite) {
-        return res.status(403).json({
-          mensaje: `Límite de publicaciones para el plan ${planUser.toUpperCase()} alcanzado. Actualiza tu plan.`,
-        });
-      }
+    const serviciosActivos = await Servicio.countDocuments({ usuario: req.user._id });
+    if (!puedePublicarServicio(req.user.plan, serviciosActivos)) {
+      return res.status(403).json({ mensaje: "Límite de servicios alcanzado para tu plan." });
     }
 
     const fotos = req.files?.map((f) => f.path) || [];
