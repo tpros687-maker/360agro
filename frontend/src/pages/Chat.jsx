@@ -68,7 +68,12 @@ export default function Chat() {
   }, [referenciaId, otroUsuarioId, usuario]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = messagesEndRef.current?.parentElement;
+    if (!container) return;
+    const distanciaDelFinal = container.scrollHeight - container.scrollTop - container.clientHeight;
+    if (distanciaDelFinal < 200) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [conversacion]);
 
   const enviar = async (e) => {
@@ -165,7 +170,7 @@ export default function Chat() {
                   <div className={`px-7 py-5 rounded-[2.5rem] text-[13px] font-medium leading-relaxed shadow-2xl border backdrop-blur-sm
                     ${propio
                       ? "bg-primary text-white border-primary rounded-tr-none"
-                      : "bg-surface-container text-white border-outline-variant/20 rounded-tl-none italic"}`}
+                      : "bg-surface-container text-gray-900 border-outline-variant/20 rounded-tl-none italic"}`}
                   >
                     {msg.archivo && (
                       <img
@@ -201,7 +206,7 @@ export default function Chat() {
               value={mensaje}
               onChange={(e) => setMensaje(e.target.value)}
               placeholder="ESCRIBA SU PROPUESTA COMERCIAL..."
-              className="flex-1 bg-transparent text-white text-[10px] font-black uppercase tracking-[0.2em] outline-none px-4 placeholder:text-on-surface-variant/20"
+              className="flex-1 bg-transparent text-agro-text text-[10px] font-black uppercase tracking-[0.2em] outline-none px-4 placeholder:text-gray-400"
             />
 
             <button
