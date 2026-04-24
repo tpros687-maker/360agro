@@ -45,6 +45,7 @@ import expenseRoutes from "./routes/expenseRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import gisRoutes from "./routes/gisRoutes.js";
+import codigoRoutes from "./routes/codigoRoutes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -155,6 +156,7 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/gis", gisRoutes);
+app.use("/api/codigos", codigoRoutes);
 
 app.get("/", (req, res) => {
   res.send("🚜 API 360 Agro Operativa con WebSockets 🔌");

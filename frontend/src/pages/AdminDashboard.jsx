@@ -9,7 +9,8 @@ import {
     CheckCircle,
     XCircle,
     Terminal,
-    Zap
+    Zap,
+    KeyRound
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -21,6 +22,11 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState("stats");
 
     const [chat, setChat] = useState([]);
+    const [codigos, setCodigos] = useState([]);
+    const [genEmail, setGenEmail] = useState("");
+    const [genPlan, setGenPlan] = useState("productor");
+    const [genPeriodo, setGenPeriodo] = useState("mensual");
+    const [generando, setGenerando] = useState(false);
 
     useEffect(() => {
         const fetchWelcome = async () => {
@@ -64,6 +70,10 @@ export default function AdminDashboard() {
         cargarDatos();
     }, []);
 
+    useEffect(() => {
+        if (activeTab === "codigos") cargarCodigos();
+    }, [activeTab]);
+
     const handleCambiarPlan = async (userId, nuevoPlan) => {
         try {
             await api.patch(`/admin/users/${userId}/plan`, { plan: nuevoPlan });
@@ -92,6 +102,31 @@ export default function AdminDashboard() {
             setUsuarios(usuarios.map(u => u._id === userId ? { ...u, esVerificado: data.esVerificado } : u));
         } catch (error) {
             toast.error("Error al actualizar verificación");
+        }
+    };
+
+    const cargarCodigos = async () => {
+        try {
+            const { data } = await api.get("/codigos");
+            setCodigos(data);
+        } catch {
+            toast.error("Error al cargar códigos");
+        }
+    };
+
+    const handleGenerarCodigo = async (e) => {
+        e.preventDefault();
+        if (!genEmail.trim()) return toast.error("Ingresá un email");
+        setGenerando(true);
+        try {
+            const { data } = await api.post("/codigos/generar", { plan: genPlan, periodo: genPeriodo, emailDestino: genEmail });
+            toast.success(`Código ${data.codigo} enviado a ${genEmail}`);
+            setGenEmail("");
+            cargarCodigos();
+        } catch (err) {
+            toast.error(err.response?.data?.mensaje || "Error al generar código");
+        } finally {
+            setGenerando(false);
         }
     };
 
@@ -168,6 +203,12 @@ export default function AdminDashboard() {
                             className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'settings' ? 'bg-primary text-white shadow-xl' : 'bg-surface-container text-on-surface-variant border border-outline-variant/60 hover:bg-surface-container-high'}`}
                         >
                             Ajustes Web
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("codigos")}
+                            className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'codigos' ? 'bg-primary text-white shadow-xl' : 'bg-surface-container text-on-surface-variant border border-outline-variant/60 hover:bg-surface-container-high'}`}
+                        >
+                            Códigos
                         </button>
                     </div>
                 </header>
@@ -290,6 +331,99 @@ export default function AdminDashboard() {
                                     <p className="text-on-surface-variant/10 text-xl font-black uppercase tracking-[0.5em] italic">No hay solicitudes pendientes de activación</p>
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {activeTab === "codigos" && (
+                        <div className="max-w-4xl mx-auto space-y-10">
+                            {/* Generador */}
+                            <form onSubmit={handleGenerarCodigo} className="bg-surface-container-high border border-outline-variant/60 p-12 rounded-[3.5rem] backdrop-blur-3xl shadow-2xl">
+                                <div className="flex items-center gap-4 mb-10">
+                                    <KeyRound className="w-6 h-6 text-primary" />
+                                    <h3 className="text-3xl font-black italic uppercase tracking-tighter text-on-surface">Generar Código de Activación</h3>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div className="md:col-span-3">
+                                        <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic block mb-3">Email del usuario</label>
+                                        <input
+                                            type="email"
+                                            value={genEmail}
+                                            onChange={e => setGenEmail(e.target.value)}
+                                            placeholder="usuario@email.com"
+                                            className="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-2xl px-6 py-5 text-on-surface text-[11px] font-bold outline-none focus:border-primary/40 transition-all shadow-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic block mb-3">Plan</label>
+                                        <select
+                                            value={genPlan}
+                                            onChange={e => setGenPlan(e.target.value)}
+                                            className="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-2xl px-6 py-5 text-on-surface text-[11px] font-bold outline-none focus:border-primary/40 transition-all shadow-sm cursor-pointer"
+                                        >
+                                            {["productor", "pro", "empresa"].map(p => (
+                                                <option key={p} value={p} className="bg-surface-container text-on-surface uppercase">{p}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic block mb-3">Período</label>
+                                        <select
+                                            value={genPeriodo}
+                                            onChange={e => setGenPeriodo(e.target.value)}
+                                            className="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-2xl px-6 py-5 text-on-surface text-[11px] font-bold outline-none focus:border-primary/40 transition-all shadow-sm cursor-pointer"
+                                        >
+                                            {["mensual", "trimestral", "anual"].map(p => (
+                                                <option key={p} value={p} className="bg-surface-container text-on-surface">{p}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="flex items-end">
+                                        <button
+                                            type="submit"
+                                            disabled={generando}
+                                            className="w-full machined-gradient text-on-tertiary-fixed font-black py-5 rounded-2xl text-[11px] uppercase tracking-[0.4em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all italic"
+                                        >
+                                            {generando ? "Enviando..." : "Generar y enviar"}
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            {/* Listado */}
+                            <div className="bg-surface-container-high border border-outline-variant/60 rounded-[3rem] overflow-hidden backdrop-blur-3xl shadow-2xl">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-outline-variant/60 bg-surface-container-low">
+                                            <th className="p-6 text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic">Código</th>
+                                            <th className="p-6 text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic">Plan</th>
+                                            <th className="p-6 text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic">Email</th>
+                                            <th className="p-6 text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic">Estado</th>
+                                            <th className="p-6 text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest italic">Usado por</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-outline-variant/30">
+                                        {codigos.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5} className="py-20 text-center text-on-surface-variant/20 font-black uppercase tracking-widest italic text-sm">
+                                                    Sin códigos generados
+                                                </td>
+                                            </tr>
+                                        ) : codigos.map(c => (
+                                            <tr key={c._id} className="hover:bg-surface-container-lowest/40 transition-colors">
+                                                <td className="p-6 font-black tracking-widest text-primary text-sm">{c.codigo}</td>
+                                                <td className="p-6 text-[10px] font-black uppercase text-on-surface-variant">{c.plan} · {c.periodo}</td>
+                                                <td className="p-6 text-[10px] text-on-surface-variant/60">{c.emailDestino || "—"}</td>
+                                                <td className="p-6">
+                                                    <span className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-full border ${c.usado ? "text-on-surface-variant/30 border-outline-variant/20" : "text-primary border-primary/20"}`}>
+                                                        {c.usado ? "Usado" : "Disponible"}
+                                                    </span>
+                                                </td>
+                                                <td className="p-6 text-[10px] text-on-surface-variant/50">{c.usadoPor?.nombre || "—"}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
 

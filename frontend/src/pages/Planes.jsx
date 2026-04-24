@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import { useState, useEffect, useContext } from "react";
 import CheckoutSuscripcion from "../components/CheckoutSuscripcion";
 import subscripcionApi from "../api/subscripcionApi";
+import api from "../api/axiosConfig";
 import { CheckCircle2, ShieldCheck, Zap, Globe } from "lucide-react";
 import SEO from "../components/SEO";
 
@@ -13,6 +14,8 @@ export default function Planes() {
   const [planSeleccionado, setPlanSeleccionado] = useState(null);
   const [solicitudPendiente, setSolicitudPendiente] = useState(null);
   const [periodo, setPeriodo] = useState("mensual");
+  const [codigo, setCodigo] = useState("");
+  const [activando, setActivando] = useState(false);
 
   useEffect(() => {
     const cargarEstado = async () => {
@@ -93,6 +96,30 @@ export default function Planes() {
       icon: ShieldCheck,
     },
   ];
+
+  const refrescarUsuario = async () => {
+    try {
+      const { data } = await api.get("/users/perfil");
+      const actualizado = { ...usuario, plan: data.plan };
+      setUsuario(actualizado);
+      localStorage.setItem("usuario", JSON.stringify(actualizado));
+    } catch {}
+  };
+
+  const activarCodigo = async () => {
+    if (!codigo.trim()) return toast.error("Ingresá un código");
+    setActivando(true);
+    try {
+      const { data } = await api.post("/codigos/activar", { codigo });
+      toast.success(`¡Plan ${data.plan.toUpperCase()} activado!`);
+      await refrescarUsuario();
+      setCodigo("");
+    } catch (err) {
+      toast.error(err.response?.data?.mensaje || "Código inválido");
+    } finally {
+      setActivando(false);
+    }
+  };
 
   const precioLabel = (p) => {
     if (p.key === "gratis") return "Gratis";
@@ -211,6 +238,25 @@ export default function Planes() {
           plan={planSeleccionado}
           onSuccess={(key) => setSolicitudPendiente(key)}
         />
+
+        <div className="mt-16 max-w-md mx-auto">
+          <p className="text-center text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest mb-4">¿Tenés un código de activación?</p>
+          <div className="flex gap-3">
+            <input
+              value={codigo}
+              onChange={e => setCodigo(e.target.value.toUpperCase())}
+              placeholder="PRO-XXXX-XXXX"
+              className="flex-1 bg-surface-container-high border border-outline-variant/60 rounded-2xl px-6 py-4 text-on-surface font-black tracking-widest text-sm outline-none focus:border-primary/50"
+            />
+            <button
+              onClick={activarCodigo}
+              disabled={activando}
+              className="machined-gradient text-on-tertiary-fixed px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+            >
+              {activando ? "..." : "Activar"}
+            </button>
+          </div>
+        </div>
 
         <div className="mt-16 text-center space-y-6">
           <a
