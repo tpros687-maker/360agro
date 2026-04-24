@@ -11,7 +11,11 @@ const getClient = () => new MercadoPagoConfig({
 // Valida la firma x-signature enviada por MercadoPago en cada webhook
 const validarFirmaMP = (req) => {
   const secret = process.env.MP_WEBHOOK_SECRET;
-  if (!secret) return true; // sin secret configurado: omitir en dev
+  if (!secret) return true;
+
+  // Si es notificación de prueba de MP, dejar pasar
+  if (req.body?.live_mode === false) return true;
+
   const xSignature = req.headers["x-signature"];
   const xRequestId = req.headers["x-request-id"];
   const dataId = req.query["data.id"];
