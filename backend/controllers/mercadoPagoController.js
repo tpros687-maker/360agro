@@ -84,9 +84,6 @@ export const crearSuscripcion = async (req, res) => {
 
 export const webhook = async (req, res) => {
   try {
-    console.log("📩 Webhook recibido:", JSON.stringify(req.body));
-    console.log("📩 Query params:", JSON.stringify(req.query));
-
     // 1. Validar firma de MercadoPago
     if (!validarFirmaMP(req)) {
       console.warn("⚠️ Webhook MP rechazado: firma inválida");
@@ -94,43 +91,31 @@ export const webhook = async (req, res) => {
     }
 
     const { type, data } = req.body;
-    console.log("📩 Tipo:", type, "| Data ID:", data?.id);
 
     // 2. Manejar evento de pago único
     if (type === "payment") {
       let pago;
       try {
-        console.log("🔍 Buscando pago ID:", data.id);
         const paymentClient = new Payment(getClient());
         pago = await paymentClient.get({ id: data.id });
-        console.log("💳 Pago encontrado, status:", pago.status);
       } catch (err) {
-        console.error("❌ Error buscando pago:", err?.message, "Status:", err?.status);
         const status = err?.status || err?.cause?.[0]?.code;
         if (status === 404 || String(err?.message).includes("not found")) {
-          console.log("⚠️ Pago no encontrado, ignorando");
           return res.sendStatus(200);
         }
         throw err;
       }
 
-      if (pago.status !== "approved") {
-        console.log("⚠️ Pago no aprobado, status:", pago.status);
-        return res.sendStatus(200);
-      }
+      if (pago.status !== "approved") return res.sendStatus(200);
 
-      console.log("✅ Pago aprobado, buscando usuario por email:", pago.payer.email);
       const userId = pago.metadata?.user_id || pago.metadata?.userId;
-      console.log("🔑 userId desde metadata:", userId);
       let usuario = userId
         ? await User.findById(userId)
         : await User.findOne({ email: pago.payer.email });
-      console.log("👤 Usuario encontrado:", usuario ? usuario.email : "NO ENCONTRADO");
 
       if (!usuario) return res.sendStatus(200);
 
       const sub = await Subscripcion.findOne({ usuario: usuario._id, status: "Pendiente" });
-      console.log("📋 Subscripción pendiente:", sub ? sub.planSolicitado : "NO ENCONTRADA");
 
       if (!sub) return res.sendStatus(200);
 
