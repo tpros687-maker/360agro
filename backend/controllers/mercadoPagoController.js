@@ -44,7 +44,7 @@ export const crearSuscripcion = async (req, res) => {
       anual: plan.precio.anual
     };
     const montoUSD = montos[periodo] || montos.mensual;
-    const montoUYU = 10; // mínimo aceptable por MP
+    const montoUYU = 20; // temporal para prueba
 
     const client = getClient();
     const preference = new Preference(client);
