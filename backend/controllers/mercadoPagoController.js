@@ -83,6 +83,9 @@ export const crearSuscripcion = async (req, res) => {
 
 export const webhook = async (req, res) => {
   try {
+    console.log("📩 Webhook recibido:", JSON.stringify(req.body));
+    console.log("📩 Query params:", JSON.stringify(req.query));
+
     // 1. Validar firma de MercadoPago
     if (!validarFirmaMP(req)) {
       console.warn("⚠️ Webhook MP rechazado: firma inválida");
@@ -90,6 +93,7 @@ export const webhook = async (req, res) => {
     }
 
     const { type, data } = req.body;
+    console.log("📩 Tipo:", type, "| Data ID:", data?.id);
 
     // 2. Manejar evento de pago único
     if (type === "payment") {
