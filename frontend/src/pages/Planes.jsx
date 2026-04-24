@@ -49,10 +49,10 @@ export default function Planes() {
       return;
     }
 
-    if (solicitudPendiente) {
-      try { await subscripcionApi.resetearSolicitud(); } catch {}
-      setSolicitudPendiente(null);
-    }
+    try {
+      await api.delete("/subscripciones/mi-solicitud");
+    } catch {}
+    setSolicitudPendiente(null);
     setPlanSeleccionado(p);
     setModalOpen(true);
   };
