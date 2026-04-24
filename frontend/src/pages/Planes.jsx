@@ -34,6 +34,19 @@ export default function Planes() {
     cargarEstado();
   }, [usuario]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pago = params.get("pago");
+    if (pago === "ok") {
+      toast.success("¡Pago recibido! Tu plan se activará en instantes.");
+      refrescarUsuario();
+      window.history.replaceState({}, "", "/planes");
+    } else if (pago === "error") {
+      toast.error("El pago no pudo procesarse. Intentá de nuevo.");
+      window.history.replaceState({}, "", "/planes");
+    }
+  }, []);
+
   const handleActivar = async (p) => {
     if (p.key === "gratis") {
       const tId = toast.loading("Sincronizando membresía gratuita...");
