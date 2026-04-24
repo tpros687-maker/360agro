@@ -113,12 +113,20 @@ export const webhook = async (req, res) => {
         throw err;
       }
 
-      if (pago.status !== "approved") return res.sendStatus(200);
+      if (pago.status !== "approved") {
+        console.log("⚠️ Pago no aprobado, status:", pago.status);
+        return res.sendStatus(200);
+      }
 
+      console.log("✅ Pago aprobado, buscando usuario por email:", pago.payer.email);
       const usuario = await User.findOne({ email: pago.payer.email });
+      console.log("👤 Usuario encontrado:", usuario ? usuario.email : "NO ENCONTRADO");
+
       if (!usuario) return res.sendStatus(200);
 
       const sub = await Subscripcion.findOne({ usuario: usuario._id, status: "Pendiente" });
+      console.log("📋 Subscripción pendiente:", sub ? sub.planSolicitado : "NO ENCONTRADA");
+
       if (!sub) return res.sendStatus(200);
 
       usuario.plan = sub.planSolicitado;
