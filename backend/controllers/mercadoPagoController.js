@@ -99,14 +99,18 @@ export const webhook = async (req, res) => {
     if (type === "payment") {
       let pago;
       try {
+        console.log("🔍 Buscando pago ID:", data.id);
         const paymentClient = new Payment(getClient());
         pago = await paymentClient.get({ id: data.id });
+        console.log("💳 Pago encontrado, status:", pago.status);
       } catch (err) {
+        console.error("❌ Error buscando pago:", err?.message, "Status:", err?.status);
         const status = err?.status || err?.cause?.[0]?.code;
         if (status === 404 || String(err?.message).includes("not found")) {
+          console.log("⚠️ Pago no encontrado, ignorando");
           return res.sendStatus(200);
         }
-        throw err; // cualquier otro error sube al catch principal
+        throw err;
       }
 
       if (pago.status !== "approved") return res.sendStatus(200);
