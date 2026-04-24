@@ -228,17 +228,15 @@ export default function Planes() {
 
                 <button
                   onClick={() => handleActivar(p)}
-                  disabled={esActual || solicitudPendiente === p.key}
+                  disabled={esActual}
                   className={`w-full py-7 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.5em] transition-all hover:scale-[1.05] active:scale-95 shadow-2xl
                     ${esActual
                       ? "bg-surface-container-low text-on-surface-variant/20 border border-outline-variant/30 cursor-default"
-                      : (solicitudPendiente === p.key)
-                        ? "bg-surface-container-high border border-primary/20 text-primary/40 cursor-wait italic"
-                        : esPro
-                          ? "machined-gradient text-on-tertiary-fixed shadow-primary/20"
-                          : "bg-surface-container-lowest border border-outline-variant/60 text-on-surface hover:bg-primary hover:text-white hover:border-primary"}`}
+                      : esPro
+                        ? "machined-gradient text-on-tertiary-fixed shadow-primary/20"
+                        : "bg-surface-container-lowest border border-outline-variant/60 text-on-surface hover:bg-primary hover:text-white hover:border-primary"}`}
                 >
-                  {esActual ? "Estatus Actual" : (solicitudPendiente === p.key) ? "Sincronizando..." : "Activar Terminal"}
+                  {esActual ? "Estatus Actual" : "Activar Terminal"}
                 </button>
               </div>
             );
