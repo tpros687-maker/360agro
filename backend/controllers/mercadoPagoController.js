@@ -64,7 +64,8 @@ export const crearSuscripcion = async (req, res) => {
           pending: `${process.env.FRONTEND_URL}/planes?pago=pendiente`
         },
         auto_return: "approved",
-        metadata: { userId: req.user._id.toString(), planKey, periodo }
+        external_reference: req.user._id.toString(),
+        metadata: { user_id: req.user._id.toString(), planKey, periodo }
       }
     });
 
@@ -119,7 +120,8 @@ export const webhook = async (req, res) => {
       }
 
       console.log("✅ Pago aprobado, buscando usuario por email:", pago.payer.email);
-      const userId = pago.metadata?.userId || pago.external_reference;
+      const userId = pago.metadata?.user_id || pago.metadata?.userId;
+      console.log("🔑 userId desde metadata:", userId);
       let usuario = userId
         ? await User.findById(userId)
         : await User.findOne({ email: pago.payer.email });
