@@ -119,7 +119,10 @@ export const webhook = async (req, res) => {
       }
 
       console.log("✅ Pago aprobado, buscando usuario por email:", pago.payer.email);
-      const usuario = await User.findOne({ email: pago.payer.email });
+      const userId = pago.metadata?.userId || pago.external_reference;
+      let usuario = userId
+        ? await User.findById(userId)
+        : await User.findOne({ email: pago.payer.email });
       console.log("👤 Usuario encontrado:", usuario ? usuario.email : "NO ENCONTRADO");
 
       if (!usuario) return res.sendStatus(200);
