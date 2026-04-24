@@ -13,43 +13,28 @@ import api from "../api/axiosConfig";
 const RadarNacional = () => {
     const [departamentoActivo, setDepartamentoActivo] = useState("Montevideo");
     const [settings, setSettings] = useState({});
+    const [mapaData, setMapaData] = useState({});
+    const [loadingMapa, setLoadingMapa] = useState(true);
 
     React.useEffect(() => {
-        const fetchSettings = async () => {
+        const fetchData = async () => {
             try {
-                const { data } = await api.get("/settings");
-                setSettings(data);
+                const [settingsRes, statsRes] = await Promise.all([
+                    api.get("/settings"),
+                    api.get("/stats/por-departamento")
+                ]);
+                setSettings(settingsRes.data);
+                setMapaData(statsRes.data);
             } catch (error) {
-                console.error("Error al cargar ajustes en Mapa:", error);
+                console.error("Error al cargar datos del mapa:", error);
+            } finally {
+                setLoadingMapa(false);
             }
         };
-        fetchSettings();
+        fetchData();
     }, []);
 
-    // Mock data por departamento para simular el Hub de Datos
-    const mockData = {
-        Montevideo: { servicios: 450, lotes: 120, tiendas: 45, clima: "22°C", estado: "Despejado" },
-        Canelones: { servicios: 280, lotes: 95, tiendas: 12, clima: "21°C", estado: "Nublado" },
-        Maldonado: { servicios: 150, lotes: 40, tiendas: 15, clima: "23°C", estado: "Despejado" },
-        Rocha: { servicios: 40, lotes: 25, tiendas: 3, clima: "20°C", estado: "Nublado" },
-        Colonia: { servicios: 90, lotes: 55, tiendas: 8, clima: "21°C", estado: "Despejado" },
-        Artigas: { servicios: 30, lotes: 15, tiendas: 2, clima: "26°C", estado: "Caluroso" },
-        Salto: { servicios: 60, lotes: 30, tiendas: 5, clima: "25°C", estado: "Despejado" },
-        Paysandú: { servicios: 75, lotes: 42, tiendas: 6, clima: "24°C", estado: "Despejado" },
-        Rivera: { servicios: 45, lotes: 20, tiendas: 4, clima: "24°C", estado: "Húmedo" },
-        Tacuarembó: { servicios: 55, lotes: 35, tiendas: 3, clima: "23°C", estado: "Despejado" },
-        CerroLargo: { servicios: 40, lotes: 28, tiendas: 3, clima: "22°C", estado: "Nublado" },
-        Durazno: { servicios: 80, lotes: 60, tiendas: 5, clima: "22°C", estado: "Despejado" },
-        Florida: { servicios: 70, lotes: 45, tiendas: 4, clima: "21°C", estado: "Despejado" },
-        Lavalleja: { servicios: 35, lotes: 22, tiendas: 2, clima: "20°C", estado: "Niebla" },
-        TreintaYTres: { servicios: 25, lotes: 18, tiendas: 1, clima: "21°C", estado: "Nublado" },
-        Soriano: { servicios: 85, lotes: 65, tiendas: 6, clima: "22°C", estado: "Despejado" },
-        RíoNegro: { servicios: 50, lotes: 38, tiendas: 3, clima: "23°C", estado: "Despejado" },
-        SanJosé: { servicios: 110, lotes: 75, tiendas: 9, clima: "21°C", estado: "Llovizna" },
-        Flores: { servicios: 20, lotes: 12, tiendas: 1, clima: "22°C", estado: "Despejado" },
-    };
-
-    const data = mockData[departamentoActivo] || mockData.Montevideo;
+    const data = mapaData[departamentoActivo] || { lotes: 0, servicios: 0 };
 
     return (
         <section className="py-32 px-6 bg-background relative overflow-hidden border-y border-outline-variant/10">
@@ -140,21 +125,17 @@ const RadarNacional = () => {
                                     </div>
                                 </div>
                                 <div className="bg-surface-container-low p-6 rounded-[2rem] border border-outline-variant/10 shadow-xl backdrop-blur-md">
-                                    {data.estado === "Despejado" || data.estado === "Caluroso" ? (
-                                        <span className="material-symbols-outlined text-4xl text-primary animate-spin-slow">light_mode</span>
-                                    ) : (
-                                        <span className="material-symbols-outlined text-4xl text-primary">cloud</span>
-                                    )}
+                                    <span className="material-symbols-outlined text-4xl text-primary">location_on</span>
                                 </div>
                             </div>
 
                             <div className="flex items-end gap-10 mb-10 mt-10 relative z-10">
                                 <span className="text-[9rem] font-black text-on-surface italic tracking-tighter leading-none glow-text">
-                                    {data.clima.split('°')[0]}<span className="text-primary">°</span>
+                                    {loadingMapa ? "—" : (data.lotes + data.servicios)}<span className="text-primary text-4xl">act</span>
                                 </span>
                                 <div className="mb-6">
-                                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-on-surface-variant/40 italic mb-2">Climatología Local</p>
-                                    <p className="text-primary font-black text-2xl uppercase tracking-widest italic leading-tight">{data.estado}</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-on-surface-variant/40 italic mb-2">Activos en zona</p>
+                                    <p className="text-primary font-black text-2xl uppercase tracking-widest italic leading-tight">En plataforma</p>
                                 </div>
                             </div>
                         </div>
