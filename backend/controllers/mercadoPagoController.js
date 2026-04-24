@@ -44,7 +44,7 @@ export const crearSuscripcion = async (req, res) => {
       anual: plan.precio.anual
     };
     const montoUSD = montos[periodo] || montos.mensual;
-    const montoUYU = 20; // temporal para prueba
+    const montoUYU = Math.round(montoUSD * 40);
 
     const client = getClient();
     const preference = new Preference(client);
