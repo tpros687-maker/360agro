@@ -145,7 +145,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
               {[...destacados, ...Array(Math.max(0, 3 - destacados.length)).fill(null)].map((lote, idx) =>
                 lote ? (
-                  <Link key={lote._id} to={`/lote/${lote._id}`} className="group bg-surface-container-high rounded-[3rem] overflow-hidden shadow-xl hover:shadow-primary/5 hover:scale-[1.02] transition-all duration-500 border border-outline-variant/60 flex flex-col">
+                  <Link key={lote._id} to={`/lotes/${lote._id}`} className="group bg-surface-container-high rounded-[3rem] overflow-hidden shadow-xl hover:shadow-primary/5 hover:scale-[1.02] transition-all duration-500 border border-outline-variant/60 flex flex-col">
                     <div className="h-60 overflow-hidden relative bg-surface-container-lowest">
                       <img
                         src={imgUrl(lote.fotos?.[0], "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80")}
